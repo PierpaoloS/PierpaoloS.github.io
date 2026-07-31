@@ -159,11 +159,103 @@ body.noscroll{overflow:hidden}
 footer{margin-top:34px; text-align:center; font-size:11.5px; color:var(--grey); padding:0 20px; line-height:1.6}
 .view{animation:slidein .22s ease}
 @keyframes slidein{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
+
+/* ============ SEZIONE SPESE ============ */
+:root{--sp:#3E8E63}
+:root[data-theme="dark"]{--sp:#4FB07C}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--sp:#4FB07C}}
+/* accesso dalla home */
+.sp-entry{display:flex; align-items:center; gap:14px; margin:2px 14px 0; padding:15px 16px; border-radius:18px; cursor:pointer;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--sp) 20%,var(--card)),var(--card));
+  border:1px solid color-mix(in srgb,var(--sp) 35%,var(--line)); position:relative; overflow:hidden; transition:transform .08s}
+.sp-entry:active{transform:scale(.98)}
+.sp-entry .ic{font-size:26px; width:52px; height:52px; border-radius:15px; display:flex; align-items:center; justify-content:center;
+  background:color-mix(in srgb,var(--sp) 20%,transparent); flex:0 0 auto}
+.sp-entry b{font-size:17px; display:block}
+.sp-entry .d{font-size:12.5px; color:var(--grey); margin-top:2px}
+.sp-entry .amt{margin-left:auto; text-align:right; font-weight:800; color:var(--sp); font-size:16px; white-space:nowrap}
+/* barra totale sticky */
+.sp-topbar{position:sticky; top:59px; z-index:30; background:color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter:blur(8px); border-bottom:1px solid var(--line); padding:12px 16px}
+.sp-total{font-size:34px; font-weight:800; letter-spacing:.3px; line-height:1}
+.sp-sub{font-size:12.5px; color:var(--grey); margin-top:3px}
+.sp-budget{margin-top:10px}
+.sp-budget-bar{height:8px; border-radius:99px; background:color-mix(in srgb,var(--grey) 22%,transparent); overflow:hidden}
+.sp-budget-bar>div{height:100%; background:var(--sp); border-radius:99px; transition:width .3s}
+.sp-budget.over .sp-budget-bar>div{background:#d1544a}
+.sp-budget-txt{font-size:11.5px; color:var(--grey); margin-top:4px}
+.sp-budget.over .sp-budget-txt{color:#d1544a; font-weight:700}
+/* barra cambio */
+.sp-ratebar{margin:10px 14px 0; padding:9px 13px; border-radius:12px; background:var(--card); border:1px solid var(--line);
+  font-size:12.5px; color:var(--grey); cursor:pointer; text-align:center}
+.sp-ratebar u{color:var(--sp); text-decoration:none; font-weight:700}
+.sp-ratebar.warn{border-color:#d1a24a; color:#b9812e; background:color-mix(in srgb,#d1a24a 12%,var(--card)); font-weight:600}
+/* card generiche */
+.sp-card{margin:12px 14px 0; padding:14px; border-radius:16px; background:var(--card); border:1px solid var(--line)}
+.sp-card-h{font-size:12.5px; font-weight:800; color:var(--grey); margin-bottom:9px; letter-spacing:.4px; text-transform:uppercase}
+.sp-settle{border-left:4px solid var(--sp)}
+.sp-settle-line{font-size:16px; line-height:1.4}
+.sp-owe{color:var(--sp); font-weight:800; white-space:nowrap}
+.sp-settle-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px}
+.sp-settle-grid>div{background:color-mix(in srgb,var(--sp) 8%,transparent); border-radius:11px; padding:9px 10px}
+.sp-settle-grid span{font-size:11px; color:var(--grey); display:block}
+.sp-settle-grid b{font-size:16px; display:block; margin-top:2px}
+.sp-settle-grid small{font-size:10.5px; color:var(--grey)}
+/* categorie */
+.sp-catrow{display:flex; align-items:center; gap:10px; margin-top:9px}
+.sp-catlbl{flex:0 0 43%; font-size:13px; display:flex; justify-content:space-between; gap:6px; min-width:0}
+.sp-catlbl span{color:var(--grey); font-weight:600; white-space:nowrap}
+.sp-bar{flex:1; height:8px; border-radius:99px; background:color-mix(in srgb,var(--grey) 18%,transparent); overflow:hidden}
+.sp-bar>div{height:100%; background:var(--sp); border-radius:99px}
+.sp-catpct{flex:0 0 36px; text-align:right; font-size:11.5px; color:var(--grey)}
+/* statistiche */
+.sp-stats{margin:12px 14px 0; border:1px solid var(--line); border-radius:16px; background:var(--card); overflow:hidden}
+.sp-stats>summary{cursor:pointer; padding:13px 14px; font-weight:700; font-size:14px; user-select:none; list-style:none}
+.sp-stats>summary::-webkit-details-marker{display:none}
+.sp-stats>summary::after{content:"⌄"; float:right; color:var(--grey)}
+.sp-stats[open]>summary::after{content:"⌃"}
+.sp-statgrid{display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:4px 12px 0}
+.sp-stat{background:color-mix(in srgb,var(--sp) 8%,transparent); border-radius:12px; padding:10px 11px}
+.sp-stat span{font-size:11px; color:var(--grey)}
+.sp-stat b{font-size:18px; display:block; margin-top:2px}
+.sp-stat small{font-size:10.5px; color:var(--grey)}
+.sp-stats .sp-card{margin:12px; border:0; background:transparent; padding:0}
+/* gruppi giorno */
+.sp-daygroup{margin:16px 14px 0}
+.sp-dayhead{display:flex; justify-content:space-between; align-items:baseline; padding:0 4px 7px; border-bottom:1.5px solid var(--line)}
+.sp-dayname{font-size:14px; font-weight:800}
+.sp-daytot{font-size:14px; font-weight:800; color:var(--sp)}
+.sp-exp{display:flex; gap:12px; align-items:center; padding:12px 4px; border-bottom:1px solid var(--line); cursor:pointer}
+.sp-exp:active{background:color-mix(in srgb,var(--ink) 5%,transparent)}
+.sp-exp-main{flex:1; min-width:0}
+.sp-exp-top{display:flex; gap:6px; align-items:baseline; flex-wrap:wrap}
+.sp-cat{font-size:13.5px; font-weight:700}
+.sp-note{font-size:13px; color:var(--grey); overflow:hidden; text-overflow:ellipsis}
+.sp-exp-who{font-size:11.5px; color:var(--grey); margin-top:3px}
+.sp-exp-amt{text-align:right; flex:0 0 auto}
+.sp-exp-amt b{font-size:15.5px; display:block}
+.sp-exp-amt small{font-size:10.5px; color:var(--grey); white-space:nowrap}
+.sp-empty{margin:44px 20px; text-align:center; color:var(--grey); font-size:14.5px; line-height:1.7; cursor:pointer}
+.sp-muted{color:var(--grey); font-size:12px}
+.sp-setbtn{display:block; width:calc(100% - 28px); margin:18px 14px 0; background:var(--card); border:1px solid var(--line); color:var(--grey)}
+/* form spesa */
+.sp-amtrow{display:flex; gap:11px}
+.sp-amtrow>div{flex:1}
+.sp-amtrow input{font-size:22px; font-weight:800; text-align:right; padding:12px 13px}
+.sp-rateline{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:12px; font-size:12.5px; color:var(--grey)}
+.sp-rateline input{width:120px; padding:8px 10px; font-size:14px}
+.sp-namerow{display:flex; gap:11px}
+.sp-namerow>div{flex:1}
+.sp-set-rate{display:flex; align-items:center; gap:10px; justify-content:space-between; margin-top:5px}
+.sp-mini{padding:7px 13px; font-size:13px; border:1px solid var(--line); background:var(--card); color:var(--sp)}
+.sp-backup{display:flex; gap:8px}
+.sp-backup .btn{flex:1; border:1px solid var(--line); background:var(--card); font-size:13.5px; padding:11px 6px}
+.sp-sheet .chip.on{background:var(--sp); border-color:var(--sp); color:#fff}
 </style>
 </head>
 <body>
 <div id="app"></div>
-<button id="fab" class="fab" title="Aggiungi un luogo" onclick="openAdd()">+</button>
+<button id="fab" class="fab" title="Aggiungi" onclick="onFab()">+</button>
 <div id="modal" class="modal" hidden onclick="closeAdd()"></div>
 <script>
 /* ============ ICONE (PNG bianche della guida, base64) ============ */
@@ -509,6 +601,11 @@ function viewHome(){
    <div class="hero"><div class="herotop"><button class="themebtn" onclick="cycleTheme()" title="Tema">${themeIcon()}</button></div>
    <div class="flag"></div><h1>GIAPPONE</h1><p>La tua guida · estate · ${tot} luoghi salvati</p></div>
    <div class="searchwrap"><input id="q" type="search" placeholder="Cerca un luogo (es. ramen, torii, wagyu...)" value="${esc(state.q)}"></div>
+   <div class="sp-entry" onclick="nav('#/spese')">
+     <div class="ic">💴</div>
+     <div><b>Spese di viaggio</b><div class="d">Yen + euro, diviso tra voi due</div></div>
+     <div class="amt">${eur(loadSpese().reduce((a,e)=>a+espTot(e),0))}</div>
+   </div>
    <div class="grid" id="home"></div>
    <footer>Costruita dalla tua guida PDF · mappe → Google Maps<br>Filtra per tipo e orario dentro ogni zona 🌅🌙</footer></div>`;
   const home=document.getElementById('home');
@@ -591,9 +688,315 @@ function viewZone(cid,zid){
 window.setCat=v=>{state.cat=(state.cat===v?null:v);render()};
 window.setWhen=v=>{state.when=(state.when===v?null:v);render()};
 
+/* ============================================================
+   ============  MODULO SPESE DI VIAGGIO  =====================
+   ============================================================ */
+const SP_KEY='spese_v1', RATE_KEY='spese_rate_v1', CFG_KEY='spese_cfg_v1';
+const SPCATS=[['cibo','🍜 Cibo'],['trasporti','🚃 Trasporti'],['alloggio','🏨 Alloggio'],
+  ['shopping','🛍️ Shopping'],['attrazioni','🎫 Attrazioni'],['varie','✨ Varie']];
+
+/* ---- storage ---- */
+function loadSpese(){try{return JSON.parse(localStorage.getItem(SP_KEY)||'[]')}catch(e){return[]}}
+function saveSpese(a){localStorage.setItem(SP_KEY,JSON.stringify(a))}
+function cachedRate(){try{return JSON.parse(localStorage.getItem(RATE_KEY)||'null')}catch(e){return null}}
+function cfg(){const d={manualRate:0,budget:0,tripDays:0,nomeA:'Io',nomeB:'Morosa'};
+  try{return Object.assign(d,JSON.parse(localStorage.getItem(CFG_KEY)||'{}'))}catch(e){return d}}
+function saveCfg(o){localStorage.setItem(CFG_KEY,JSON.stringify(o))}
+
+/* ---- formattazione italiana ---- */
+const fmtNum=(n,d=2)=>new Intl.NumberFormat('it-IT',{minimumFractionDigits:d,maximumFractionDigits:d}).format(n||0);
+const eur=n=>fmtNum(n,2)+' €';
+const jpy=n=>fmtNum(n,0)+' ¥';
+const capit=s=>s?s.charAt(0).toUpperCase()+s.slice(1):s;
+function parseNum(s){ if(typeof s==='number')return s; s=(''+(s||'')).trim(); if(!s)return 0;
+  if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');   // formato IT: punto=migliaia, virgola=decimali
+  const n=parseFloat(s.replace(/[^\d.\-]/g,'')); return isFinite(n)?n:0; }
+function numIn(n){ return (n==null||n===''||n===0)?'':(''+n).replace('.',','); }
+function todayISO(){const d=new Date(),z=x=>String(x).padStart(2,'0');
+  return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate());}
+function fmtDay(iso){try{return new Date(iso+'T00:00:00').toLocaleDateString('it-IT',{weekday:'short',day:'numeric',month:'long'});}catch(e){return iso}}
+function agoTxt(ts){ if(!ts)return'mai'; const s=(Date.now()-ts)/1000;
+  if(s<90)return'poco fa'; const m=s/60; if(m<90)return Math.round(m)+' min fa';
+  const h=m/60; if(h<36)return Math.round(h)+' ore fa'; return Math.round(h/24)+' giorni fa'; }
+
+/* ---- calcolo: i due importi SI SOMMANO, tasso congelato per spesa ---- */
+function espTot(e){ return (e.importoEur||0) + (e.importoJpy||0)*(e.tassoUsato||0); }
+
+/* ---- cambio ¥→€: manuale ha priorità, poi cache, poi niente ---- */
+function effRate(){ const c=cfg();
+  if(c.manualRate>0) return {rate:c.manualRate, source:'manuale'};
+  const cr=cachedRate();
+  if(cr&&cr.rate>0) return {rate:cr.rate, source:'auto', fetchedAt:cr.fetchedAt, date:cr.date};
+  return null; }
+function fetchRate(){
+  return fetch('https://api.frankfurter.app/latest?from=JPY&to=EUR').then(r=>{
+    if(!r.ok)throw 0; return r.json();
+  }).then(j=>{ const rate=j&&j.rates&&j.rates.EUR; if(!(rate>0))throw 0;
+    const rec={rate, date:j.date, fetchedAt:Date.now()};
+    localStorage.setItem(RATE_KEY,JSON.stringify(rec)); return rec; });
+}
+let _rateTried=false;
+function maybeRefreshRate(){
+  if(_rateTried)return; _rateTried=true;
+  if(cfg().manualRate>0)return;               // override manuale: non serve la rete
+  if(!navigator.onLine)return;
+  fetchRate().then(()=>{ if((location.hash.replace(/^#\/?/,'').split('/')[0])==='spese')render(); }).catch(()=>{});
+}
+
+/* ---- FAB contestuale ---- */
+window.onFab=()=>{
+  const h=location.hash.replace(/^#\/?/,'').split('/').filter(Boolean);
+  if(h[0]==='spese') openSpesa(); else openAdd();
+};
+window.segPick=(el,sel)=>{ document.querySelectorAll(sel+' .chip').forEach(c=>c.classList.remove('on')); el.classList.add('on'); };
+
+/* ---- vista spese ---- */
+function viewSpese(){
+  maybeRefreshRate();
+  const exps=loadSpese(), c=cfg();
+  const tot=exps.reduce((a,e)=>a+espTot(e),0);
+  const nd=new Set(exps.map(e=>e.data)).size;
+  app.innerHTML=`<div class="view">
+   ${header('💴 Spese di viaggio', exps.length+' spese · '+nd+(nd===1?' giorno':' giorni'), '#/')}
+   <div class="sp-topbar">
+     <div class="sp-total">${eur(tot)}</div>
+     <div class="sp-sub">Totale del viaggio, convertito in euro</div>
+     ${budgetBar(tot,c.budget)}
+   </div>
+   ${rateBar()}
+   ${settlementCard(exps,c)}
+   ${statsBlock(exps,c)}
+   ${dayGroups(exps)}
+   <button class="btn sp-setbtn" onclick="openSpeseSettings()">⚙️ Impostazioni · cambio · backup</button>
+   <div style="height:24px"></div>
+  </div>`;
+}
+function budgetBar(tot,b){ if(!(b>0))return'';
+  const pct=Math.min(100,tot/b*100), over=tot>b;
+  return `<div class="sp-budget ${over?'over':''}">
+    <div class="sp-budget-bar"><div style="width:${pct}%"></div></div>
+    <div class="sp-budget-txt">${eur(tot)} / ${eur(b)} · ${over?'sforato di '+eur(tot-b):'restano '+eur(b-tot)}</div>
+  </div>`; }
+function rateBar(){ const er=effRate();
+  if(!er) return `<div class="sp-ratebar warn" onclick="openSpeseSettings()">⚠️ Nessun cambio impostato — tocca per inserirlo</div>`;
+  const inv=fmtNum(1/er.rate,0);
+  const info = er.source==='manuale'
+    ? `1 € = ${inv} ¥ · cambio manuale · <u>modifica</u>`
+    : `1 € = ${inv} ¥ · aggiornato ${agoTxt(er.fetchedAt)} · <u>impostazioni</u>`;
+  return `<div class="sp-ratebar" onclick="openSpeseSettings()">💱 ${info}</div>`;
+}
+function settlementCard(exps,c){ if(!exps.length)return'';
+  let paidA=0,paidB=0,shA=0,shB=0;
+  for(const e of exps){ const t=espTot(e);
+    if(e.pagatoDa==='B')paidB+=t; else paidA+=t;
+    if(e.divisa==='A')shA+=t; else if(e.divisa==='B')shB+=t; else {shA+=t/2; shB+=t/2;} }
+  const balA=paidA-shA;   // >0 ⇒ A ha anticipato, gli è dovuto
+  let line;
+  if(Math.abs(balA)<0.01) line=`<b>Siete in pari</b> 🤝`;
+  else if(balA>0) line=`<b>${esc(c.nomeB)}</b> deve a <b>${esc(c.nomeA)}</b> <span class="sp-owe">${eur(balA)}</span>`;
+  else line=`<b>${esc(c.nomeA)}</b> deve a <b>${esc(c.nomeB)}</b> <span class="sp-owe">${eur(-balA)}</span>`;
+  return `<div class="sp-card sp-settle">
+    <div class="sp-card-h">🤝 Chi deve a chi</div>
+    <div class="sp-settle-line">${line}</div>
+    <div class="sp-settle-grid">
+      <div><span>${esc(c.nomeA)} ha pagato</span><b>${eur(paidA)}</b><small>sua parte: ${eur(shA)}</small></div>
+      <div><span>${esc(c.nomeB)} ha pagato</span><b>${eur(paidB)}</b><small>sua parte: ${eur(shB)}</small></div>
+    </div>
+  </div>`;
+}
+function statsBlock(exps,c){ if(!exps.length)return'';
+  const tot=exps.reduce((a,e)=>a+espTot(e),0);
+  const nd=new Set(exps.map(e=>e.data)).size||1;
+  const avg=tot/nd, proj=c.tripDays>0?avg*c.tripDays:null;
+  const by={}; for(const e of exps){const k=e.categoria||'varie'; by[k]=(by[k]||0)+espTot(e);}
+  const cats=Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([k,v])=>{
+    const l=(SPCATS.find(x=>x[0]===k)||[,k])[1], pct=tot?v/tot*100:0;
+    return `<div class="sp-catrow"><div class="sp-catlbl">${l}<span>${eur(v)}</span></div>
+      <div class="sp-bar"><div style="width:${pct.toFixed(1)}%"></div></div>
+      <div class="sp-catpct">${fmtNum(pct,0)}%</div></div>`;
+  }).join('');
+  return `<details class="sp-stats"><summary>📊 Statistiche e riepilogo</summary>
+    <div class="sp-statgrid">
+      <div class="sp-stat"><span>Media al giorno</span><b>${eur(avg)}</b><small>su ${nd} ${nd===1?'giorno':'giorni'}</small></div>
+      <div class="sp-stat"><span>${proj!=null?'Proiezione '+c.tripDays+' gg':'Totale finora'}</span><b>${eur(proj!=null?proj:tot)}</b>${c.budget>0?`<small>budget ${eur(c.budget)}</small>`:''}</div>
+    </div>
+    <div class="sp-card"><div class="sp-card-h">🧾 Per categoria</div>${cats}</div>
+  </details>`;
+}
+function dayGroups(exps){
+  if(!exps.length) return `<div class="sp-empty" onclick="openSpesa()">Ancora nessuna spesa.<br>Tocca <b>+</b> per aggiungere la prima 💴</div>`;
+  const g={}; for(const e of exps){(g[e.data]=g[e.data]||[]).push(e);}
+  return Object.keys(g).sort().reverse().map(d=>{
+    const items=g[d].slice().sort((a,b)=>b.createdAt-a.createdAt);
+    const sub=items.reduce((a,e)=>a+espTot(e),0);
+    return `<div class="sp-daygroup">
+      <div class="sp-dayhead"><span class="sp-dayname">${capit(fmtDay(d))}</span><span class="sp-daytot">${eur(sub)}</span></div>
+      ${items.map(espRow).join('')}
+    </div>`;
+  }).join('');
+}
+function espRow(e){ const c=cfg();
+  const cat=(SPCATS.find(x=>x[0]===e.categoria)||[,'✨ Varie'])[1];
+  const who=e.pagatoDa==='B'?c.nomeB:c.nomeA;
+  const div=e.divisa==='A'?('solo '+c.nomeA):e.divisa==='B'?('solo '+c.nomeB):'metà e metà';
+  const bits=[]; if(e.importoEur)bits.push(eur(e.importoEur)); if(e.importoJpy)bits.push(jpy(e.importoJpy));
+  const show=e.importoJpy>0||bits.length>1;
+  return `<div class="sp-exp" onclick="openSpesa('${e.id}')">
+    <div class="sp-exp-main">
+      <div class="sp-exp-top"><span class="sp-cat">${cat}</span>${e.nota?`<span class="sp-note">· ${esc(e.nota)}</span>`:''}</div>
+      <div class="sp-exp-who">💳 ${esc(who)} · ${div}</div>
+    </div>
+    <div class="sp-exp-amt"><b>${eur(espTot(e))}</b>${show?`<small>${bits.join(' + ')}</small>`:''}</div>
+  </div>`;
+}
+
+/* ---- form nuova / modifica spesa ---- */
+window.openSpesa=(id)=>{
+  const editing = id ? loadSpese().find(e=>e.id===id) : null;
+  const c=cfg(), er=effRate();
+  const rate = editing ? editing.tassoUsato : (er?er.rate:'');
+  const sel=(cond)=>cond?'on':'';
+  const m=document.getElementById('modal');
+  m.innerHTML=`<div class="sheet sp-sheet" onclick="event.stopPropagation()">
+    <h2>${editing?'✏️ Modifica spesa':'➕ Nuova spesa'}</h2>
+    <div class="sp-amtrow">
+      <div><label>Yen ¥</label><input id="s_jpy" inputmode="decimal" placeholder="0" value="${editing?numIn(editing.importoJpy):''}"></div>
+      <div><label>Euro €</label><input id="s_eur" inputmode="decimal" placeholder="0" value="${editing?numIn(editing.importoEur):''}"></div>
+    </div>
+    <div class="sp-rateline">Cambio ¥→€ usato: <input id="s_rate" inputmode="decimal" placeholder="es. 0,0064" value="${rate}"> ${(!editing&&!er)?'<span class="sp-muted">nessun cambio salvato: inseriscilo</span>':''}</div>
+    <label>Categoria</label>
+    <div class="formchips" id="s_cat">${SPCATS.map(([k,l])=>`<button type="button" class="chip ${sel(((editing&&editing.categoria)||'varie')===k)}" data-v="${k}" onclick="segPick(this,'#s_cat')">${l}</button>`).join('')}</div>
+    <label>Chi ha pagato?</label>
+    <div class="formchips" id="s_pay">
+      <button type="button" class="chip ${sel(!editing||editing.pagatoDa!=='B')}" data-v="A" onclick="segPick(this,'#s_pay')">💳 ${esc(c.nomeA)}</button>
+      <button type="button" class="chip ${sel(editing&&editing.pagatoDa==='B')}" data-v="B" onclick="segPick(this,'#s_pay')">💳 ${esc(c.nomeB)}</button>
+    </div>
+    <label>Come si divide?</label>
+    <div class="formchips" id="s_split">
+      <button type="button" class="chip ${sel(!editing||!editing.divisa||editing.divisa==='entrambi')}" data-v="entrambi" onclick="segPick(this,'#s_split')">🤝 Metà e metà</button>
+      <button type="button" class="chip ${sel(editing&&editing.divisa==='A')}" data-v="A" onclick="segPick(this,'#s_split')">Solo ${esc(c.nomeA)}</button>
+      <button type="button" class="chip ${sel(editing&&editing.divisa==='B')}" data-v="B" onclick="segPick(this,'#s_split')">Solo ${esc(c.nomeB)}</button>
+    </div>
+    <label>Data</label><input id="s_date" type="date" value="${editing?editing.data:todayISO()}">
+    <label>Nota (facoltativa)</label><input id="s_note" placeholder="Es. ramen a Shinjuku" value="${editing?esc(editing.nota||''):''}">
+    <div class="formrow">
+      ${editing?`<button class="btn ghost" style="margin-right:auto;color:#d1544a" onclick="delSpesa('${editing.id}')">🗑️ Elimina</button>`:''}
+      <button class="btn ghost" onclick="closeAdd()">Annulla</button>
+      <button class="btn save" style="background:var(--sp)" onclick="saveSpesa('${editing?editing.id:''}')">Salva</button>
+    </div>
+  </div>`;
+  m.hidden=false; document.body.classList.add('noscroll');
+  setTimeout(()=>{const j=document.getElementById('s_jpy'); if(j)j.focus();},80);   // focus su ¥: valuta d'uso quotidiano
+};
+window.saveSpesa=(id)=>{
+  const jv=parseNum(document.getElementById('s_jpy').value);
+  const ev=parseNum(document.getElementById('s_eur').value);
+  const rate=parseNum(document.getElementById('s_rate').value);
+  if(jv<=0 && ev<=0){ alert('Inserisci almeno un importo (¥ o €) 🙂'); return; }
+  if(jv>0 && !(rate>0)){ alert('Serve il cambio ¥→€ per convertire gli yen.\nInseriscilo nel campo "Cambio" o nelle impostazioni.'); document.getElementById('s_rate').focus(); return; }
+  const pick=sel=>{const el=document.querySelector(sel+' .chip.on'); return el?el.dataset.v:null;};
+  const cat=pick('#s_cat')||'varie', pay=pick('#s_pay')||'A', split=pick('#s_split')||'entrambi';
+  const data=document.getElementById('s_date').value||todayISO();
+  const nota=document.getElementById('s_note').value.trim();
+  const arr=loadSpese();
+  if(id){ const e=arr.find(x=>x.id===id);
+    if(e) Object.assign(e,{data,importoEur:ev,importoJpy:jv,tassoUsato:rate||e.tassoUsato,categoria:cat,nota,pagatoDa:pay,divisa:split}); }
+  else arr.push({ id:'s'+Date.now()+Math.random().toString(36).slice(2,6),
+    data, importoEur:ev, importoJpy:jv, tassoUsato:rate, categoria:cat, nota, pagatoDa:pay, divisa:split, createdAt:Date.now() });
+  saveSpese(arr); closeAdd(); render();
+};
+window.delSpesa=(id)=>{ if(confirm('Eliminare questa spesa?')){ saveSpese(loadSpese().filter(e=>e.id!==id)); closeAdd(); render(); } };
+
+/* ---- impostazioni: cambio, budget, nomi, backup ---- */
+window.openSpeseSettings=()=>{
+  const c=cfg(), cr=cachedRate();
+  const m=document.getElementById('modal');
+  m.innerHTML=`<div class="sheet sp-sheet" onclick="event.stopPropagation()">
+    <h2>⚙️ Impostazioni spese</h2>
+    <label>Cambio automatico (mercato)</label>
+    <div class="sp-set-rate">
+      <div class="sp-muted">${cr&&cr.rate?`1 € = ${fmtNum(1/cr.rate,0)} ¥ · ${agoTxt(cr.fetchedAt)}`:'non ancora scaricato'}</div>
+      <button type="button" class="btn sp-mini" onclick="refreshRateBtn(this)">🔄 Aggiorna</button>
+    </div>
+    <label>Cambio manuale — ha priorità (facoltativo)</label>
+    <input id="c_rate" inputmode="decimal" placeholder="es. 0,0064" value="${c.manualRate?c.manualRate:''}">
+    <div class="sp-muted" style="margin-top:5px">Il cambio reale di ATM/carta è di solito 2–4% peggiore del mercato: per conti realistici metti qui quello del tuo prelievo.</div>
+    <label>Budget del viaggio in € (facoltativo)</label>
+    <input id="c_budget" inputmode="decimal" placeholder="es. 2000" value="${c.budget?numIn(c.budget):''}">
+    <label>Durata viaggio in giorni — per la proiezione (facoltativo)</label>
+    <input id="c_days" inputmode="numeric" placeholder="es. 14" value="${c.tripDays?c.tripDays:''}">
+    <div class="sp-namerow">
+      <div><label>Nome 1</label><input id="c_na" maxlength="14" value="${esc(c.nomeA)}"></div>
+      <div><label>Nome 2</label><input id="c_nb" maxlength="14" value="${esc(c.nomeB)}"></div>
+    </div>
+    <label>Backup dei dati (unico modo per salvarli fuori dal telefono)</label>
+    <div class="sp-backup">
+      <button type="button" class="btn" onclick="exportJSON()">⬇️ JSON</button>
+      <button type="button" class="btn" onclick="exportCSV()">⬇️ CSV</button>
+      <button type="button" class="btn" onclick="importJSON()">⬆️ Importa</button>
+    </div>
+    <div class="formrow">
+      <button class="btn ghost" onclick="closeAdd()">Chiudi</button>
+      <button class="btn save" style="background:var(--sp)" onclick="saveSpeseSettings()">Salva</button>
+    </div>
+  </div>`;
+  m.hidden=false; document.body.classList.add('noscroll');
+};
+window.saveSpeseSettings=()=>{
+  const c=cfg();
+  c.manualRate=parseNum(document.getElementById('c_rate').value)||0;
+  c.budget=parseNum(document.getElementById('c_budget').value)||0;
+  c.tripDays=Math.round(parseNum(document.getElementById('c_days').value))||0;
+  c.nomeA=(document.getElementById('c_na').value.trim()||'Io').slice(0,14);
+  c.nomeB=(document.getElementById('c_nb').value.trim()||'Morosa').slice(0,14);
+  saveCfg(c); closeAdd(); render();
+};
+window.refreshRateBtn=(btn)=>{ btn.textContent='…'; btn.disabled=true;
+  fetchRate().then(()=>openSpeseSettings()).catch(()=>{ btn.textContent='✕ offline'; setTimeout(()=>{btn.textContent='🔄 Aggiorna'; btn.disabled=false;},1600); }); };
+
+/* ---- export / import (backup) ---- */
+function downloadFile(name,content,mime){
+  const blob=new Blob([content],{type:mime}), url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url); a.remove();},120);
+}
+window.exportJSON=()=>{
+  const data={version:1, exportedAt:new Date().toISOString(), spese:loadSpese(), config:cfg(), rate:cachedRate()};
+  downloadFile('spese-giappone-'+todayISO()+'.json', JSON.stringify(data,null,2), 'application/json');
+};
+window.exportCSV=()=>{
+  const c=cfg(), nm={A:c.nomeA,B:c.nomeB};
+  const cell=v=>{v=(v==null?'':''+v); return /[";\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const n2=n=>(Math.round((n||0)*100)/100+'').replace('.',',');
+  const rows=[['Data','Categoria','Nota','Euro','Yen','Cambio','Totale €','Pagato da','Diviso']];
+  loadSpese().slice().sort((a,b)=>a.data.localeCompare(b.data)||a.createdAt-b.createdAt).forEach(e=>{
+    const catL=(SPCATS.find(x=>x[0]===e.categoria)||[,e.categoria||''])[1].replace(/^\S+\s/,'');
+    const div=e.divisa==='A'?('Solo '+c.nomeA):e.divisa==='B'?('Solo '+c.nomeB):'Metà e metà';
+    rows.push([e.data,catL,e.nota||'',n2(e.importoEur),n2(e.importoJpy),(''+(e.tassoUsato||'')).replace('.',','),n2(espTot(e)),nm[e.pagatoDa]||c.nomeA,div]);
+  });
+  const csv='﻿'+rows.map(r=>r.map(cell).join(';')).join('\r\n');   // ; e virgola decimale = Excel italiano
+  downloadFile('spese-giappone-'+todayISO()+'.csv', csv, 'text/csv;charset=utf-8');
+};
+window.importJSON=()=>{
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='application/json,.json';
+  inp.onchange=()=>{ const f=inp.files&&inp.files[0]; if(!f)return;
+    const r=new FileReader();
+    r.onload=()=>{ try{ const d=JSON.parse(r.result);
+      if(!d||!Array.isArray(d.spese)) throw 0;
+      if(!confirm('Importare '+d.spese.length+' spese?\nSostituiranno i dati attuali.')) return;
+      saveSpese(d.spese);
+      if(d.config) localStorage.setItem(CFG_KEY,JSON.stringify(d.config));
+      if(d.rate) localStorage.setItem(RATE_KEY,JSON.stringify(d.rate));
+      closeAdd(); render(); alert('Import completato ✔');
+    }catch(e){ alert('File non valido 😕'); } };
+    r.readAsText(f); };
+  inp.click();
+};
+
 function render(){
   const h=location.hash.replace(/^#\/?/,'').split('/').filter(Boolean);
   window.scrollTo(0,0);
+  if(h[0]==='spese') return viewSpese();
   if(h.length===0)viewHome();
   else if(h.length===1)viewCity(h[0]);
   else viewZone(h[0],h[1]);
