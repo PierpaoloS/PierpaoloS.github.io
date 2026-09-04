@@ -35,7 +35,7 @@ let filter = "ui";
 let stream = null;
 let running = false;
 let lastShot = null;
-const VERSION = "8"; // deve combaciare con ?v= in index.html (per la cache)
+const VERSION = "9"; // deve combaciare con ?v= in index.html (per la cache)
 const DEBUG = new URLSearchParams(location.search).has("debug");
 
 // Diagnostica (mostrata con ?debug)
@@ -48,6 +48,7 @@ let lastDetections = [];    // keypoints NORMALIZZATI [0..1] nel frame INTERO de
 let lastDetectTs = -1;
 let detectError = "";
 let detCanvas = null, detCtx = null; // frame pieno usato per il rilevamento
+let detDelegate = "";                // "CPU" o "GPU" (per il debug)
 
 // Immagini dei filtri
 let dogLayers = null;       // {ears, nose, tongue} oppure null → fallback vettoriale
@@ -114,15 +115,17 @@ async function init() {
   }
 }
 
-// ---- Fotocamera: prova a ottenere la MASSIMA risoluzione ----
+// ---- Fotocamera: Full HD (nitida ma affidabile). NIENTE 12MP: le modalità ad
+// altissima risoluzione sul telefono danno frame lenti/instabili e mandano in tilt
+// il rilevamento volti. 1080p è più che sufficiente per foto e filtri.
 async function openCamera() {
   if (stream) stream.getTracks().forEach((t) => t.stop());
   const constraints = {
     audio: false,
     video: {
       facingMode: { ideal: facing },
-      width: { ideal: 4096 },
-      height: { ideal: 2160 },
+      width: { ideal: 1920 },
+      height: { ideal: 1080 },
     },
   };
   stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -132,17 +135,6 @@ async function openCamera() {
     if (video.videoWidth) return res();
     video.onloadedmetadata = () => res();
   });
-  // Spingi la traccia alla risoluzione massima supportata dal sensore
-  try {
-    const track = stream.getVideoTracks()[0];
-    const caps = track.getCapabilities ? track.getCapabilities() : null;
-    if (caps && caps.width && caps.height) {
-      await track.applyConstraints({
-        width: { ideal: caps.width.max },
-        height: { ideal: caps.height.max },
-      });
-    }
-  } catch (_) { /* non supportato: teniamo quello che c'è */ }
 }
 
 function resize() {
@@ -426,10 +418,14 @@ function ensureDetector() {
       runningMode: "VIDEO",
       minDetectionConfidence: 0.3,
     });
+    // CPU prima: su molti telefoni il delegate GPU "parte" ma non restituisce
+    // rilevamenti. La CPU è affidabile ovunque (e a 480px è velocissima).
     try {
-      detector = await vision.FaceDetector.createFromOptions(fileset, opts("GPU"));
-    } catch (_) {
       detector = await vision.FaceDetector.createFromOptions(fileset, opts("CPU"));
+      detDelegate = "CPU";
+    } catch (_) {
+      detector = await vision.FaceDetector.createFromOptions(fileset, opts("GPU"));
+      detDelegate = "GPU";
     }
     lastDetectTs = -1;
     hideToast();
@@ -620,7 +616,7 @@ function paintDebug() {
   const dsz = detCanvas ? `${detCanvas.width}x${detCanvas.height}` : "-";
   const lines = [
     `VERSIONE=${VERSION}  filtro=${filter} cam=${facing} ${video.videoWidth}x${video.videoHeight}`,
-    `detector=${detector ? "ok" : "no"} volti=${lastDetections.length} frameRil=${dsz}`,
+    `detector=${detector ? "ok" : "no"}(${detDelegate}) volti=${lastDetections.length} fr=${dsz}`,
     `keypoints=${dbgKp} riquadro=${dbgBox} faceW=${dbgFaceW} earsW=${dbgEarsW}`,
     `assets dog=${!!dogLayers} ui=${!!uiLayer} mazz=${!!mazzImg}`,
     detectError ? `err=${detectError.slice(0, 60)}` : "",
