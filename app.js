@@ -35,7 +35,7 @@ let filter = "ui";
 let stream = null;
 let running = false;
 let lastShot = null;
-const VERSION = "7"; // deve combaciare con ?v= in index.html (per la cache)
+const VERSION = "8"; // deve combaciare con ?v= in index.html (per la cache)
 const DEBUG = new URLSearchParams(location.search).has("debug");
 
 // Diagnostica (mostrata con ?debug)
@@ -424,7 +424,7 @@ function ensureDetector() {
     const opts = (delegate) => ({
       baseOptions: { modelAssetPath: MODEL_URL, delegate },
       runningMode: "VIDEO",
-      minDetectionConfidence: 0.45,
+      minDetectionConfidence: 0.3,
     });
     try {
       detector = await vision.FaceDetector.createFromOptions(fileset, opts("GPU"));
@@ -599,12 +599,28 @@ function hideToast() { toastEl.classList.add("hidden"); }
 
 function paintDebug() {
   ctx.save();
+  // Miniatura di ciò che ANALIZZA il rilevatore (frame intero) + riquadro rosso
+  if (detCanvas) {
+    const tw = Math.min(150 * DPR, W * 0.42), th = tw * detCanvas.height / detCanvas.width;
+    const tx = W - tw - 8 * DPR, ty = 76 * DPR;
+    ctx.drawImage(detCanvas, tx, ty, tw, th);
+    ctx.lineWidth = 2 * DPR; ctx.strokeStyle = "#0f0"; ctx.strokeRect(tx, ty, tw, th);
+    ctx.strokeStyle = "#f00";
+    for (const d of lastDetections) {
+      const b = d.boundingBox;
+      if (b) ctx.strokeRect(tx + b.originX / detCanvas.width * tw, ty + b.originY / detCanvas.height * th,
+        b.width / detCanvas.width * tw, b.height / detCanvas.height * th);
+    }
+    ctx.fillStyle = "#0f0"; ctx.font = `${Math.round(11 * DPR)}px monospace`; ctx.textAlign = "left"; ctx.textBaseline = "bottom";
+    ctx.fillText("rilevatore vede:", tx, ty - 2 * DPR);
+  }
   const boxH = 108 * DPR;
   ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fillRect(0, H - boxH, W, boxH);
   ctx.fillStyle = "#0f0"; ctx.font = `${Math.round(13 * DPR)}px monospace`; ctx.textAlign = "left"; ctx.textBaseline = "top";
+  const dsz = detCanvas ? `${detCanvas.width}x${detCanvas.height}` : "-";
   const lines = [
     `VERSIONE=${VERSION}  filtro=${filter} cam=${facing} ${video.videoWidth}x${video.videoHeight}`,
-    `detector=${detector ? "ok" : "no"} volti=${lastDetections.length}`,
+    `detector=${detector ? "ok" : "no"} volti=${lastDetections.length} frameRil=${dsz}`,
     `keypoints=${dbgKp} riquadro=${dbgBox} faceW=${dbgFaceW} earsW=${dbgEarsW}`,
     `assets dog=${!!dogLayers} ui=${!!uiLayer} mazz=${!!mazzImg}`,
     detectError ? `err=${detectError.slice(0, 60)}` : "",
