@@ -282,10 +282,11 @@ function loadAssets() {
 
 function loadImg(src, ok) {
   const img = new Image();
-  img.crossOrigin = "anonymous";
+  // Niente crossOrigin: le immagini sono nello stesso sito, così funziona
+  // anche aprendo il file in locale. Aggiungo ?v per evitare la cache vecchia.
   img.onload = () => ok(img);
   img.onerror = () => {};
-  img.src = src;
+  img.src = src + (src.includes("?") ? "&" : "?") + "v=3";
 }
 
 // Ritaglia dog.png in 3 fasce (orecchie/naso/lingua) usando gli spazi trasparenti
