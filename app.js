@@ -186,7 +186,9 @@ function paintFilter(c, cw, ch) {
     if (uiLayer) drawImageFit(c, cw, ch, uiLayer, "fill");
     else drawRetroUI(c, cw, ch);
   } else if (filter === "mazz") {
-    if (mazzImg) drawImageFit(c, cw, ch, mazzImg, "cover");
+    // Il soggetto è allineato in basso-a-destra: riempi in altezza e ancora lì,
+    // così restano visibili sia il volto sia le bottiglie.
+    if (mazzImg) drawImageFit(c, cw, ch, mazzImg, "cover", 1, 1);
     else hintMissing(c, cw, ch, "assets/mazz2016.png");
   }
 }
@@ -505,13 +507,14 @@ function roundRect(c, x, y, w, h, r) {
   c.arcTo(x, y, x + w, y, r);
   c.closePath();
 }
-function drawImageFit(c, cw, ch, img, mode) {
+function drawImageFit(c, cw, ch, img, mode, ax = 0.5, ay = 0.5) {
   const iw = img.width || img.naturalWidth, ih = img.height || img.naturalHeight;
   if (!iw || !ih) return;
   if (mode === "fill") { c.drawImage(img, 0, 0, cw, ch); return; }
   const scale = mode === "cover" ? Math.max(cw / iw, ch / ih) : Math.min(cw / iw, ch / ih);
   const dw = iw * scale, dh = ih * scale;
-  c.drawImage(img, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
+  // ax/ay: ancoraggio 0=inizio, .5=centro, 1=fine
+  c.drawImage(img, (cw - dw) * ax, (ch - dh) * ay, dw, dh);
 }
 function stamp() {
   const d = new Date(), p = (n) => String(n).padStart(2, "0");
