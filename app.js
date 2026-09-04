@@ -35,7 +35,7 @@ let filter = "ui";
 let stream = null;
 let running = false;
 let lastShot = null;
-const VERSION = "6"; // deve combaciare con ?v= in index.html (per la cache)
+const VERSION = "7"; // deve combaciare con ?v= in index.html (per la cache)
 const DEBUG = new URLSearchParams(location.search).has("debug");
 
 // Diagnostica (mostrata con ?debug)
@@ -44,9 +44,10 @@ let dbgKp = -1, dbgBox = false, dbgFaceW = 0, dbgEarsW = 0;
 // Rilevatore volti (caricato in modo pigro)
 let detector = null;
 let detectorLoading = null;
-let lastDetections = [];    // keypoints NORMALIZZATI [0..1] nello spazio del canvas mostrato
+let lastDetections = [];    // keypoints NORMALIZZATI [0..1] nel frame INTERO della camera
 let lastDetectTs = -1;
 let detectError = "";
+let detCanvas = null, detCtx = null; // frame pieno usato per il rilevamento
 
 // Immagini dei filtri
 let dogLayers = null;       // {ears, nose, tongue} oppure null → fallback vettoriale
@@ -202,8 +203,19 @@ function detectOnStage(ts) {
   if (!detector) { ensureDetector(); return; }
   if (ts <= lastDetectTs) return;
   lastDetectTs = ts;
+  const vw = video.videoWidth, vh = video.videoHeight;
+  if (!vw || !vh) return;
+  // Rilevo sul FRAME INTERO (non ritagliato): così il volto ha dimensioni
+  // normali e BlazeFace lo trova anche quando lo schermo verticale zooma molto.
+  if (!detCanvas) { detCanvas = document.createElement("canvas"); detCtx = detCanvas.getContext("2d"); }
+  const target = 480;
+  const dW = vw >= vh ? target : Math.round(target * vw / vh);
+  const dH = vw >= vh ? Math.round(target * vh / vw) : target;
+  if (detCanvas.width !== dW) detCanvas.width = dW;
+  if (detCanvas.height !== dH) detCanvas.height = dH;
+  detCtx.drawImage(video, 0, 0, dW, dH);
   try {
-    const res = detector.detectForVideo(stage, ts);
+    const res = detector.detectForVideo(detCanvas, ts);
     lastDetections = res.detections || [];
     detectError = "";
   } catch (e) {
@@ -212,22 +224,32 @@ function detectOnStage(ts) {
   }
 }
 
-// Ricava i 6 punti del viso (in pixel del canvas) dai keypoints normalizzati,
-// oppure — se il telefono non li fornisce — stimandoli dal riquadro del volto.
+// Ricava i 6 punti del viso in pixel del canvas MOSTRATO, partendo dal
+// rilevamento fatto sul frame intero: mappo con lo stesso "cover" del video e
+// specchio se è la camera frontale. Se mancano i keypoints, li stimo dal riquadro.
 function faceLandmarks(det, cw, ch) {
+  const vw = video.videoWidth, vh = video.videoHeight;
+  if (!vw || !vh) return null;
+  const box = coverBox(vw, vh, cw, ch);
+  const front = facing === "user";
+  const mapN = (nx, ny) => {           // da normalizzato-frame a pixel-schermo
+    const px = box.dx + nx * box.dw;
+    return [front ? cw - px : px, box.dy + ny * box.dh];
+  };
   const kp = det.keypoints;
   if (kp && kp.length >= 6)
-    return [0, 1, 2, 3, 4, 5].map((i) => [kp[i].x * cw, kp[i].y * ch]);
-  const b = det.boundingBox; // in PIXEL del canvas
-  if (b && b.width && b.height) {
+    return [0, 1, 2, 3, 4, 5].map((i) => mapN(kp[i].x, kp[i].y));
+  const b = det.boundingBox; // PIXEL del detCanvas → normalizzo
+  if (b && b.width && b.height && detCanvas) {
+    const nx = (v) => v / detCanvas.width, ny = (v) => v / detCanvas.height;
     const x = b.originX, y = b.originY, w = b.width, h = b.height;
     return [
-      [x + 0.32 * w, y + 0.42 * h], // occhio dx
-      [x + 0.68 * w, y + 0.42 * h], // occhio sx
-      [x + 0.50 * w, y + 0.58 * h], // naso
-      [x + 0.50 * w, y + 0.78 * h], // bocca
-      [x + 0.02 * w, y + 0.45 * h], // orecchio dx
-      [x + 0.98 * w, y + 0.45 * h], // orecchio sx
+      mapN(nx(x + 0.32 * w), ny(y + 0.42 * h)), // occhio dx
+      mapN(nx(x + 0.68 * w), ny(y + 0.42 * h)), // occhio sx
+      mapN(nx(x + 0.50 * w), ny(y + 0.58 * h)), // naso
+      mapN(nx(x + 0.50 * w), ny(y + 0.78 * h)), // bocca
+      mapN(nx(x + 0.02 * w), ny(y + 0.45 * h)), // orecchio dx
+      mapN(nx(x + 0.98 * w), ny(y + 0.45 * h)), // orecchio sx
     ];
   }
   return null;
