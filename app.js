@@ -35,7 +35,7 @@ let filter = "ui";
 let stream = null;
 let running = false;
 let lastShot = null;
-const VERSION = "10"; // deve combaciare con ?v= in index.html (per la cache)
+const VERSION = "11"; // deve combaciare con ?v= in index.html (per la cache)
 const DEBUG = new URLSearchParams(location.search).has("debug");
 
 // Diagnostica (mostrata con ?debug)
@@ -286,6 +286,17 @@ function paintDog(c, cw, ch) {
       drawImgCentered(c, dogLayers.tongue, mouth[0] - up[0] * faceW * 0.28, mouth[1] - up[1] * faceW * 0.28, faceW * 0.55 * scale, angle);
     } else {
       drawVectorDog(c, eyeCx, eyeCy, nose, mouth, faceW, angle, up);
+    }
+
+    // Debug: puntini sui punti rilevati (per capire eventuali disallineamenti)
+    // rosso=occhio dx, verde=occhio sx, GIALLO=naso, ciano=bocca, magenta/bianco=orecchie
+    if (DEBUG) {
+      const cols = ["#f00", "#0f0", "#ff0", "#0ff", "#f0f", "#fff"];
+      for (let i = 0; i < 6; i++) {
+        c.beginPath(); c.arc(L[i][0], L[i][1], 7 * DPR, 0, 7);
+        c.fillStyle = cols[i]; c.fill();
+        c.lineWidth = 2 * DPR; c.strokeStyle = "#000"; c.stroke();
+      }
     }
   }
 }
