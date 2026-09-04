@@ -186,9 +186,7 @@ function paintFilter(c, cw, ch) {
     if (uiLayer) drawImageFit(c, cw, ch, uiLayer, "fill");
     else drawRetroUI(c, cw, ch);
   } else if (filter === "mazz") {
-    // Il soggetto è allineato in basso-a-destra: riempi in altezza e ancora lì,
-    // così restano visibili sia il volto sia le bottiglie.
-    if (mazzImg) drawImageFit(c, cw, ch, mazzImg, "cover", 1, 1);
+    if (mazzImg) drawMazz(c, cw, ch, mazzImg);
     else hintMissing(c, cw, ch, "assets/mazz2016.png");
   }
 }
@@ -228,10 +226,13 @@ function paintDog(c, cw, ch) {
     const up = [Math.sin(angle), -Math.cos(angle)];
 
     if (dogLayers) {
-      const earsW = faceW * 1.7;
-      drawImgCentered(c, dogLayers.ears, eyeCx + up[0] * faceW * 0.55, eyeCy + up[1] * faceW * 0.55, earsW, angle);
-      drawImgCentered(c, dogLayers.nose, nose[0], nose[1], faceW * 0.5, angle);
-      drawImgCentered(c, dogLayers.tongue, mouth[0] - up[0] * faceW * 0.28, mouth[1] - up[1] * faceW * 0.28, faceW * 0.55, angle);
+      // Tutto è proporzionale alla larghezza del volto (faceW), quindi si adatta
+      // da solo. k = fattore globale delle DIMENSIONI (non delle posizioni):
+      // abbassalo se il cane è troppo grande, alzalo se è troppo piccolo.
+      const k = 0.82;
+      drawImgCentered(c, dogLayers.ears, eyeCx + up[0] * faceW * 0.55, eyeCy + up[1] * faceW * 0.55, faceW * 1.7 * k, angle);
+      drawImgCentered(c, dogLayers.nose, nose[0], nose[1], faceW * 0.5 * k, angle);
+      drawImgCentered(c, dogLayers.tongue, mouth[0] - up[0] * faceW * 0.28, mouth[1] - up[1] * faceW * 0.28, faceW * 0.55 * k, angle);
     } else {
       drawVectorDog(c, eyeCx, eyeCy, nose, mouth, faceW, angle, up);
     }
@@ -516,6 +517,18 @@ function drawImageFit(c, cw, ch, img, mode, ax = 0.5, ay = 0.5) {
   const dw = iw * scale, dh = ih * scale;
   // ax/ay: ancoraggio 0=inizio, .5=centro, 1=fine
   c.drawImage(img, (cw - dw) * ax, (ch - dh) * ay, dw, dh);
+}
+// Mazz2016: soggetto allineato in basso-a-destra. Lo teniamo un po' più piccolo
+// del "cover" e ancorato all'angolo basso-destra, così resta più spazio di
+// sfondo (camera) a sinistra e in alto.
+// MAZZ_SCALE: 1 = riempie l'altezza; più basso = più piccolo e più a destra.
+function drawMazz(c, cw, ch, img) {
+  const iw = img.width || img.naturalWidth, ih = img.height || img.naturalHeight;
+  if (!iw || !ih) return;
+  const MAZZ_SCALE = 0.8;
+  const s = Math.max(cw / iw, ch / ih) * MAZZ_SCALE;
+  const dw = iw * s, dh = ih * s;
+  c.drawImage(img, cw - dw, ch - dh, dw, dh); // ancorato in basso a destra
 }
 function stamp() {
   const d = new Date(), p = (n) => String(n).padStart(2, "0");
