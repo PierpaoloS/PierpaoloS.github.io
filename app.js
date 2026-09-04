@@ -35,7 +35,7 @@ let filter = "ui";
 let stream = null;
 let running = false;
 let lastShot = null;
-const VERSION = "9"; // deve combaciare con ?v= in index.html (per la cache)
+const VERSION = "10"; // deve combaciare con ?v= in index.html (per la cache)
 const DEBUG = new URLSearchParams(location.search).has("debug");
 
 // Diagnostica (mostrata con ?debug)
@@ -256,14 +256,18 @@ function paintDog(c, cw, ch) {
     if (!L) continue;
     const rEye = L[0], lEye = L[1], nose = L[2], mouth = L[3], rEar = L[4], lEar = L[5];
 
-    const eyeVec = [lEye[0] - rEye[0], lEye[1] - rEye[1]];
-    const angle = Math.atan2(eyeVec[1], eyeVec[0]);
-    const eyeDist = Math.hypot(eyeVec[0], eyeVec[1]);
+    const eyeCx = (rEye[0] + lEye[0]) / 2, eyeCy = (rEye[1] + lEye[1]) / 2;
+    // Verticale del volto = da centro-occhi verso la bocca. La bocca è SEMPRE
+    // sotto gli occhi, anche con la camera specchiata: così il cane non si
+    // capovolge mai (il problema di prima nasceva dall'usare la linea occhi).
+    const dnx = mouth[0] - eyeCx, dny = mouth[1] - eyeCy;
+    const dlen = Math.hypot(dnx, dny) || 1;
+    const down = [dnx / dlen, dny / dlen];
+    const up = [-down[0], -down[1]];
+    const angle = Math.atan2(dny, dnx) - Math.PI / 2; // 0 quando il volto è dritto
+    const eyeDist = Math.hypot(lEye[0] - rEye[0], lEye[1] - rEye[1]);
     let faceW = Math.hypot(lEar[0] - rEar[0], lEar[1] - rEar[1]);
     if (!faceW || faceW < eyeDist) faceW = eyeDist * 2.4;
-
-    const eyeCx = (rEye[0] + lEye[0]) / 2, eyeCy = (rEye[1] + lEye[1]) / 2;
-    const up = [Math.sin(angle), -Math.cos(angle)];
 
     if (dogLayers) {
       // Il cane è proporzionale alla larghezza del volto (faceW) → si adatta.
