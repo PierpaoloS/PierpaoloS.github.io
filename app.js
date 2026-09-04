@@ -35,7 +35,11 @@ let filter = "ui";
 let stream = null;
 let running = false;
 let lastShot = null;
+const VERSION = "6"; // deve combaciare con ?v= in index.html (per la cache)
 const DEBUG = new URLSearchParams(location.search).has("debug");
+
+// Diagnostica (mostrata con ?debug)
+let dbgKp = -1, dbgBox = false, dbgFaceW = 0, dbgEarsW = 0;
 
 // Rilevatore volti (caricato in modo pigro)
 let detector = null;
@@ -208,13 +212,35 @@ function detectOnStage(ts) {
   }
 }
 
+// Ricava i 6 punti del viso (in pixel del canvas) dai keypoints normalizzati,
+// oppure — se il telefono non li fornisce — stimandoli dal riquadro del volto.
+function faceLandmarks(det, cw, ch) {
+  const kp = det.keypoints;
+  if (kp && kp.length >= 6)
+    return [0, 1, 2, 3, 4, 5].map((i) => [kp[i].x * cw, kp[i].y * ch]);
+  const b = det.boundingBox; // in PIXEL del canvas
+  if (b && b.width && b.height) {
+    const x = b.originX, y = b.originY, w = b.width, h = b.height;
+    return [
+      [x + 0.32 * w, y + 0.42 * h], // occhio dx
+      [x + 0.68 * w, y + 0.42 * h], // occhio sx
+      [x + 0.50 * w, y + 0.58 * h], // naso
+      [x + 0.50 * w, y + 0.78 * h], // bocca
+      [x + 0.02 * w, y + 0.45 * h], // orecchio dx
+      [x + 0.98 * w, y + 0.45 * h], // orecchio sx
+    ];
+  }
+  return null;
+}
+
 function paintDog(c, cw, ch) {
   for (const det of lastDetections) {
     const kp = det.keypoints;
-    if (!kp || kp.length < 6) continue;
-    // Coordinate già nello spazio del canvas mostrato (normalizzate)
-    const P = (i) => [kp[i].x * cw, kp[i].y * ch];
-    const rEye = P(0), lEye = P(1), nose = P(2), mouth = P(3), rEar = P(4), lEar = P(5);
+    dbgKp = kp ? kp.length : 0;
+    dbgBox = !!det.boundingBox;
+    const L = faceLandmarks(det, cw, ch);
+    if (!L) continue;
+    const rEye = L[0], lEye = L[1], nose = L[2], mouth = L[3], rEar = L[4], lEar = L[5];
 
     const eyeVec = [lEye[0] - rEye[0], lEye[1] - rEye[1]];
     const angle = Math.atan2(eyeVec[1], eyeVec[0]);
@@ -236,6 +262,7 @@ function paintDog(c, cw, ch) {
       let earsW = faceW * 1.7 * k;
       const maxW = cw * 0.9;
       if (earsW > maxW) { scale *= maxW / earsW; earsW = maxW; }
+      dbgFaceW = Math.round(faceW); dbgEarsW = Math.round(earsW);
       drawImgCentered(c, dogLayers.ears, eyeCx + up[0] * faceW * 0.55, eyeCy + up[1] * faceW * 0.55, earsW, angle);
       drawImgCentered(c, dogLayers.nose, nose[0], nose[1], faceW * 0.5 * scale, angle);
       drawImgCentered(c, dogLayers.tongue, mouth[0] - up[0] * faceW * 0.28, mouth[1] - up[1] * faceW * 0.28, faceW * 0.55 * scale, angle);
@@ -293,7 +320,7 @@ function loadImg(src, ok) {
   // anche aprendo il file in locale. Aggiungo ?v per evitare la cache vecchia.
   img.onload = () => ok(img);
   img.onerror = () => {};
-  img.src = src + (src.includes("?") ? "&" : "?") + "v=3";
+  img.src = src + (src.includes("?") ? "&" : "?") + "v=" + VERSION;
 }
 
 // Ritaglia dog.png in 3 fasce (orecchie/naso/lingua) usando gli spazi trasparenti
@@ -550,15 +577,17 @@ function hideToast() { toastEl.classList.add("hidden"); }
 
 function paintDebug() {
   ctx.save();
-  ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fillRect(0, H - 84, W, 84);
+  const boxH = 108 * DPR;
+  ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fillRect(0, H - boxH, W, boxH);
   ctx.fillStyle = "#0f0"; ctx.font = `${Math.round(13 * DPR)}px monospace`; ctx.textAlign = "left"; ctx.textBaseline = "top";
   const lines = [
-    `filtro=${filter} cam=${facing} ${video.videoWidth}x${video.videoHeight}`,
+    `VERSIONE=${VERSION}  filtro=${filter} cam=${facing} ${video.videoWidth}x${video.videoHeight}`,
     `detector=${detector ? "ok" : "no"} volti=${lastDetections.length}`,
+    `keypoints=${dbgKp} riquadro=${dbgBox} faceW=${dbgFaceW} earsW=${dbgEarsW}`,
     `assets dog=${!!dogLayers} ui=${!!uiLayer} mazz=${!!mazzImg}`,
     detectError ? `err=${detectError.slice(0, 60)}` : "",
   ];
-  lines.forEach((l, i) => ctx.fillText(l, 8, H - 80 + i * 18 * DPR));
+  lines.forEach((l, i) => ctx.fillText(l, 8 * DPR, H - boxH + 6 * DPR + i * 18 * DPR));
   ctx.restore();
 }
 
