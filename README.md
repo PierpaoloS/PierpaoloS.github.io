@@ -1,12 +1,15 @@
 # Retro Cam 📸
 
-Mini web-app statica (super leggera) per fare foto con due filtri vintage:
+Mini web-app statica (super leggera) per fare foto con tre filtri vintage:
 
-- **🐶 Filtro cane** — rileva il volto di una o più persone e ci mette orecchie, naso e lingua.
-- **🎮 UI Retro** — un'interfaccia stile gioco AR trasparente, con la fotocamera al centro.
+- **🎮 UI Retro** — lo screenshot dell'interfaccia stile gioco AR, con lo sfondo
+  bianco reso trasparente: al centro si vede la fotocamera.
+- **🐶 Filtro cane** — rileva il volto di una o più persone e ci mette orecchie,
+  naso e lingua.
+- **😎 Mazz2016** — la tua immagine con sfondo trasparente sovrapposta allo scatto.
 
 Funziona interamente nel browser: **nessuna foto lascia il telefono**.
-Scegli fotocamera frontale/posteriore, scatti e salvi direttamente nel rullino.
+Scegli fotocamera frontale/posteriore, scatti alla massima risoluzione e salvi nel rullino.
 
 ## File del progetto
 
@@ -16,21 +19,30 @@ retro-cam/
 ├── styles.css      → lo stile
 ├── app.js          → tutta la logica (camera, filtri, salvataggio)
 ├── assets/
-│   └── dog.png     ← METTI QUI la tua PNG del cane (vedi assets/LEGGIMI.txt)
+│   ├── dog.png         ← filtro cane (vedi assets/LEGGIMI.txt)
+│   ├── ui.png          ← screenshot interfaccia Pokémon
+│   └── mazz2016.png    ← terzo filtro
 ├── .nojekyll
 └── README.md
 ```
 
 > Il filtro cane usa **MediaPipe FaceDetector**, caricato da CDN solo quando serve:
-> il repository resta leggerissimo (poche decine di KB + la tua `dog.png`).
+> il repository resta leggerissimo (poche decine di KB + le tue immagini).
 
-## Come metti la tua immagine del cane
+## Le tre immagini da mettere in `assets/`
 
-1. Salva la tua PNG (sfondo trasparente, con orecchie in alto, naso al centro,
-   lingua in basso) dentro la cartella `assets/` con nome **`dog.png`**.
-2. Fatto: l'app la ritaglia e la posiziona da sola.
+Salva in `assets/` (nomi esatti):
 
-Se non la metti, l'app disegna comunque un cane di ripiego.
+- **`dog.png`** — orecchie in alto, naso al centro, lingua in basso, sfondo trasparente.
+  L'app ritaglia e posiziona da sola. Se manca → cane di ripiego disegnato.
+- **`ui.png`** — lo screenshot dell'UI così com'è: l'app rende trasparente lo sfondo
+  bianco automaticamente. Se manca → UI di ripiego disegnata.
+- **`mazz2016.png`** — immagine con sfondo trasparente. Se manca → avviso a schermo.
+
+## Diagnostica
+
+Aggiungi `?debug` all'URL (es. `.../index.html?debug`) per vedere in basso:
+risoluzione camera, stato del rilevatore, numero di volti rilevati ed eventuali errori.
 
 ## Pubblicare su GitHub Pages
 

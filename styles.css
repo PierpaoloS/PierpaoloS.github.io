@@ -34,10 +34,12 @@ body{overflow:hidden;}
 .ctl:active{transform:scale(.9);background:rgba(15,22,28,.7);}
 
 #switch{display:flex;background:rgba(15,22,28,.42);backdrop-filter:blur(8px);
-  border-radius:999px;padding:4px;gap:2px;}
+  border-radius:999px;padding:4px;gap:2px;max-width:calc(100vw - 120px);overflow:auto;
+  -ms-overflow-style:none;scrollbar-width:none;}
+#switch::-webkit-scrollbar{display:none;}
 .seg{border:none;background:transparent;color:rgba(238,244,246,.7);
-  font-size:14px;font-weight:600;padding:9px 14px;border-radius:999px;
-  cursor:pointer;white-space:nowrap;transition:all .18s ease;}
+  font-size:13px;font-weight:600;padding:8px 12px;border-radius:999px;
+  cursor:pointer;white-space:nowrap;transition:all .18s ease;flex:0 0 auto;}
 .seg.is-active{background:var(--accent);color:#04252a;}
 
 /* ---- Pulsante di scatto ---- */

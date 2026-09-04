@@ -1,16 +1,19 @@
-Metti qui la tua immagine del filtro cane con il nome ESATTO:
+Metti in questa cartella TRE immagini, con questi nomi ESATTI:
 
-    dog.png
+1) dog.png       → il filtro cane (orecchie in alto, naso al centro, lingua in basso).
+                   PNG con sfondo TRASPARENTE. L'app ritaglia da sola le 3 parti
+                   leggendo gli spazi vuoti tra loro.
+                   Se manca, l'app usa un cane "disegnato" di ripiego.
 
-Requisiti:
-- Formato PNG con sfondo TRASPARENTE.
-- Deve contenere, dall'alto verso il basso e ben separati da spazio vuoto:
-  1) le ORECCHIE (in alto)
-  2) il NASO (al centro)
-  3) la LINGUA (in basso)
-  (esattamente come la classica immagine del filtro cane).
+2) ui.png        → lo screenshot dell'interfaccia stile Pokémon GO (quello che mi hai
+                   mandato). Va bene lo screenshot COSÌ com'è: l'app rende
+                   automaticamente TRASPARENTE lo sfondo bianco, così al centro si
+                   vede la fotocamera, tenendo intatti pokéball, pulsanti e barra.
+                   Se manca, l'app disegna un'interfaccia di ripiego.
 
-L'app ritaglia da sola le tre parti leggendo gli spazi trasparenti tra loro
-e le posiziona sul volto rilevato.
+3) mazz2016.png  → l'immagine "Mazz2016" con sfondo TRASPARENTE (il terzo filtro).
+                   Viene sovrapposta alla fotocamera.
 
-Se il file manca, l'app funziona comunque con un cane "disegnato" di ripiego.
+Suggerimenti:
+- Per lo sfondo trasparente di dog.png e mazz2016.png usa un PNG (non JPG).
+- ui.png può anche essere JPG rinominato in .png, ma meglio PNG.
