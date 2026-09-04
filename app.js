@@ -35,7 +35,7 @@ let filter = "ui";
 let stream = null;
 let running = false;
 let lastShot = null;
-const VERSION = "11"; // deve combaciare con ?v= in index.html (per la cache)
+const VERSION = "12"; // deve combaciare con ?v= in index.html (per la cache)
 const DEBUG = new URLSearchParams(location.search).has("debug");
 
 // Diagnostica (mostrata con ?debug)
@@ -222,7 +222,7 @@ function detectOnStage(ts) {
 function faceLandmarks(det, cw, ch) {
   const vw = video.videoWidth, vh = video.videoHeight;
   if (!vw || !vh) return null;
-  const box = coverBox(vw, vh, cw, ch);
+  const box = coverBox(cw, ch); // stesso ritaglio del video mostrato (usa vw/vh interni)
   const front = facing === "user";
   const mapN = (nx, ny) => {           // da normalizzato-frame a pixel-schermo
     const px = box.dx + nx * box.dw;
