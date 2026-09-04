@@ -1,0 +1,16 @@
+Metti qui la tua immagine del filtro cane con il nome ESATTO:
+
+    dog.png
+
+Requisiti:
+- Formato PNG con sfondo TRASPARENTE.
+- Deve contenere, dall'alto verso il basso e ben separati da spazio vuoto:
+  1) le ORECCHIE (in alto)
+  2) il NASO (al centro)
+  3) la LINGUA (in basso)
+  (esattamente come la classica immagine del filtro cane).
+
+L'app ritaglia da sola le tre parti leggendo gli spazi trasparenti tra loro
+e le posiziona sul volto rilevato.
+
+Se il file manca, l'app funziona comunque con un cane "disegnato" di ripiego.
