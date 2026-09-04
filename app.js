@@ -226,13 +226,19 @@ function paintDog(c, cw, ch) {
     const up = [Math.sin(angle), -Math.cos(angle)];
 
     if (dogLayers) {
-      // Tutto è proporzionale alla larghezza del volto (faceW), quindi si adatta
-      // da solo. k = fattore globale delle DIMENSIONI (non delle posizioni):
-      // abbassalo se il cane è troppo grande, alzalo se è troppo piccolo.
+      // Il cane è proporzionale alla larghezza del volto (faceW) → si adatta.
+      // k = fattore globale delle dimensioni. MAX_W = tetto: sul telefono la
+      // camera 4:3 viene zoomata su schermo verticale e il volto diventa enorme;
+      // qui limitiamo le orecchie al 90% della larghezza schermo così il cane
+      // non esce mai dai bordi, mantenendo le proporzioni tra le parti.
       const k = 0.82;
-      drawImgCentered(c, dogLayers.ears, eyeCx + up[0] * faceW * 0.55, eyeCy + up[1] * faceW * 0.55, faceW * 1.7 * k, angle);
-      drawImgCentered(c, dogLayers.nose, nose[0], nose[1], faceW * 0.5 * k, angle);
-      drawImgCentered(c, dogLayers.tongue, mouth[0] - up[0] * faceW * 0.28, mouth[1] - up[1] * faceW * 0.28, faceW * 0.55 * k, angle);
+      let scale = k;
+      let earsW = faceW * 1.7 * k;
+      const maxW = cw * 0.9;
+      if (earsW > maxW) { scale *= maxW / earsW; earsW = maxW; }
+      drawImgCentered(c, dogLayers.ears, eyeCx + up[0] * faceW * 0.55, eyeCy + up[1] * faceW * 0.55, earsW, angle);
+      drawImgCentered(c, dogLayers.nose, nose[0], nose[1], faceW * 0.5 * scale, angle);
+      drawImgCentered(c, dogLayers.tongue, mouth[0] - up[0] * faceW * 0.28, mouth[1] - up[1] * faceW * 0.28, faceW * 0.55 * scale, angle);
     } else {
       drawVectorDog(c, eyeCx, eyeCy, nose, mouth, faceW, angle, up);
     }
@@ -525,10 +531,11 @@ function drawImageFit(c, cw, ch, img, mode, ax = 0.5, ay = 0.5) {
 function drawMazz(c, cw, ch, img) {
   const iw = img.width || img.naturalWidth, ih = img.height || img.naturalHeight;
   if (!iw || !ih) return;
-  const MAZZ_SCALE = 0.8;
+  const MAZZ_SCALE = 0.8;    // 1 = riempie l'altezza; più basso = più piccolo
+  const MAZZ_SHIFT_X = 0.12; // quanto spostarlo verso destra (frazione larghezza)
   const s = Math.max(cw / iw, ch / ih) * MAZZ_SCALE;
   const dw = iw * s, dh = ih * s;
-  c.drawImage(img, cw - dw, ch - dh, dw, dh); // ancorato in basso a destra
+  c.drawImage(img, cw - dw + dw * MAZZ_SHIFT_X, ch - dh, dw, dh);
 }
 function stamp() {
   const d = new Date(), p = (n) => String(n).padStart(2, "0");
