@@ -1173,9 +1173,10 @@ function faces(x){
   let front, back;
   if(x.d==='w'){
     const itBig = `<div class="big it" style="font-size:${itSize(x.it)}px">${esc(x.it)}</div>`;
-    const detail = `${x.kana!==x.jp?`<div class="reading">${esc(x.kana)}</div>`:''}<div class="romaji">${esc(x.ro)}</div>`;
-    front = rev ? itBig : jpBig;
-    back = rev ? `${jpBig}${detail}` : `<div class="big" style="font-size:${Math.min(jpSize(x.jp),56)}px">${esc(x.jp)}</div>${detail}<div class="meaning">${esc(x.it)}</div>`;
+    // lato giapponese: parola + lettura + romaji; lato italiano: solo la traduzione
+    const jpSide = `${jpBig}${x.kana!==x.jp?`<div class="reading">${esc(x.kana)}</div>`:''}<div class="romaji">${esc(x.ro)}</div>`;
+    front = rev ? itBig : jpSide;
+    back = rev ? jpSide : itBig;
   } else if(x.d==='j'){
     const ex = x.ex.length ? `<div class="examples">${x.ex.map(w=>`<span><span class="jp">${esc(w.jp)}</span>${esc(w.it)}</span>`).join('')}</div>` : '';
     front = rev ? `<div class="big it" style="font-size:${itSize(x.it)}px">${esc(x.it)}</div>` : jpBig;
