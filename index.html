@@ -282,6 +282,15 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
 .ly-time{display:none;font-size:11px;font-weight:800;color:var(--yuzu-ink);background:var(--yuzu-soft);border-radius:999px;padding:2px 8px;margin-right:8px;vertical-align:middle}
 .lyrics.sync .ly-time{display:inline-block}
 
+/* ---------- sincronizzazione ---------- */
+.sync-help{background:var(--surface);border-radius:16px;box-shadow:var(--shadow);padding:2px 14px;margin-bottom:6px}
+.sync-help summary{cursor:pointer;font-weight:800;font-size:13.5px;padding:11px 0;color:var(--ramune);list-style:none}
+.sync-help summary::-webkit-details-marker{display:none}
+.sync-help ol{margin:0 0 10px}
+.sync-help code{display:block;white-space:pre-wrap;word-break:break-all;background:var(--surface2);border-radius:10px;padding:8px 10px;font-size:12px;margin-top:6px;font-weight:700}
+.synctoggle{display:flex;align-items:center;gap:10px;font-weight:800;font-size:14px;color:var(--ink);padding:8px 4px}
+.synctoggle input{width:22px;height:22px;accent-color:var(--ramune)}
+
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -398,6 +407,30 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
       <button class="tool danger" id="resetBtn">Azzera progressi</button>
     </div>
     <input type="file" id="importFile" accept="application/json,.json" hidden>
+
+    <p class="label">Sincronizza tra dispositivi</p>
+    <p class="note">Con lo stesso <b>URL</b> e lo stesso <b>codice</b> su PC e telefono, i dati si allineano dal cloud (Firebase, gratis). Si sincronizza all'apertura dell'app e a ogni modifica.</p>
+    <details class="sync-help">
+      <summary>Come si configura (una volta sola)</summary>
+      <ol class="note" style="padding-left:18px;line-height:1.8">
+        <li>Vai su <b>console.firebase.google.com</b> e crea un progetto (gratis).</li>
+        <li><b>Build → Realtime Database → Crea database</b>.</li>
+        <li>Copia l'<b>URL</b> del database (es. https://xxx-default-rtdb.firebaseio.com) e incollalo qui sotto.</li>
+        <li>Nella scheda <b>Regole</b> incolla questo e pubblica:<code>{
+  "rules": {
+    "sync": { "$c": { ".read": true, ".write": true } }
+  }
+}</code></li>
+        <li>Metti lo <b>stesso URL e lo stesso codice</b> anche sul telefono.</li>
+      </ol>
+    </details>
+    <div class="field"><input id="syncUrl" placeholder="URL database Firebase" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+    <div class="field"><input id="syncCode" placeholder="Codice segreto (uguale sui due dispositivi)" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+    <label class="synctoggle"><input type="checkbox" id="syncAuto"> Sincronizza automaticamente</label>
+    <div class="tools">
+      <button class="tool" id="syncPullBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Carica dal cloud</button>
+      <button class="tool" id="syncPushBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7 9l5-5 5 5M5 20h14"/></svg>Salva sul cloud</button>
+    </div>
   </section>
 
   <!-- LE MIE PAROLE (editor) -->
@@ -1147,13 +1180,13 @@ try{ Object.assign(prefs, JSON.parse(localStorage.getItem(PREF_KEY))||{}); }catc
 if(!Array.isArray(prefs.blocks)) prefs.blocks=[];
 const savePrefs=()=>{ try{localStorage.setItem(PREF_KEY,JSON.stringify(prefs));}catch(e){} };
 const st = id => state.s[id] || 'n';
-function persist(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){ toast('Impossibile salvare: spazio del browser non disponibile'); } }
+function persist(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){ toast('Impossibile salvare: spazio del browser non disponibile'); } touch(); }
 function setStatus(id, v){ if(v==='n') delete state.s[id]; else state.s[id]=v; state.updatedAt=Date.now(); persist(); }
 /* parole e gruppi aggiunti dall'utente */
 const CUSTOM_KEY='kotoba-custom-v1';
 let CUSTOM = {v:1, blocks:[], words:[]};
 try{ const j=JSON.parse(localStorage.getItem(CUSTOM_KEY)); if(j && Array.isArray(j.blocks) && Array.isArray(j.words)) CUSTOM=j; }catch(e){}
-function saveCustom(){ try{ localStorage.setItem(CUSTOM_KEY, JSON.stringify(CUSTOM)); }catch(e){ toast('Impossibile salvare: spazio del browser non disponibile'); } }
+function saveCustom(){ try{ localStorage.setItem(CUSTOM_KEY, JSON.stringify(CUSTOM)); }catch(e){ toast('Impossibile salvare: spazio del browser non disponibile'); } touch(); }
 const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
 try{ navigator.storage && navigator.storage.persist && navigator.storage.persist(); }catch(e){}
 
@@ -1562,7 +1595,7 @@ function delWord(id){
 const SONGS_KEY='kotoba-songs-v1';
 let SONGS=[];
 try{ const j=JSON.parse(localStorage.getItem(SONGS_KEY)); if(Array.isArray(j)) SONGS=j.map(s=>({lines:[],artist:'',...s})); }catch(e){}
-function saveSongs(){ try{ localStorage.setItem(SONGS_KEY, JSON.stringify(SONGS)); }catch(e){ toast('Impossibile salvare'); } }
+function saveSongs(){ try{ localStorage.setItem(SONGS_KEY, JSON.stringify(SONGS)); }catch(e){ toast('Impossibile salvare'); } touch(); }
 
 function parseYT(u){ u=(u||'').trim(); const m=u.match(/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([A-Za-z0-9_-]{11})/); if(m) return m[1]; if(/^[A-Za-z0-9_-]{11}$/.test(u)) return u; return ''; }
 function mmss(s){ s=Math.max(0,s); const m=Math.floor(s/60); const r=Math.round((s-60*m)*10)/10; const ri=Math.floor(r), fr=Math.round((r-ri)*10); return m+':'+String(ri).padStart(2,'0')+(fr?'.'+fr:''); }
@@ -1717,10 +1750,58 @@ $('lyrics').addEventListener('click',e=>{
 $('playerEdit').onclick=()=>{ if(curSong) openSongEditor(curSong.id); };
 $('playerBack').onclick=()=>{ stopTick(); if(ytPlayer&&ytPlayer.pauseVideo){ try{ytPlayer.pauseVideo();}catch(e){} } renderSongs(); show('songs'); };
 
+/* ================= SYNC (codice tra dispositivi) ================= */
+const SYNC_KEY='kotoba-sync', UPD_KEY='kotoba-updated';
+let applyingRemote=false, pushTimer=null;
+function syncCfg(){ try{ return Object.assign({url:'',code:'',auto:false}, JSON.parse(localStorage.getItem(SYNC_KEY))||{}); }catch(e){ return {url:'',code:'',auto:false}; } }
+function saveSyncCfg(c){ try{ localStorage.setItem(SYNC_KEY, JSON.stringify(c)); }catch(e){} }
+function localUpdated(){ return +localStorage.getItem(UPD_KEY)||0; }
+function touch(){ try{ localStorage.setItem(UPD_KEY, String(Date.now())); }catch(e){} if(applyingRemote) return; const c=syncCfg(); if(c.auto && c.url && c.code){ clearTimeout(pushTimer); pushTimer=setTimeout(()=>syncPush(false), 1500); } }
+function syncEndpoint(c){ const code=String(c.code).trim().replace(/[.#$/\[\]\s]/g,'_'); return c.url.replace(/\/+$/,'') + '/sync/' + encodeURIComponent(code) + '.json'; }
+function snapshot(){ return {app:'kotoba-swipe', v:1, updatedAt: localUpdated()||Date.now(), s:state.s, custom:CUSTOM, songs:SONGS}; }
+function applySnapshot(d){
+  if(!d || typeof d.s!=='object' || Array.isArray(d.s)) return false;
+  const s={}; Object.entries(d.s).forEach(([k,v])=>{ if(['k','l','h'].includes(v)) s[k]=v; });
+  state={v:1, updatedAt:Date.now(), s};
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){}
+  if(d.custom && Array.isArray(d.custom.blocks) && Array.isArray(d.custom.words)){ CUSTOM=d.custom; try{ localStorage.setItem(CUSTOM_KEY, JSON.stringify(CUSTOM)); }catch(e){} }
+  if(Array.isArray(d.songs)){ SONGS=d.songs.map(x=>({lines:[],artist:'',...x})); try{ localStorage.setItem(SONGS_KEY, JSON.stringify(SONGS)); }catch(e){} }
+  try{ localStorage.setItem(UPD_KEY, String(d.updatedAt||Date.now())); }catch(e){}
+  buildItems(); renderHome();
+  if(current==='list') renderList(); else if(current==='cards') renderCards(); else if(current==='songs') renderSongs();
+  return true;
+}
+function syncPush(manual){
+  const c=syncCfg(); if(!c.url||!c.code){ if(manual) toast('Inserisci URL e codice'); return; }
+  fetch(syncEndpoint(c), {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(snapshot())})
+    .then(r=>{ if(!r.ok) throw 0; if(manual) toast('Salvato sul cloud ✓'); })
+    .catch(()=>{ if(manual) toast('Errore: controlla URL e regole'); });
+}
+function syncPull(manual){
+  const c=syncCfg(); if(!c.url||!c.code){ if(manual) toast('Inserisci URL e codice'); return; }
+  fetch(syncEndpoint(c)).then(r=>{ if(!r.ok) throw 0; return r.json(); }).then(d=>{
+    if(!d){ if(manual) toast('Ancora niente nel cloud'); return; }
+    if(!manual && !((d.updatedAt||0) > localUpdated())) return;
+    applyingRemote=true; const ok=applySnapshot(d); applyingRemote=false;
+    if(ok) toast(manual?'Caricato dal cloud ✓':'Sincronizzato'); else if(manual) toast('Dati cloud non validi');
+  }).catch(()=>{ if(manual) toast('Errore: controlla URL e regole'); });
+}
+(function initSync(){
+  if(!$('syncUrl')) return;
+  const c=syncCfg();
+  $('syncUrl').value=c.url||''; $('syncCode').value=c.code||''; $('syncAuto').checked=!!c.auto;
+  $('syncUrl').addEventListener('change',()=>{ const x=syncCfg(); x.url=$('syncUrl').value.trim(); saveSyncCfg(x); });
+  $('syncCode').addEventListener('change',()=>{ const x=syncCfg(); x.code=$('syncCode').value.trim(); saveSyncCfg(x); });
+  $('syncAuto').addEventListener('change',()=>{ const x=syncCfg(); x.auto=$('syncAuto').checked; saveSyncCfg(x); if(x.auto){ toast('Sync automatica attiva'); syncPull(false); } });
+  $('syncPullBtn').onclick=()=>syncPull(true);
+  $('syncPushBtn').onclick=()=>syncPush(true);
+})();
+
 /* ================= BOOT ================= */
 applyTheme();
 buildItems();
 renderHome();
+{ const c=syncCfg(); if(c.auto && c.url && c.code) syncPull(false); }
 </script>
 </body>
 </html>
