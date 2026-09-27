@@ -253,6 +253,35 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
 .mdl-actions .btn{flex:1;padding:14px}
 .mdl-actions .btn.del{flex:none;color:var(--learn);background:var(--learn-soft);box-shadow:none}
 
+/* ---------- canzoni ---------- */
+.yt-wrap{position:relative;width:100%;aspect-ratio:16/9;border-radius:20px;overflow:hidden;background:#000;box-shadow:var(--shadow);flex:none}
+.yt-wrap iframe,.yt-wrap>div{position:absolute;inset:0;width:100%;height:100%;border:0}
+.yt-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:#cdd;font-weight:700;font-size:14px;padding:20px}
+.ly-toggles{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ly-toggles button{border-radius:999px;background:var(--surface);box-shadow:var(--shadow);padding:8px 13px;font-weight:800;font-size:13px;color:var(--muted)}
+.ly-toggles button.on{background:var(--ink);color:var(--bg)}
+.ly-toggles .jp{font-family:var(--jp)}
+.ly-toggles #syncToggle{margin-left:auto;background:var(--yuzu-soft);color:var(--yuzu-ink);box-shadow:none}
+.ly-toggles #syncToggle.on{background:var(--learn);color:#fff}
+.sync-hint{font-size:12.5px;color:var(--muted);font-weight:700;background:var(--yuzu-soft);color:var(--yuzu-ink);border-radius:14px;padding:10px 12px}
+.lyrics{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:6px 2px 45vh;-webkit-overflow-scrolling:touch}
+.lyr{opacity:.45;transition:opacity .3s;cursor:pointer;border-radius:14px;padding:6px 8px}
+.lyr.active{opacity:1}
+.lyrics.sync .lyr{opacity:.9;background:var(--surface2)}
+.ly-jp{font-family:var(--jp);font-weight:700;font-size:21px;line-height:1.55}
+.ly-jp.words .tok{margin-right:.28em}
+.lyr.active .ly-jp{font-size:23px}
+.ly-ro{font-family:var(--display);font-size:15px;color:var(--ramune);font-weight:600;margin-top:2px}
+.ly-it{font-size:14px;color:var(--muted);font-weight:600;margin-top:2px}
+.lyrics:not(.show-jp) .ly-jp{display:none}
+.lyrics:not(.show-ro) .ly-ro{display:none}
+.lyrics:not(.show-it) .ly-it{display:none}
+.tok{display:inline-block;transition:transform .12s ease, color .12s;transform-origin:center bottom}
+.lyr.active .tok.done{color:var(--ramune)}
+.lyr.active .tok.on{color:var(--learn);transform:scale(1.28);font-weight:900}
+.ly-time{display:none;font-size:11px;font-weight:800;color:var(--yuzu-ink);background:var(--yuzu-soft);border-radius:999px;padding:2px 8px;margin-right:8px;vertical-align:middle}
+.lyrics.sync .ly-time{display:inline-block}
+
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -283,6 +312,10 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
     <button class="row-btn" id="openCards">
       <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span>
       <span><b>Le mie parole</b><span>Crea gruppi e aggiungi le tue parole</span></span>
+    </button>
+    <button class="row-btn" id="openSongs">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg></span>
+      <span><b>Canzoni</b><span>Testo che scorre col karaoke, GIA · romaji · ITA</span></span>
     </button>
     <button class="row-btn" id="openList">
       <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.3" fill="currentColor" stroke="none"/><circle cx="4.5" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="4.5" cy="18" r="1.3" fill="currentColor" stroke="none"/></svg></span>
@@ -384,6 +417,38 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
       <button class="mini-add" id="addWordBtn">+ Parola</button>
     </div>
     <div id="myWords"></div>
+  </section>
+
+  <!-- CANZONI (lista) -->
+  <section class="screen" id="songs" hidden>
+    <div class="bar">
+      <button class="icon-btn" id="songsBack" aria-label="Indietro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h1>Canzoni</h1>
+    </div>
+    <div class="bar" style="min-height:0">
+      <p class="label" style="margin:0;flex:1">Le tue canzoni</p>
+      <button class="mini-add" id="addSongBtn">+ Canzone</button>
+    </div>
+    <div id="songsBox"></div>
+    <p class="note">Aggiungi il link YouTube e il testo (giapponese · romaji · italiano). Apri una canzone e usa <b>Sincronizza</b> per segnare i tempi delle righe: il testo scorrerà a tempo con parole che si ingrossano. Restano su questo dispositivo — incluse nel backup.</p>
+  </section>
+
+  <!-- PLAYER -->
+  <section class="screen" id="player" hidden>
+    <div class="bar">
+      <button class="icon-btn" id="playerBack" aria-label="Indietro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h1 id="playerTitle" style="font-size:18px">Canzone</h1>
+      <button class="icon-btn" id="playerEdit" aria-label="Modifica canzone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+    </div>
+    <div class="yt-wrap"><div id="ytFrame"></div></div>
+    <div class="ly-toggles">
+      <button class="jp on" id="tgJp" data-ly="jp">あ</button>
+      <button class="on" id="tgRo" data-ly="ro">romaji</button>
+      <button class="on" id="tgIt" data-ly="it">IT</button>
+      <button id="syncToggle">⏱ Sincronizza</button>
+    </div>
+    <div class="sync-hint" id="syncHint" hidden>Modalità sincronizza: fai partire il video e <b>tocca ogni riga</b> nel momento in cui inizia. Ritocca quando vuoi. Esci per salvare.</div>
+    <div class="lyrics show-jp show-ro show-it" id="lyrics"></div>
   </section>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -1128,7 +1193,7 @@ $('themeBtn').onclick=()=>{
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{ if(themeMode==='auto') applyTheme(); });
 
 /* ================= NAV ================= */
-const screens=['home','setup','study','done','list','cards'];
+const screens=['home','setup','study','done','list','cards','songs','player'];
 let current='home';
 function show(name){ screens.forEach(s=>$(s).hidden = s!==name); current=name; window.scrollTo(0,0); }
 
@@ -1359,7 +1424,7 @@ $('search').addEventListener('input',renderList);
 $('listBack').onclick=()=>{ renderHome(); show('home'); };
 
 $('exportBtn').onclick=()=>{
-  const blob=new Blob([JSON.stringify({app:'kotoba-swipe', ...state, custom:CUSTOM})],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({app:'kotoba-swipe', ...state, custom:CUSTOM, songs:SONGS})],{type:'application/json'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
   a.download=`kotoba-progressi-${new Date().toISOString().slice(0,10)}.json`;
   document.body.appendChild(a); a.click(); a.remove();
@@ -1376,6 +1441,7 @@ $('importFile').onchange=async e=>{
     state={v:1, updatedAt:Date.now(), s}; persist();
     let extra='';
     if(j.custom && Array.isArray(j.custom.blocks) && Array.isArray(j.custom.words)){ CUSTOM=j.custom; saveCustom(); buildItems(); extra=` · ${CUSTOM.words.length} parole tue`; }
+    if(Array.isArray(j.songs)){ SONGS=j.songs.map(x=>({lines:[],artist:'',...x})); saveSongs(); extra+=` · ${SONGS.length} canzoni`; }
     renderList();
     toast(`Importati ${Object.keys(s).length} progressi${extra}`);
   }catch(err){ toast('File non valido: scegli un backup esportato da Kotoba Swipe'); }
@@ -1491,6 +1557,165 @@ function delWord(id){
   CUSTOM.words = CUSTOM.words.filter(w=>w.id!==id);
   persist(); saveCustom(); buildItems(); closeModal(); renderCards(); toast('Parola eliminata');
 }
+
+/* ================= CANZONI ================= */
+const SONGS_KEY='kotoba-songs-v1';
+let SONGS=[];
+try{ const j=JSON.parse(localStorage.getItem(SONGS_KEY)); if(Array.isArray(j)) SONGS=j.map(s=>({lines:[],artist:'',...s})); }catch(e){}
+function saveSongs(){ try{ localStorage.setItem(SONGS_KEY, JSON.stringify(SONGS)); }catch(e){ toast('Impossibile salvare'); } }
+
+function parseYT(u){ u=(u||'').trim(); const m=u.match(/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([A-Za-z0-9_-]{11})/); if(m) return m[1]; if(/^[A-Za-z0-9_-]{11}$/.test(u)) return u; return ''; }
+function mmss(s){ s=Math.max(0,s); const m=Math.floor(s/60); const r=Math.round((s-60*m)*10)/10; const ri=Math.floor(r), fr=Math.round((r-ri)*10); return m+':'+String(ri).padStart(2,'0')+(fr?'.'+fr:''); }
+function parseLyrics(text){
+  return String(text||'').split('\n').map(raw=>{
+    let s=raw.trim(); if(!s) return null;
+    let t=null; const m=s.match(/^\[(\d+):(\d{1,2})(?:\.(\d{1,2}))?\]\s*/);
+    if(m){ t=(+m[1])*60 + (+m[2]) + (m[3]?+('0.'+m[3]):0); s=s.slice(m[0].length); }
+    const p=s.split('|').map(x=>x.trim());
+    return {t, jp:p[0]||'', ro:p[1]||'', it:p[2]||''};
+  }).filter(Boolean);
+}
+function linesToText(lines){
+  return (lines||[]).map(l=>{
+    const pre = l.t!=null ? '['+mmss(l.t)+'] ' : '';
+    const rest = [l.jp, l.ro, l.it];
+    while(rest.length>1 && !rest[rest.length-1]) rest.pop();
+    return pre + rest.join(' | ');
+  }).join('\n');
+}
+function tokenize(s){ s=String(s||''); if(/\s/.test(s.trim()) && s.trim().includes(' ')) return {words:true, toks:s.trim().split(/\s+/)}; return {words:false, toks:Array.from(s)}; }
+
+/* ---- lista ---- */
+const IC_MUSIC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>';
+function renderSongs(){
+  $('songsBox').innerHTML = SONGS.length ? `<div class="card-list">`+SONGS.map(s=>{
+    const timed=(s.lines||[]).filter(l=>l.t!=null).length;
+    const meta=[s.artist, (s.lines||[]).length?((s.lines.length)+' righe'):null, timed?(timed+' a tempo'):(s.lines.length?'senza tempi':null)].filter(Boolean).join(' · ');
+    return `<div class="crow"><span class="rid">${IC_MUSIC}</span>
+      <div class="w" data-open="${esc(s.id)}" style="cursor:pointer"><b>${esc(s.title||'(senza titolo)')}</b><small>${esc(meta||'tocca per aprire')}</small></div>
+      <button class="mini-btn" data-sedit="${esc(s.id)}" aria-label="Modifica">${IC_EDIT}</button>
+      <button class="mini-btn danger" data-sdel="${esc(s.id)}" aria-label="Elimina">${IC_DEL}</button></div>`;
+  }).join('')+`</div>` : `<div class="cards-empty">Nessuna canzone.<br>Tocca “+ Canzone” per aggiungerne una.</div>`;
+}
+$('openSongs').onclick=()=>{ renderSongs(); show('songs'); };
+$('songsBack').onclick=()=>{ renderHome(); show('home'); };
+$('addSongBtn').onclick=()=>openSongEditor();
+$('songsBox').addEventListener('click',e=>{
+  const op=e.target.closest('[data-open]'); if(op){ openPlayer(op.dataset.open); return; }
+  const ed=e.target.closest('[data-sedit]'); if(ed){ openSongEditor(ed.dataset.sedit); return; }
+  const dl=e.target.closest('[data-sdel]'); if(dl){ delSong(dl.dataset.sdel); }
+});
+
+/* ---- editor canzone ---- */
+function openSongEditor(id){
+  const editing=!!id;
+  const s = editing ? SONGS.find(x=>x.id===id) : {title:'',artist:'',yt:'',lines:[]};
+  if(editing && !s) return;
+  openModal(`<h2>${editing?'Modifica canzone':'Nuova canzone'}</h2>
+    <div class="field"><label>Titolo</label><input id="so_t" value="${esc(s.title)}" placeholder="Es. 前前前世"></div>
+    <div class="field"><label>Artista</label><input id="so_a" value="${esc(s.artist||'')}" placeholder="Es. RADWIMPS"></div>
+    <div class="field"><label>Link YouTube</label><input id="so_y" placeholder="https://youtu.be/..."><div class="hintline">Incolla il link del video (o l'ID).</div></div>
+    <div class="field"><label>Testo</label><textarea id="so_l" rows="9"></textarea><div class="hintline">Un verso per riga. Formato: <b>giapponese | romaji | italiano</b> (romaji e italiano facoltativi). I tempi li aggiungi dopo con “Sincronizza” nel player — oppure a mano come <b>[1:23]</b> a inizio riga.</div></div>
+    <div class="mdl-actions">${editing?`<button class="btn del" id="so_del">Elimina</button>`:''}<button class="btn primary" id="so_save">Salva</button></div>`);
+  $('so_y').value = s.yt ? ('https://youtu.be/'+s.yt) : '';
+  $('so_l').value = linesToText(s.lines);
+  setTimeout(()=>$('so_t').focus(),60);
+  $('so_save').onclick=()=>{
+    const title=$('so_t').value.trim(); if(!title){ toast('Scrivi un titolo'); return; }
+    const yt=parseYT($('so_y').value);
+    if($('so_y').value.trim() && !yt){ toast('Link YouTube non valido'); return; }
+    const lines=parseLyrics($('so_l').value);
+    if(editing){ Object.assign(s,{title, artist:$('so_a').value.trim(), yt, lines}); }
+    else { const ns={id:uid('sg:'), title, artist:$('so_a').value.trim(), yt, lines}; SONGS.push(ns); id=ns.id; }
+    saveSongs(); closeModal();
+    if(current==='player'){ openPlayer(id); }
+    else renderSongs();
+    toast('Canzone salvata');
+  };
+  if(editing) $('so_del').onclick=()=>delSong(id);
+}
+function delSong(id){
+  const s=SONGS.find(x=>x.id===id); if(!s) return;
+  if(!confirm(`Eliminare “${s.title||'questa canzone'}”?`)) return;
+  SONGS=SONGS.filter(x=>x.id!==id); saveSongs(); closeModal();
+  if(current==='player'){ renderSongs(); show('songs'); } else renderSongs();
+  toast('Canzone eliminata');
+}
+
+/* ---- player + karaoke ---- */
+let ytPlayer=null, curSong=null, rafId=null, lastActive=-1, syncing=false;
+function ensureYT(cb){
+  if(window.YT && window.YT.Player){ cb(); return; }
+  if(!document.getElementById('yt-api')){ const s=document.createElement('script'); s.id='yt-api'; s.src='https://www.youtube.com/iframe_api'; document.head.appendChild(s); }
+  const prev=window.onYouTubeIframeAPIReady;
+  window.onYouTubeIframeAPIReady=()=>{ prev&&prev(); cb(); };
+}
+function buildLyrics(){
+  const box=$('lyrics'); lastActive=-1;
+  if(!curSong.lines.length){ box.innerHTML='<div class="empty">Nessun testo. Tocca ✎ in alto per aggiungerlo.</div>'; return; }
+  box.innerHTML = curSong.lines.map((l,i)=>{
+    const {words,toks}=tokenize(l.jp);
+    const spans = toks.map(t=>`<span class="tok">${esc(t)}</span>`).join(words?' ':'');
+    return `<div class="lyr" data-i="${i}">
+      <div class="ly-jp ${words?'words':''}"><span class="ly-time">${l.t!=null?mmss(l.t):'—'}</span>${spans}</div>
+      ${l.ro?`<div class="ly-ro">${esc(l.ro)}</div>`:''}
+      ${l.it?`<div class="ly-it">${esc(l.it)}</div>`:''}
+    </div>`;
+  }).join('');
+}
+function openPlayer(id){
+  curSong=SONGS.find(s=>s.id===id); if(!curSong) return;
+  if(!Array.isArray(curSong.lines)) curSong.lines=[];
+  $('playerTitle').textContent=curSong.title||'Canzone';
+  syncing=false; $('syncToggle').classList.remove('on'); $('syncHint').hidden=true; $('lyrics').classList.remove('sync');
+  buildLyrics(); show('player');
+  if(!curSong.yt){ if(ytPlayer){ try{ytPlayer.destroy();}catch(e){} ytPlayer=null; } $('ytFrame').outerHTML='<div id="ytFrame"><div class="yt-empty">Nessun video YouTube per questa canzone. Tocca ✎ per aggiungerlo.</div></div>'; return; }
+  ensureYT(()=>{
+    if(ytPlayer && ytPlayer.loadVideoById){ ytPlayer.loadVideoById(curSong.yt); }
+    else {
+      const host=document.getElementById('ytFrame'); if(host) host.innerHTML='';
+      ytPlayer=new YT.Player('ytFrame',{videoId:curSong.yt, playerVars:{playsinline:1, rel:0, modestbranding:1}, events:{}});
+    }
+    startTick();
+  });
+}
+function startTick(){ if(rafId) return; const loop=()=>{ rafId=requestAnimationFrame(loop); if(ytPlayer && ytPlayer.getCurrentTime){ try{ updateHighlight(ytPlayer.getCurrentTime()); }catch(e){} } }; rafId=requestAnimationFrame(loop); }
+function stopTick(){ if(rafId){ cancelAnimationFrame(rafId); rafId=null; } }
+function activeIndexAt(t){ let ai=-1; const L=curSong.lines; for(let i=0;i<L.length;i++){ if(L[i].t!=null && L[i].t<=t+0.02) ai=i; } return ai; }
+function lineDur(i){ const L=curSong.lines, lt=L[i].t; if(lt==null) return 0; for(let j=i+1;j<L.length;j++){ if(L[j].t!=null) return Math.max(.4, L[j].t-lt); } return 4; }
+function clearToks(node){ node && node.querySelectorAll('.tok').forEach(el=>el.classList.remove('done','on')); }
+function updateHighlight(t){
+  if(!curSong) return;
+  const nodes=$('lyrics').children; const ai=activeIndexAt(t);
+  if(ai!==lastActive){
+    if(lastActive>=0 && nodes[lastActive]){ nodes[lastActive].classList.remove('active'); clearToks(nodes[lastActive]); }
+    if(ai>=0 && nodes[ai]){ nodes[ai].classList.add('active'); if(!syncing) nodes[ai].scrollIntoView({block:'center',behavior:'smooth'}); }
+    lastActive=ai;
+  }
+  if(ai>=0 && nodes[ai]){
+    const jp=nodes[ai].querySelector('.ly-jp'); if(!jp) return;
+    const toks=jp.querySelectorAll('.tok'); if(!toks.length) return;
+    const p=Math.max(0,Math.min(1,(t-curSong.lines[ai].t)/lineDur(ai)));
+    const on=Math.min(toks.length-1, Math.floor(p*toks.length));
+    toks.forEach((el,k)=>{ el.classList.toggle('done',k<on); el.classList.toggle('on',k===on); });
+  }
+}
+['tgJp','tgRo','tgIt'].forEach(id=>{ $(id).onclick=()=>{ const b=$(id); b.classList.toggle('on'); $('lyrics').classList.toggle('show-'+b.dataset.ly, b.classList.contains('on')); }; });
+$('syncToggle').onclick=()=>{ syncing=!syncing; $('syncToggle').classList.toggle('on',syncing); $('syncHint').hidden=!syncing; $('lyrics').classList.toggle('sync',syncing); if(syncing) toast('Tocca ogni riga quando parte'); };
+$('lyrics').addEventListener('click',e=>{
+  const lyr=e.target.closest('.lyr'); if(!lyr||!curSong) return; const i=+lyr.dataset.i;
+  if(syncing){
+    const t=(ytPlayer&&ytPlayer.getCurrentTime)?ytPlayer.getCurrentTime():0;
+    curSong.lines[i].t=Math.max(0,Math.round(t*10)/10); saveSongs();
+    const chip=lyr.querySelector('.ly-time'); if(chip) chip.textContent=mmss(curSong.lines[i].t);
+    toast('Riga '+(i+1)+' → '+mmss(curSong.lines[i].t));
+  } else {
+    const lt=curSong.lines[i].t;
+    if(lt!=null && ytPlayer&&ytPlayer.seekTo){ ytPlayer.seekTo(lt,true); ytPlayer.playVideo&&ytPlayer.playVideo(); }
+  }
+});
+$('playerEdit').onclick=()=>{ if(curSong) openSongEditor(curSong.id); };
+$('playerBack').onclick=()=>{ stopTick(); if(ytPlayer&&ytPlayer.pauseVideo){ try{ytPlayer.pauseVideo();}catch(e){} } renderSongs(); show('songs'); };
 
 /* ================= BOOT ================= */
 applyTheme();
