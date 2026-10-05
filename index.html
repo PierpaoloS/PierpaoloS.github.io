@@ -1946,7 +1946,7 @@ function syncPull(manual){
 /* ================= FRASE DEL GIORNO (IA) ================= */
 const AI_KEY='kotoba-ai', PHRASE_KEY='kotoba-phrase';
 let genBusy=false;
-function aiCfg(){ try{ return Object.assign({key:'',model:'gemini-2.0-flash'}, JSON.parse(localStorage.getItem(AI_KEY))||{}); }catch(e){ return {key:'',model:'gemini-2.0-flash'}; } }
+function aiCfg(){ try{ return Object.assign({key:'',model:'gemini-2.0-flash-lite'}, JSON.parse(localStorage.getItem(AI_KEY))||{}); }catch(e){ return {key:'',model:'gemini-2.0-flash-lite'}; } }
 function saveAiCfg(c){ try{ localStorage.setItem(AI_KEY, JSON.stringify(c)); }catch(e){} }
 function loadPhrase(){ try{ return JSON.parse(localStorage.getItem(PHRASE_KEY))||null; }catch(e){ return null; } }
 function savePhrase(p){ try{ localStorage.setItem(PHRASE_KEY, JSON.stringify(p)); }catch(e){} touch(); }
@@ -1996,7 +1996,7 @@ ${list}
 Rispondi SOLO con JSON: jp (frase con kanji dove naturale), kana (stessa frase tutta in kana), romaji, it (traduzione italiana), used (array delle parole del vocabolario usate), grammar (una frase in italiano che spiega la forma/tempo verbale usato).`;
   const body={ contents:[{parts:[{text:prompt}]}], generationConfig:{ temperature:1.1, responseMimeType:'application/json',
     responseSchema:{ type:'OBJECT', properties:{ jp:{type:'STRING'}, kana:{type:'STRING'}, romaji:{type:'STRING'}, it:{type:'STRING'}, used:{type:'ARRAY', items:{type:'STRING'}}, grammar:{type:'STRING'} }, required:['jp','kana','romaji','it'] } } };
-  const candidates=[...new Set([cfg.model, 'gemini-2.0-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash-001', 'gemini-flash-latest'].filter(Boolean))];
+  const candidates=[...new Set([cfg.model, 'gemini-2.0-flash-lite', 'gemini-1.5-flash-8b', 'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite-001', 'gemini-2.0-flash-001', 'gemini-1.5-flash-latest', 'gemini-flash-latest'].filter(Boolean))];
   const isModelErr=(m,s)=> s===404 || /not found|not supported|not available|no longer|does not exist|deprecat|retir|invalid model|unregistered/i.test(m||'');
   const isOverload=(m,s)=> s===429 || s===503 || /overload|high demand|try again|temporar|unavailable|resource.?exhausted|rate.?limit|quota/i.test(m||'');
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -2039,10 +2039,10 @@ function openAiSettings(){
   const c=aiCfg();
   openModal(`<h2>Impostazioni IA (Gemini)</h2>
     <div class="field"><label>Chiave API Gemini</label><input id="ai_key" value="${esc(c.key||'')}" placeholder="Incolla qui la chiave" autocomplete="off" autocapitalize="off" spellcheck="false"><div class="hintline">Gratis da <b>aistudio.google.com/apikey</b> (serve solo un account Google). Resta su questo dispositivo, non viene sincronizzata.</div></div>
-    <div class="field"><label>Modello</label><input id="ai_model" value="${esc(c.model||'gemini-2.0-flash')}"><div class="hintline">Default: gemini-2.0-flash. Se non va, l'app prova da sola altri modelli.</div></div>
+    <div class="field"><label>Modello</label><input id="ai_model" value="${esc(c.model||'gemini-2.0-flash-lite')}"><div class="hintline">Default: gemini-2.0-flash-lite (leggero, quasi sempre libero). Se è occupato, l'app prova da sola altri modelli.</div></div>
     <div class="mdl-actions"><button class="btn" onclick="closeModal()">Chiudi</button><button class="btn primary" id="ai_save">Salva</button></div>`);
   setTimeout(()=>$('ai_key').focus(),60);
-  $('ai_save').onclick=()=>{ const x=aiCfg(); x.key=$('ai_key').value.trim(); x.model=$('ai_model').value.trim()||'gemini-2.0-flash'; saveAiCfg(x); closeModal(); toast('Salvato');
+  $('ai_save').onclick=()=>{ const x=aiCfg(); x.key=$('ai_key').value.trim(); x.model=$('ai_model').value.trim()||'gemini-2.0-flash-lite'; saveAiCfg(x); closeModal(); toast('Salvato');
     if(current==='phrase'){ const p=loadPhrase(); if(p&&p.date===todayStr()) renderPhrase(p); else if(x.key) genPhrase(); else renderPhraseEmpty(true); } };
 }
 $('openPhrase').onclick=openPhrase;
