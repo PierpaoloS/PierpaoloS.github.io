@@ -291,6 +291,37 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
 .synctoggle{display:flex;align-items:center;gap:10px;font-weight:800;font-size:14px;color:var(--ink);padding:8px 4px}
 .synctoggle input{width:22px;height:22px;accent-color:var(--ramune)}
 
+/* ---------- frase del giorno ---------- */
+.phrase-card{background:var(--surface);border-radius:26px;box-shadow:var(--shadow-lg);padding:22px;display:flex;flex-direction:column;gap:11px}
+.ph-jp{font-family:var(--jp);font-weight:700;font-size:26px;line-height:1.5}
+.ph-reading{font-family:var(--jp);font-size:16px;color:var(--muted);font-weight:700}
+.ph-romaji{font-family:var(--display);font-size:16px;color:var(--ramune);font-weight:600}
+.ph-it{font-size:17px;font-weight:700;line-height:1.4}
+.ph-note{font-size:13.5px;color:var(--muted);font-weight:600;background:var(--surface2);border-radius:14px;padding:11px 13px;line-height:1.5}
+.ph-words{display:flex;flex-wrap:wrap;gap:6px}
+.ph-words span{background:var(--yuzu-soft);color:var(--yuzu-ink);border-radius:999px;padding:5px 11px;font-size:14px;font-weight:800;font-family:var(--jp)}
+.ph-date{font-size:12px;color:var(--muted);font-weight:700;margin-top:2px}
+.ph-empty{background:var(--surface);border-radius:26px;box-shadow:var(--shadow);padding:30px 22px;text-align:center;color:var(--muted);font-weight:700;display:flex;flex-direction:column;gap:16px;align-items:center;line-height:1.5}
+.ph-gen{background:var(--learn);color:#fff;border-radius:999px;padding:14px 22px;font-family:var(--display);font-size:17px;font-weight:600;box-shadow:0 12px 24px -12px var(--learn)}
+.ph-spin{width:42px;height:42px;border-radius:50%;border:4px solid var(--line);border-top-color:var(--ramune);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- ripasso lezioni ---------- */
+.gp{background:var(--surface);border-radius:22px;box-shadow:var(--shadow);padding:18px;margin-bottom:12px;display:flex;flex-direction:column;gap:9px}
+.gp-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.gp-pat{font-family:var(--jp);font-weight:700;font-size:22px;color:var(--ramune)}
+.gp-mean{font-weight:800;font-size:14px;color:var(--muted)}
+.gp-struct{font-size:13.5px;font-weight:700;background:var(--surface2);border-radius:12px;padding:8px 12px}
+.gp-ex{border-left:3px solid var(--ramune);padding-left:12px;display:flex;flex-direction:column;gap:2px}
+.gp-jp{font-family:var(--jp);font-weight:700;font-size:19px;line-height:1.5}
+.gp-ro{font-family:var(--display);font-size:14px;color:var(--ramune);font-weight:600}
+.gp-it{font-size:14px;color:var(--muted);font-weight:600}
+.gp-note{font-size:13px;color:var(--muted);font-weight:600;background:var(--surface2);border-radius:12px;padding:9px 12px;line-height:1.5}
+.lvocab{display:flex;flex-direction:column;gap:7px;background:var(--surface);border-radius:18px;box-shadow:var(--shadow);padding:13px 15px}
+.lvocab span{font-size:14px;font-weight:600;color:var(--muted)}
+.lvocab b{font-family:var(--jp);font-weight:700;color:var(--ink);margin-right:8px;font-size:16px}
+.chev{color:var(--muted);font-size:22px;font-weight:700;flex:none}
+
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -318,9 +349,17 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
       <div class="meter" id="kanaMeter"></div>
       <div class="legend" id="kanaLegend"></div>
     </button>
+    <button class="row-btn" id="openPhrase">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8 8 0 0 1-11.6 7.1L4 20l1.4-5.4A8 8 0 1 1 21 11.5z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01"/></svg></span>
+      <span><b>Frase del giorno</b><span id="phraseSub">Una frase al giorno con le tue parole</span></span>
+    </button>
     <button class="row-btn" id="openCards">
       <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span>
       <span><b>Le mie parole</b><span>Crea gruppi e aggiungi le tue parole</span></span>
+    </button>
+    <button class="row-btn" id="openRipasso">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M19 17H6a2 2 0 0 0-2 2"/></svg></span>
+      <span><b>Ripasso lezioni</b><span>Gli appunti delle lezioni, in sintesi</span></span>
     </button>
     <button class="row-btn" id="openSongs">
       <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg></span>
@@ -482,6 +521,37 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
     </div>
     <div class="sync-hint" id="syncHint" hidden>Modalità sincronizza: fai partire il video e <b>tocca ogni riga</b> nel momento in cui inizia. Ritocca quando vuoi. Esci per salvare.</div>
     <div class="lyrics show-jp show-ro show-it" id="lyrics"></div>
+  </section>
+
+  <!-- FRASE DEL GIORNO -->
+  <section class="screen" id="phrase" hidden>
+    <div class="bar">
+      <button class="icon-btn" id="phraseBack" aria-label="Indietro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h1>Frase del giorno</h1>
+      <button class="icon-btn" id="phraseSettings" aria-label="Impostazioni IA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1.5 14h5M9.5 8h5M17.5 16h5"/></svg></button>
+    </div>
+    <div id="phraseBox"></div>
+    <div class="tools" style="margin-top:2px"><button class="tool" id="phraseNew"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 4v4h-4"/></svg>Nuova frase</button></div>
+    <p class="note">Ripeti questa frase durante il giorno — ad alta voce, mentre cammini, prima di dormire. Domani ne arriva una nuova con parole diverse e tempi verbali diversi.</p>
+  </section>
+
+  <!-- RIPASSO (elenco lezioni) -->
+  <section class="screen" id="ripasso" hidden>
+    <div class="bar">
+      <button class="icon-btn" id="ripassoBack" aria-label="Indietro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h1>Ripasso lezioni</h1>
+    </div>
+    <div id="lessonsBox"></div>
+    <p class="note">Gli appunti delle tue lezioni in sintesi: grammatica, esempi e parole chiave, per un ripasso veloce. Mandami nuovi PDF e aggiungo altre lezioni.</p>
+  </section>
+
+  <!-- LEZIONE (appunti) -->
+  <section class="screen" id="lesson" hidden>
+    <div class="bar">
+      <button class="icon-btn" id="lessonBack" aria-label="Indietro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h1 id="lessonTitle" style="font-size:18px">Ripasso</h1>
+    </div>
+    <div id="lessonBox"></div>
   </section>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -1128,6 +1198,69 @@ function romaji(str){
 }
 
 /* ================= BUILD ITEMS ================= */
+/* parole aggiunte dalle lezioni (blocco "Parole lezioni") */
+const RAW_LESSON = `
+#Lezioni A1
+有名な|ゆうめいな|famoso (na-agg.)
+巻|かん|volume (di un'opera)
+フィギュア||figure (statuetta da collezione)
+好きな|すきな|preferito (na-agg.)
+読む|よむ|leggere
+おいしい||buono, delizioso
+仕事|しごと|lavoro
+リモートワーカー||lavoratore da remoto
+生徒|せいと|studente, allievo
+出かける|でかける|uscire, andare in giro
+切符|きっぷ|biglietto (del treno)
+から||da, a partire da (particella)
+お願いした|おねがいした|ho chiesto (un favore)
+肉|にく|carne
+昨日|きのう|ieri
+雨|あめ|pioggia
+晴れ|はれ|sereno, bel tempo
+曇り|くもり|nuvoloso
+では||allora, dunque
+話します|はなします|parlare (parlo)
+や||e (elenco: ～や～)
+できます||potere, riuscire (posso)
+袋|ふくろ|sacchetto, busta
+仕事をする|しごとをする|lavorare
+ノートをとる||prendere appunti
+味|あじ|sapore, gusto
+トマト||pomodoro
+勉強|べんきょう|studio
+怖い|こわい|spaventoso, che fa paura
+料理|りょうり|cucina, piatto
+か||o, oppure; particella interrogativa
+飲み物|のみもの|bevanda
+店|みせ|negozio
+さくらんぼ||ciliegia
+`;
+
+/* appunti per il ripasso (una lezione per oggetto) */
+const LESSONS = [
+ { id:'a1-01', title:'A1 · 01', sub:'Grammatica 1–5 · です e forme base',
+   points:[
+    {pat:'〜は〜です', mean:'A è B', struct:'Nome は + Nome + です', jp:'ここは東京駅です。', ro:'Koko wa Tōkyō-eki desu.', it:'Questa è la stazione di Tokyo.', note:'は segna il tema (di cosa parli), です chiude la frase in modo cortese.'},
+    {pat:'〜じゃありません', mean:'A non è B', struct:'Nome は + Nome + じゃありません', jp:'これは私のかばんじゃありません。', ro:'Kore wa watashi no kaban ja arimasen.', it:'Questa non è la mia borsa.', note:'Forma negativa di です: です → じゃありません. L\'ordine non cambia.'},
+    {pat:'〜でした', mean:'A era B', struct:'Nome は + Nome + でした', jp:'昨日は雨でした。', ro:'Kinō wa ame deshita.', it:'Ieri è piovuto (era pioggia).', note:'Passato di です: です → でした.'},
+    {pat:'〜ではありませんでした', mean:'A non era B', struct:'Nome は + Nome + ではありませんでした', jp:'部屋はきれいではありませんでした。', ro:'Heya wa kirei dewa arimasen deshita.', it:'La stanza non era pulita.', note:'Negativo + passato: prima il negativo, poi でした.'},
+    {pat:'〜も', mean:'anche', struct:'Nome も + … です  (も al posto di は)', jp:'これも五百円です。', ro:'Kore mo gohyaku-en desu.', it:'Anche questo costa 500 yen.', note:'も sostituisce は per dire "anche questo".'}
+   ],
+   vocab:[['ここ','qui, questo posto'],['東京','Tokyo'],['駅','stazione'],['これ','questo'],['私','io'],['かばん','borsa'],['の','di (possessivo)'],['昨日','ieri'],['雨','pioggia'],['部屋','stanza'],['きれい','pulito, bello'],['五百','cinquecento'],['円','yen'],['かさ','ombrello'],['学生','studente']]
+ },
+ { id:'a1-02', title:'A1 · 02', sub:'Grammatica 6–10 · dimostrativi e だれ',
+   points:[
+    {pat:'〜の', mean:'di / possesso', struct:'Nome(proprietario) + の + Nome(cosa)', jp:'これは私のかばんです。', ro:'Kore wa watashi no kaban desu.', it:'Questa è la mia borsa.', note:'Il proprietario viene prima: 私のほん = "il mio libro".'},
+    {pat:'これ・それ・あれ', mean:'questo / quello / quello là (da soli)', struct:'stanno da soli, senza nome dopo', jp:'それは私のかさです。', ro:'Sore wa watashi no kasa desu.', it:'Quello è il mio ombrello.', note:'これ = vicino a me · それ = vicino a te · あれ = lontano da entrambi.'},
+    {pat:'この・その・あの', mean:'questo / quel + Nome', struct:'この / その / あの + Nome', jp:'あの人は山田さんです。', ro:'Ano hito wa Yamada-san desu.', it:'Quella persona (là) è il signor Yamada.', note:'Hanno SEMPRE un nome subito dopo.'},
+    {pat:'ここ・そこ・あそこ', mean:'qui / lì / laggiù (luoghi)', struct:'Nome は + ここ / そこ / あそこ + です', jp:'トイレはあそこです。', ro:'Toire wa asoko desu.', it:'Il bagno è laggiù.', note:'ここ = dove sono io · そこ = dove sei tu · あそこ = lontano da entrambi.'},
+    {pat:'だれ', mean:'chi?', struct:'… は + だれ + ですか', jp:'あの人はだれですか。', ro:'Ano hito wa dare desu ka.', it:'Chi è quella persona?', note:'だれ va al posto della persona; か chiude la domanda. どなた è più cortese.'}
+   ],
+   vocab:[['の','di (possessivo)'],['これ','questo (vicino a me)'],['それ','quello (vicino a te)'],['あれ','quello là'],['この〜','questo~ (+ nome)'],['その〜','quel~ (+ nome)'],['あの〜','quel~ là (+ nome)'],['ここ','qui'],['そこ','lì'],['あそこ','laggiù'],['人','persona'],['〜さん','sig. / sig.ra'],['トイレ','bagno'],['だれ','chi'],['か','(particella domanda)'],['本','libro'],['日本語','giapponese (lingua)'],['ホテル','hotel']]
+ }
+];
+
 const ITEMS = [], BLOCKS = [];
 let WORDS = [], BUILTIN_BLOCKS = [];
 const KANA_BASE = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん';
@@ -1144,6 +1277,14 @@ function buildItems(){
     if(line[0]==='#'){ theme=line.slice(1); return; }
     const f=line.split('|'), jp=f[0], kana=f[1]||f[0];
     ITEMS.push({id:'w:'+jp, d:'w', b:block, theme, jp, kana, ro:f[3]||romaji(kana), it:f[2]});
+  });
+  // parole dalle lezioni (blocco dedicato, id 'wl:' per non collidere con i built-in)
+  let lt='Lezioni A1'; const lb=BLOCKS.push('Parole lezioni')-1;
+  RAW_LESSON.trim().split('\n').forEach(line=>{
+    line=line.trim(); if(!line) return;
+    if(line[0]==='#'){ lt=line.slice(1); return; }
+    const f=line.split('|'), jp=f[0], kana=f[1]||f[0];
+    ITEMS.push({id:'wl:'+jp, d:'w', b:lb, theme:lt, jp, kana, ro:f[3]||romaji(kana), it:f[2]});
   });
   BUILTIN_BLOCKS = [...BLOCKS];
   // le mie parole (gruppi e card aggiunti dall'utente)
@@ -1226,7 +1367,7 @@ $('themeBtn').onclick=()=>{
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{ if(themeMode==='auto') applyTheme(); });
 
 /* ================= NAV ================= */
-const screens=['home','setup','study','done','list','cards','songs','player'];
+const screens=['home','setup','study','done','list','cards','songs','player','phrase','ripasso','lesson'];
 let current='home';
 function show(name){ screens.forEach(s=>$(s).hidden = s!==name); current=name; window.scrollTo(0,0); }
 
@@ -1242,6 +1383,7 @@ function renderHome(){
   $('wordsSub').textContent = `${cw.vis} parole · ${BLOCKS.length} blocchi`;
   $('kanaSub').textContent = `${nk} kana · ${nj} kanji`;
   meter($('wordsMeter'),$('wordsLegend'),cw); meter($('kanaMeter'),$('kanaLegend'),ck);
+  const ps=$('phraseSub'); if(ps){ const p=loadPhrase(); ps.textContent = (p&&p.date===todayStr()&&p.jp) ? p.jp : 'Una frase al giorno con le tue parole'; }
 }
 $('deckWords').onclick=()=>{ prefs.deck='w'; savePrefs(); renderSetup(); show('setup'); };
 $('deckKana').onclick=()=>{ prefs.deck='kk'; savePrefs(); renderSetup(); show('setup'); };
@@ -1758,7 +1900,7 @@ function saveSyncCfg(c){ try{ localStorage.setItem(SYNC_KEY, JSON.stringify(c));
 function localUpdated(){ return +localStorage.getItem(UPD_KEY)||0; }
 function touch(){ try{ localStorage.setItem(UPD_KEY, String(Date.now())); }catch(e){} if(applyingRemote) return; const c=syncCfg(); if(c.auto && c.url && c.code){ clearTimeout(pushTimer); pushTimer=setTimeout(()=>syncPush(false), 1500); } }
 function syncEndpoint(c){ const code=String(c.code).trim().replace(/[.#$/\[\]\s]/g,'_'); return c.url.replace(/\/+$/,'') + '/sync/' + encodeURIComponent(code) + '.json'; }
-function snapshot(){ return {app:'kotoba-swipe', v:1, updatedAt: localUpdated()||Date.now(), s:state.s, custom:CUSTOM, songs:SONGS}; }
+function snapshot(){ return {app:'kotoba-swipe', v:1, updatedAt: localUpdated()||Date.now(), s:state.s, custom:CUSTOM, songs:SONGS, phrase:loadPhrase()}; }
 function applySnapshot(d){
   if(!d || typeof d.s!=='object' || Array.isArray(d.s)) return false;
   const s={}; Object.entries(d.s).forEach(([k,v])=>{ if(['k','l','h'].includes(v)) s[k]=v; });
@@ -1766,9 +1908,11 @@ function applySnapshot(d){
   try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){}
   if(d.custom && Array.isArray(d.custom.blocks) && Array.isArray(d.custom.words)){ CUSTOM=d.custom; try{ localStorage.setItem(CUSTOM_KEY, JSON.stringify(CUSTOM)); }catch(e){} }
   if(Array.isArray(d.songs)){ SONGS=d.songs.map(x=>({lines:[],artist:'',...x})); try{ localStorage.setItem(SONGS_KEY, JSON.stringify(SONGS)); }catch(e){} }
+  if(d.phrase && d.phrase.jp){ try{ localStorage.setItem('kotoba-phrase', JSON.stringify(d.phrase)); }catch(e){} }
   try{ localStorage.setItem(UPD_KEY, String(d.updatedAt||Date.now())); }catch(e){}
   buildItems(); renderHome();
   if(current==='list') renderList(); else if(current==='cards') renderCards(); else if(current==='songs') renderSongs();
+  else if(current==='phrase'){ const pp=loadPhrase(); if(pp && pp.date===todayStr()) renderPhrase(pp); }
   return true;
 }
 function syncPush(manual){
@@ -1796,6 +1940,119 @@ function syncPull(manual){
   $('syncPullBtn').onclick=()=>syncPull(true);
   $('syncPushBtn').onclick=()=>syncPush(true);
 })();
+
+/* ================= FRASE DEL GIORNO (IA) ================= */
+const AI_KEY='kotoba-ai', PHRASE_KEY='kotoba-phrase';
+let genBusy=false;
+function aiCfg(){ try{ return Object.assign({key:'',model:'gemini-2.5-flash'}, JSON.parse(localStorage.getItem(AI_KEY))||{}); }catch(e){ return {key:'',model:'gemini-2.5-flash'}; } }
+function saveAiCfg(c){ try{ localStorage.setItem(AI_KEY, JSON.stringify(c)); }catch(e){} }
+function loadPhrase(){ try{ return JSON.parse(localStorage.getItem(PHRASE_KEY))||null; }catch(e){ return null; } }
+function savePhrase(p){ try{ localStorage.setItem(PHRASE_KEY, JSON.stringify(p)); }catch(e){} touch(); }
+function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
+function renderPhrase(p){
+  const words=(p.used||[]).map(w=>`<span>${esc(w)}</span>`).join('');
+  $('phraseBox').innerHTML=`<div class="phrase-card">
+    <div class="ph-jp jp">${esc(p.jp)}</div>
+    ${p.kana && p.kana!==p.jp ? `<div class="ph-reading jp">${esc(p.kana)}</div>` : ''}
+    ${p.romaji ? `<div class="ph-romaji">${esc(p.romaji)}</div>` : ''}
+    ${p.it ? `<div class="ph-it">${esc(p.it)}</div>` : ''}
+    ${p.grammar ? `<div class="ph-note">💡 ${esc(p.grammar)}</div>` : ''}
+    ${words ? `<div class="ph-words">${words}</div>` : ''}
+    <div class="ph-date">Frase di oggi · ${esc(p.date)}</div>
+  </div>`;
+}
+function renderPhraseEmpty(needKey){
+  $('phraseBox').innerHTML=`<div class="ph-empty">
+    ${needKey ? '<div>Per generare la frase serve la chiave IA (Gemini, gratis).</div><button class="ph-gen" id="phKeyBtn">Imposta la chiave</button>'
+              : '<div>Nessuna frase per oggi.</div><button class="ph-gen" id="phGenBtn">✨ Genera la frase di oggi</button>'}
+  </div>`;
+  if(needKey){ $('phKeyBtn').onclick=openAiSettings; } else { $('phGenBtn').onclick=genPhrase; }
+}
+function renderPhraseLoading(){ $('phraseBox').innerHTML=`<div class="ph-empty"><div class="ph-spin"></div><div>Sto creando la frase di oggi…</div></div>`; }
+function openPhrase(){
+  show('phrase');
+  const p=loadPhrase();
+  if(p && p.date===todayStr()){ renderPhrase(p); return; }
+  if(aiCfg().key){ genPhrase(); } else { renderPhraseEmpty(true); }
+}
+function pickWords(n){
+  let pool=WORDS.filter(w=>st(w.id)!=='h'); if(!pool.length) pool=WORDS.slice();
+  for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+  return pool.slice(0, Math.min(n, pool.length));
+}
+function genPhrase(){
+  if(genBusy) return;
+  const cfg=aiCfg(); if(!cfg.key){ renderPhraseEmpty(true); return; }
+  const words=pickWords(18); if(!words.length){ toast('Nessuna parola disponibile'); return; }
+  genBusy=true; renderPhraseLoading();
+  const list=words.map(w=>`- ${w.jp}${w.kana&&w.kana!==w.jp?' ['+w.kana+']':''} = ${w.it}`).join('\n');
+  const prompt=`Sei un insegnante di giapponese. Scrivi UNA sola frase in giapponese, naturale e di senso compiuto, adatta a chi studia (livello principiante/intermedio).
+Usa il più possibile queste parole del mio vocabolario; puoi aggiungere particelle e poche parole di collegamento se serve. Varia la forma e il tempo verbale (presente, passato, forma て, negativo, volitivo, potenziale, ecc.) per allenare la flessibilità.
+Parole (giapponese [lettura] = italiano):
+${list}
+Rispondi SOLO con JSON: jp (frase con kanji dove naturale), kana (stessa frase tutta in kana), romaji, it (traduzione italiana), used (array delle parole del vocabolario usate), grammar (una frase in italiano che spiega la forma/tempo verbale usato).`;
+  const body={ contents:[{parts:[{text:prompt}]}], generationConfig:{ temperature:1.1, responseMimeType:'application/json',
+    responseSchema:{ type:'OBJECT', properties:{ jp:{type:'STRING'}, kana:{type:'STRING'}, romaji:{type:'STRING'}, it:{type:'STRING'}, used:{type:'ARRAY', items:{type:'STRING'}}, grammar:{type:'STRING'} }, required:['jp','kana','romaji','it'] } } };
+  const model=cfg.model||'gemini-2.5-flash';
+  fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(cfg.key)}`,
+    {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)})
+    .then(r=>r.json().then(j=>({ok:r.ok,j})))
+    .then(({ok,j})=>{
+      if(!ok) throw new Error((j&&j.error&&j.error.message)||('HTTP '+(j&&j.error&&j.error.code||'')));
+      const txt=j&&j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts&&j.candidates[0].content.parts[0]&&j.candidates[0].content.parts[0].text;
+      if(!txt) throw new Error('risposta vuota (contenuto bloccato?)');
+      let d; try{ d=JSON.parse(txt); }catch(e){ const m=txt.match(/\{[\s\S]*\}/); d=m?JSON.parse(m[0]):null; }
+      if(!d||!d.jp) throw new Error('formato risposta non valido');
+      const p={ date:todayStr(), jp:d.jp, kana:d.kana||d.jp, romaji:d.romaji||romaji(d.kana||d.jp), it:d.it||'', used:Array.isArray(d.used)?d.used:[], grammar:d.grammar||'' };
+      savePhrase(p); genBusy=false; renderPhrase(p); if(current==='home') renderHome();
+    })
+    .catch(err=>{ genBusy=false; renderPhraseEmpty(false); toast('IA: '+((err&&err.message)||'errore di rete')); });
+}
+function openAiSettings(){
+  const c=aiCfg();
+  openModal(`<h2>Impostazioni IA (Gemini)</h2>
+    <div class="field"><label>Chiave API Gemini</label><input id="ai_key" value="${esc(c.key||'')}" placeholder="Incolla qui la chiave" autocomplete="off" autocapitalize="off" spellcheck="false"><div class="hintline">Gratis da <b>aistudio.google.com/apikey</b> (serve solo un account Google). Resta su questo dispositivo, non viene sincronizzata.</div></div>
+    <div class="field"><label>Modello</label><input id="ai_model" value="${esc(c.model||'gemini-2.5-flash')}"><div class="hintline">Default: gemini-2.5-flash. Cambialo solo se necessario.</div></div>
+    <div class="mdl-actions"><button class="btn" onclick="closeModal()">Chiudi</button><button class="btn primary" id="ai_save">Salva</button></div>`);
+  setTimeout(()=>$('ai_key').focus(),60);
+  $('ai_save').onclick=()=>{ const x=aiCfg(); x.key=$('ai_key').value.trim(); x.model=$('ai_model').value.trim()||'gemini-2.5-flash'; saveAiCfg(x); closeModal(); toast('Salvato');
+    if(current==='phrase'){ const p=loadPhrase(); if(p&&p.date===todayStr()) renderPhrase(p); else if(x.key) genPhrase(); else renderPhraseEmpty(true); } };
+}
+$('openPhrase').onclick=openPhrase;
+$('phraseBack').onclick=()=>{ renderHome(); show('home'); };
+$('phraseSettings').onclick=openAiSettings;
+$('phraseNew').onclick=()=>{ if(aiCfg().key) genPhrase(); else openAiSettings(); };
+
+/* ================= RIPASSO LEZIONI ================= */
+const IC_BOOK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M19 17H6a2 2 0 0 0-2 2"/></svg>';
+function renderRipasso(){
+  $('lessonsBox').innerHTML = LESSONS.length ? `<div class="card-list">`+LESSONS.map(l=>`
+    <div class="crow" data-lesson="${esc(l.id)}" style="cursor:pointer">
+      <span class="rid">${IC_BOOK}</span>
+      <div class="w"><b>${esc(l.title)}</b><small>${esc(l.sub)}</small></div>
+      <span class="chev">›</span>
+    </div>`).join('')+`</div>` : `<div class="cards-empty">Ancora nessuna lezione.</div>`;
+}
+function renderLesson(l){
+  $('lessonTitle').textContent='Ripasso · '+l.title;
+  let html=`<p class="note" style="margin:0 0 4px">${esc(l.sub)}</p>`;
+  html += (l.points||[]).map(p=>`
+    <div class="gp">
+      <div class="gp-top"><span class="gp-pat jp">${esc(p.pat)}</span><span class="gp-mean">${esc(p.mean)}</span></div>
+      <div class="gp-struct">${esc(p.struct)}</div>
+      <div class="gp-ex"><div class="gp-jp jp">${esc(p.jp)}</div><div class="gp-ro">${esc(p.ro)}</div><div class="gp-it">${esc(p.it)}</div></div>
+      ${p.note?`<div class="gp-note">💡 ${esc(p.note)}</div>`:''}
+    </div>`).join('');
+  if(l.vocab && l.vocab.length){
+    html += `<p class="label" style="margin-top:14px">Parole chiave</p><div class="lvocab">`+l.vocab.map(v=>`<span><b class="jp">${esc(v[0])}</b>${esc(v[1])}</span>`).join('')+`</div>`;
+  }
+  $('lessonBox').innerHTML=html; $('lessonBox').scrollTop=0;
+}
+$('openRipasso').onclick=()=>{ renderRipasso(); show('ripasso'); };
+$('ripassoBack').onclick=()=>{ renderHome(); show('home'); };
+$('lessonBack').onclick=()=>{ show('ripasso'); };
+$('lessonsBox').addEventListener('click',e=>{ const r=e.target.closest('[data-lesson]'); if(!r) return; const l=LESSONS.find(x=>x.id===r.dataset.lesson); if(l){ renderLesson(l); show('lesson'); } });
 
 /* ================= BOOT ================= */
 applyTheme();
