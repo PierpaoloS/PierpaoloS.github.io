@@ -310,6 +310,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
 .gp{background:var(--surface);border-radius:22px;box-shadow:var(--shadow);padding:18px;margin-bottom:12px;display:flex;flex-direction:column;gap:9px}
 .gp-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .gp-pat{font-family:var(--jp);font-weight:700;font-size:22px;color:var(--ramune)}
+.gp-pat-ro{font-family:var(--display);font-weight:600;font-size:14px;color:var(--ramune);opacity:.85}
 .gp-mean{font-weight:800;font-size:14px;color:var(--muted)}
 .gp-struct{font-size:13.5px;font-weight:700;background:var(--surface2);border-radius:12px;padding:8px 12px}
 .gp-ex{border-left:3px solid var(--ramune);padding-left:12px;display:flex;flex-direction:column;gap:2px}
@@ -320,6 +321,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
 .lvocab{display:flex;flex-direction:column;gap:7px;background:var(--surface);border-radius:18px;box-shadow:var(--shadow);padding:13px 15px}
 .lvocab span{font-size:14px;font-weight:600;color:var(--muted)}
 .lvocab b{font-family:var(--jp);font-weight:700;color:var(--ink);margin-right:8px;font-size:16px}
+.lvocab .lv-ro{font-family:var(--display);font-style:normal;color:var(--ramune);font-weight:600;margin-right:8px}
 .chev{color:var(--muted);font-size:22px;font-weight:700;flex:none}
 
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
@@ -1241,23 +1243,23 @@ const RAW_LESSON = `
 const LESSONS = [
  { id:'a1-01', title:'A1 · 01', sub:'Grammatica 1–5 · です e forme base',
    points:[
-    {pat:'〜は〜です', mean:'A è B', struct:'Nome は + Nome + です', jp:'ここは東京駅です。', ro:'Koko wa Tōkyō-eki desu.', it:'Questa è la stazione di Tokyo.', note:'は segna il tema (di cosa parli), です chiude la frase in modo cortese.'},
-    {pat:'〜じゃありません', mean:'A non è B', struct:'Nome は + Nome + じゃありません', jp:'これは私のかばんじゃありません。', ro:'Kore wa watashi no kaban ja arimasen.', it:'Questa non è la mia borsa.', note:'Forma negativa di です: です → じゃありません. L\'ordine non cambia.'},
-    {pat:'〜でした', mean:'A era B', struct:'Nome は + Nome + でした', jp:'昨日は雨でした。', ro:'Kinō wa ame deshita.', it:'Ieri è piovuto (era pioggia).', note:'Passato di です: です → でした.'},
-    {pat:'〜ではありませんでした', mean:'A non era B', struct:'Nome は + Nome + ではありませんでした', jp:'部屋はきれいではありませんでした。', ro:'Heya wa kirei dewa arimasen deshita.', it:'La stanza non era pulita.', note:'Negativo + passato: prima il negativo, poi でした.'},
-    {pat:'〜も', mean:'anche', struct:'Nome も + … です  (も al posto di は)', jp:'これも五百円です。', ro:'Kore mo gohyaku-en desu.', it:'Anche questo costa 500 yen.', note:'も sostituisce は per dire "anche questo".'}
+    {pat:'〜は〜です', patRo:'~wa ~desu', mean:'A è B', struct:'Nome + は (wa) + Nome + です (desu)', jp:'ここは東京駅です。', ro:'Koko wa Tōkyō-eki desu.', it:'Questa è la stazione di Tokyo.', note:'は (wa) segna il tema (di cosa parli), です (desu) chiude la frase in modo cortese.'},
+    {pat:'〜じゃありません', patRo:'~ja arimasen', mean:'A non è B', struct:'Nome + は (wa) + Nome + じゃありません (ja arimasen)', jp:'これは私のかばんじゃありません。', ro:'Kore wa watashi no kaban ja arimasen.', it:'Questa non è la mia borsa.', note:'Forma negativa di です (desu): です → じゃありません (desu → ja arimasen). L\'ordine non cambia.'},
+    {pat:'〜でした', patRo:'~deshita', mean:'A era B', struct:'Nome + は (wa) + Nome + でした (deshita)', jp:'昨日は雨でした。', ro:'Kinō wa ame deshita.', it:'Ieri è piovuto (era pioggia).', note:'Passato di です (desu): です → でした (desu → deshita).'},
+    {pat:'〜ではありませんでした', patRo:'~dewa arimasen deshita', mean:'A non era B', struct:'Nome + は (wa) + Nome + ではありませんでした (dewa arimasen deshita)', jp:'部屋はきれいではありませんでした。', ro:'Heya wa kirei dewa arimasen deshita.', it:'La stanza non era pulita.', note:'Negativo + passato: prima il negativo, poi でした (deshita).'},
+    {pat:'〜も', patRo:'~mo', mean:'anche', struct:'Nome + も (mo) + … + です (desu)  —  も al posto di は', jp:'これも五百円です。', ro:'Kore mo gohyaku-en desu.', it:'Anche questo costa 500 yen.', note:'も (mo) sostituisce は (wa) per dire «anche questo».'}
    ],
-   vocab:[['ここ','qui, questo posto'],['東京','Tokyo'],['駅','stazione'],['これ','questo'],['私','io'],['かばん','borsa'],['の','di (possessivo)'],['昨日','ieri'],['雨','pioggia'],['部屋','stanza'],['きれい','pulito, bello'],['五百','cinquecento'],['円','yen'],['かさ','ombrello'],['学生','studente']]
+   vocab:[['ここ','koko','qui, questo posto'],['東京','Tōkyō','Tokyo'],['駅','eki','stazione'],['これ','kore','questo'],['私','watashi','io'],['かばん','kaban','borsa'],['の','no','di (possessivo)'],['昨日','kinō','ieri'],['雨','ame','pioggia'],['部屋','heya','stanza'],['きれい','kirei','pulito, bello'],['五百','gohyaku','cinquecento'],['円','en','yen'],['かさ','kasa','ombrello'],['学生','gakusei','studente']]
  },
- { id:'a1-02', title:'A1 · 02', sub:'Grammatica 6–10 · dimostrativi e だれ',
+ { id:'a1-02', title:'A1 · 02', sub:'Grammatica 6–10 · dimostrativi e だれ (dare)',
    points:[
-    {pat:'〜の', mean:'di / possesso', struct:'Nome(proprietario) + の + Nome(cosa)', jp:'これは私のかばんです。', ro:'Kore wa watashi no kaban desu.', it:'Questa è la mia borsa.', note:'Il proprietario viene prima: 私のほん = "il mio libro".'},
-    {pat:'これ・それ・あれ', mean:'questo / quello / quello là (da soli)', struct:'stanno da soli, senza nome dopo', jp:'それは私のかさです。', ro:'Sore wa watashi no kasa desu.', it:'Quello è il mio ombrello.', note:'これ = vicino a me · それ = vicino a te · あれ = lontano da entrambi.'},
-    {pat:'この・その・あの', mean:'questo / quel + Nome', struct:'この / その / あの + Nome', jp:'あの人は山田さんです。', ro:'Ano hito wa Yamada-san desu.', it:'Quella persona (là) è il signor Yamada.', note:'Hanno SEMPRE un nome subito dopo.'},
-    {pat:'ここ・そこ・あそこ', mean:'qui / lì / laggiù (luoghi)', struct:'Nome は + ここ / そこ / あそこ + です', jp:'トイレはあそこです。', ro:'Toire wa asoko desu.', it:'Il bagno è laggiù.', note:'ここ = dove sono io · そこ = dove sei tu · あそこ = lontano da entrambi.'},
-    {pat:'だれ', mean:'chi?', struct:'… は + だれ + ですか', jp:'あの人はだれですか。', ro:'Ano hito wa dare desu ka.', it:'Chi è quella persona?', note:'だれ va al posto della persona; か chiude la domanda. どなた è più cortese.'}
+    {pat:'〜の', patRo:'~no', mean:'di / possesso', struct:'Nome (proprietario) + の (no) + Nome (cosa)', jp:'これは私のかばんです。', ro:'Kore wa watashi no kaban desu.', it:'Questa è la mia borsa.', note:'Il proprietario viene prima: 私のほん (watashi no hon) = «il mio libro».'},
+    {pat:'これ・それ・あれ', patRo:'kore · sore · are', mean:'questo / quello / quello là (da soli)', struct:'Stanno da soli, senza nome dopo', jp:'それは私のかさです。', ro:'Sore wa watashi no kasa desu.', it:'Quello è il mio ombrello.', note:'これ (kore) = vicino a me · それ (sore) = vicino a te · あれ (are) = lontano da entrambi.'},
+    {pat:'この・その・あの', patRo:'kono · sono · ano', mean:'questo / quel + Nome', struct:'この / その / あの (kono/sono/ano) + Nome', jp:'あの人は山田さんです。', ro:'Ano hito wa Yamada-san desu.', it:'Quella persona (là) è il signor Yamada.', note:'Hanno SEMPRE un nome subito dopo.'},
+    {pat:'ここ・そこ・あそこ', patRo:'koko · soko · asoko', mean:'qui / lì / laggiù (luoghi)', struct:'Nome + は (wa) + ここ / そこ / あそこ (koko/soko/asoko) + です (desu)', jp:'トイレはあそこです。', ro:'Toire wa asoko desu.', it:'Il bagno è laggiù.', note:'ここ (koko) = dove sono io · そこ (soko) = dove sei tu · あそこ (asoko) = lontano da entrambi.'},
+    {pat:'だれ', patRo:'dare', mean:'chi?', struct:'… + は (wa) + だれ (dare) + ですか (desu ka)', jp:'あの人はだれですか。', ro:'Ano hito wa dare desu ka.', it:'Chi è quella persona?', note:'だれ (dare) va al posto della persona; か (ka) chiude la domanda. どなた (donata) è più cortese.'}
    ],
-   vocab:[['の','di (possessivo)'],['これ','questo (vicino a me)'],['それ','quello (vicino a te)'],['あれ','quello là'],['この〜','questo~ (+ nome)'],['その〜','quel~ (+ nome)'],['あの〜','quel~ là (+ nome)'],['ここ','qui'],['そこ','lì'],['あそこ','laggiù'],['人','persona'],['〜さん','sig. / sig.ra'],['トイレ','bagno'],['だれ','chi'],['か','(particella domanda)'],['本','libro'],['日本語','giapponese (lingua)'],['ホテル','hotel']]
+   vocab:[['の','no','di (possessivo)'],['これ','kore','questo (vicino a me)'],['それ','sore','quello (vicino a te)'],['あれ','are','quello là'],['この〜','kono~','questo~ (+ nome)'],['その〜','sono~','quel~ (+ nome)'],['あの〜','ano~','quel~ là (+ nome)'],['ここ','koko','qui'],['そこ','soko','lì'],['あそこ','asoko','laggiù'],['人','hito','persona'],['〜さん','~san','sig. / sig.ra'],['トイレ','toire','bagno'],['だれ','dare','chi'],['か','ka','(particella domanda)'],['本','hon','libro'],['日本語','nihongo','giapponese (lingua)'],['ホテル','hoteru','hotel']]
  }
 ];
 
@@ -1944,7 +1946,7 @@ function syncPull(manual){
 /* ================= FRASE DEL GIORNO (IA) ================= */
 const AI_KEY='kotoba-ai', PHRASE_KEY='kotoba-phrase';
 let genBusy=false;
-function aiCfg(){ try{ return Object.assign({key:'',model:'gemini-2.5-flash'}, JSON.parse(localStorage.getItem(AI_KEY))||{}); }catch(e){ return {key:'',model:'gemini-2.5-flash'}; } }
+function aiCfg(){ try{ return Object.assign({key:'',model:'gemini-2.0-flash'}, JSON.parse(localStorage.getItem(AI_KEY))||{}); }catch(e){ return {key:'',model:'gemini-2.0-flash'}; } }
 function saveAiCfg(c){ try{ localStorage.setItem(AI_KEY, JSON.stringify(c)); }catch(e){} }
 function loadPhrase(){ try{ return JSON.parse(localStorage.getItem(PHRASE_KEY))||null; }catch(e){ return null; } }
 function savePhrase(p){ try{ localStorage.setItem(PHRASE_KEY, JSON.stringify(p)); }catch(e){} touch(); }
@@ -1981,7 +1983,7 @@ function pickWords(n){
   for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
   return pool.slice(0, Math.min(n, pool.length));
 }
-function genPhrase(){
+async function genPhrase(){
   if(genBusy) return;
   const cfg=aiCfg(); if(!cfg.key){ renderPhraseEmpty(true); return; }
   const words=pickWords(18); if(!words.length){ toast('Nessuna parola disponibile'); return; }
@@ -1994,29 +1996,34 @@ ${list}
 Rispondi SOLO con JSON: jp (frase con kanji dove naturale), kana (stessa frase tutta in kana), romaji, it (traduzione italiana), used (array delle parole del vocabolario usate), grammar (una frase in italiano che spiega la forma/tempo verbale usato).`;
   const body={ contents:[{parts:[{text:prompt}]}], generationConfig:{ temperature:1.1, responseMimeType:'application/json',
     responseSchema:{ type:'OBJECT', properties:{ jp:{type:'STRING'}, kana:{type:'STRING'}, romaji:{type:'STRING'}, it:{type:'STRING'}, used:{type:'ARRAY', items:{type:'STRING'}}, grammar:{type:'STRING'} }, required:['jp','kana','romaji','it'] } } };
-  const model=cfg.model||'gemini-2.5-flash';
-  fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(cfg.key)}`,
-    {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)})
-    .then(r=>r.json().then(j=>({ok:r.ok,j})))
-    .then(({ok,j})=>{
-      if(!ok) throw new Error((j&&j.error&&j.error.message)||('HTTP '+(j&&j.error&&j.error.code||'')));
+  const candidates=[...new Set([cfg.model, 'gemini-2.0-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash-001', 'gemini-flash-latest'].filter(Boolean))];
+  const isModelErr=(m,s)=> s===404 || /model|not found|not supported|not available|no longer|does not exist|deprecat|retir/i.test(m||'');
+  let lastErr='errore di rete';
+  for(const model of candidates){
+    try{
+      const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(cfg.key)}`,
+        {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+      const j=await r.json().catch(()=>null);
+      if(!r.ok){ const msg=(j&&j.error&&j.error.message)||('HTTP '+r.status); if(isModelErr(msg,r.status)){ lastErr=msg; continue; } throw new Error(msg); }
       const txt=j&&j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts&&j.candidates[0].content.parts[0]&&j.candidates[0].content.parts[0].text;
       if(!txt) throw new Error('risposta vuota (contenuto bloccato?)');
       let d; try{ d=JSON.parse(txt); }catch(e){ const m=txt.match(/\{[\s\S]*\}/); d=m?JSON.parse(m[0]):null; }
       if(!d||!d.jp) throw new Error('formato risposta non valido');
+      if(model!==cfg.model){ const x=aiCfg(); x.model=model; saveAiCfg(x); }
       const p={ date:todayStr(), jp:d.jp, kana:d.kana||d.jp, romaji:d.romaji||romaji(d.kana||d.jp), it:d.it||'', used:Array.isArray(d.used)?d.used:[], grammar:d.grammar||'' };
-      savePhrase(p); genBusy=false; renderPhrase(p); if(current==='home') renderHome();
-    })
-    .catch(err=>{ genBusy=false; renderPhraseEmpty(false); toast('IA: '+((err&&err.message)||'errore di rete')); });
+      savePhrase(p); genBusy=false; renderPhrase(p); if(current==='home') renderHome(); return;
+    }catch(err){ const m=(err&&err.message)||''; if(isModelErr(m)){ lastErr=m; continue; } genBusy=false; renderPhraseEmpty(false); toast('IA: '+m); return; }
+  }
+  genBusy=false; renderPhraseEmpty(false); toast('IA: nessun modello disponibile — '+lastErr);
 }
 function openAiSettings(){
   const c=aiCfg();
   openModal(`<h2>Impostazioni IA (Gemini)</h2>
     <div class="field"><label>Chiave API Gemini</label><input id="ai_key" value="${esc(c.key||'')}" placeholder="Incolla qui la chiave" autocomplete="off" autocapitalize="off" spellcheck="false"><div class="hintline">Gratis da <b>aistudio.google.com/apikey</b> (serve solo un account Google). Resta su questo dispositivo, non viene sincronizzata.</div></div>
-    <div class="field"><label>Modello</label><input id="ai_model" value="${esc(c.model||'gemini-2.5-flash')}"><div class="hintline">Default: gemini-2.5-flash. Cambialo solo se necessario.</div></div>
+    <div class="field"><label>Modello</label><input id="ai_model" value="${esc(c.model||'gemini-2.0-flash')}"><div class="hintline">Default: gemini-2.0-flash. Se non va, l'app prova da sola altri modelli.</div></div>
     <div class="mdl-actions"><button class="btn" onclick="closeModal()">Chiudi</button><button class="btn primary" id="ai_save">Salva</button></div>`);
   setTimeout(()=>$('ai_key').focus(),60);
-  $('ai_save').onclick=()=>{ const x=aiCfg(); x.key=$('ai_key').value.trim(); x.model=$('ai_model').value.trim()||'gemini-2.5-flash'; saveAiCfg(x); closeModal(); toast('Salvato');
+  $('ai_save').onclick=()=>{ const x=aiCfg(); x.key=$('ai_key').value.trim(); x.model=$('ai_model').value.trim()||'gemini-2.0-flash'; saveAiCfg(x); closeModal(); toast('Salvato');
     if(current==='phrase'){ const p=loadPhrase(); if(p&&p.date===todayStr()) renderPhrase(p); else if(x.key) genPhrase(); else renderPhraseEmpty(true); } };
 }
 $('openPhrase').onclick=openPhrase;
@@ -2039,13 +2046,13 @@ function renderLesson(l){
   let html=`<p class="note" style="margin:0 0 4px">${esc(l.sub)}</p>`;
   html += (l.points||[]).map(p=>`
     <div class="gp">
-      <div class="gp-top"><span class="gp-pat jp">${esc(p.pat)}</span><span class="gp-mean">${esc(p.mean)}</span></div>
+      <div class="gp-top"><span class="gp-pat jp">${esc(p.pat)}</span>${p.patRo?`<span class="gp-pat-ro">${esc(p.patRo)}</span>`:''}<span class="gp-mean">${esc(p.mean)}</span></div>
       <div class="gp-struct">${esc(p.struct)}</div>
       <div class="gp-ex"><div class="gp-jp jp">${esc(p.jp)}</div><div class="gp-ro">${esc(p.ro)}</div><div class="gp-it">${esc(p.it)}</div></div>
       ${p.note?`<div class="gp-note">💡 ${esc(p.note)}</div>`:''}
     </div>`).join('');
   if(l.vocab && l.vocab.length){
-    html += `<p class="label" style="margin-top:14px">Parole chiave</p><div class="lvocab">`+l.vocab.map(v=>`<span><b class="jp">${esc(v[0])}</b>${esc(v[1])}</span>`).join('')+`</div>`;
+    html += `<p class="label" style="margin-top:14px">Parole chiave</p><div class="lvocab">`+l.vocab.map(v=>`<span><b class="jp">${esc(v[0])}</b><i class="lv-ro">${esc(v[1])}</i>${esc(v[2])}</span>`).join('')+`</div>`;
   }
   $('lessonBox').innerHTML=html; $('lessonBox').scrollTop=0;
 }
