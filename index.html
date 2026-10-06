@@ -533,7 +533,10 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
       <button class="icon-btn" id="phraseSettings" aria-label="Impostazioni IA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1.5 14h5M9.5 8h5M17.5 16h5"/></svg></button>
     </div>
     <div id="phraseBox"></div>
-    <div class="tools" style="margin-top:2px"><button class="tool" id="phraseNew"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 4v4h-4"/></svg>Nuova frase</button></div>
+    <div class="tools" style="margin-top:2px">
+      <button class="tool" id="phraseShuffle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 4v4h-4"/></svg>Altra frase</button>
+      <button class="tool" id="phraseAI"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.9L18.7 9.7 13.8 11.5 12 16.4 10.2 11.5 5.3 9.7 10.2 7.9z"/><path d="M19 15l.7 1.9L21.6 17.6l-1.9.7L19 20.2l-.7-1.9L16.4 17.6l1.9-.7z"/></svg>Con IA</button>
+    </div>
     <p class="note">Ripeti questa frase durante il giorno — ad alta voce, mentre cammini, prima di dormire. Domani ne arriva una nuova con parole diverse e tempi verbali diversi.</p>
   </section>
 
@@ -1263,6 +1266,118 @@ const LESSONS = [
  }
 ];
 
+/* banca di frasi brevi (default istantaneo della "frase del giorno") — jp|kana|romaji|it|nota */
+const RAW_PHRASES = `
+私は学生です。|わたしはがくせいです。|watashi wa gakusei desu.|Sono uno studente.|presente (です)
+これは本です。|これはほんです。|kore wa hon desu.|Questo è un libro.|これ + です
+それは私のかばんです。|それはわたしのかばんです。|sore wa watashi no kaban desu.|Quella è la mia borsa.|の (possesso)
+あれは駅です。|あれはえきです。|are wa eki desu.|Quello là è la stazione.|あれ
+今日は晴れです。|きょうははれです。|kyō wa hare desu.|Oggi è sereno.|presente
+昨日は雨でした。|きのうはあめでした。|kinō wa ame deshita.|Ieri è piovuto.|passato (でした)
+これは私のかさじゃありません。|これはわたしのかさじゃありません。|kore wa watashi no kasa ja arimasen.|Questo non è il mio ombrello.|negativo
+私も日本人です。|わたしもにほんじんです。|watashi mo nihonjin desu.|Anch'io sono giapponese.|〜も
+水を飲みます。|みずをのみます。|mizu o nomimasu.|Bevo acqua.|presente (verbo)
+お茶を飲みました。|おちゃをのみました。|ocha o nomimashita.|Ho bevuto il tè.|passato
+ご飯を食べます。|ごはんをたべます。|gohan o tabemasu.|Mangio il riso.|presente
+寿司を食べました。|すしをたべました。|sushi o tabemashita.|Ho mangiato il sushi.|passato
+本を読みます。|ほんをよみます。|hon o yomimasu.|Leggo un libro.|presente
+映画を見ます。|えいがをみます。|eiga o mimasu.|Guardo un film.|presente
+日本語を勉強します。|にほんごをべんきょうします。|nihongo o benkyō shimasu.|Studio giapponese.|する
+肉を食べません。|にくをたべません。|niku o tabemasen.|Non mangio carne.|negativo
+コーヒーが好きです。|コーヒーがすきです。|kōhī ga suki desu.|Mi piace il caffè.|好き + が
+寿司が好きです。|すしがすきです。|sushi ga suki desu.|Mi piace il sushi.|好き
+このラーメンはおいしいです。|このラーメンはおいしいです。|kono rāmen wa oishii desu.|Questo ramen è buono.|aggettivo い
+この店は有名です。|このみせはゆうめいです。|kono mise wa yūmei desu.|Questo negozio è famoso.|aggettivo な
+切符を買います。|きっぷをかいます。|kippu o kaimasu.|Compro il biglietto.|presente
+駅はあそこです。|えきはあそこです。|eki wa asoko desu.|La stazione è laggiù.|あそこ
+トイレはどこですか。|トイレはどこですか。|toire wa doko desu ka.|Dov'è il bagno?|どこ + か
+あの人は田中さんです。|あのひとはたなかさんです。|ano hito wa Tanaka-san desu.|Quella persona è il sig. Tanaka.|あの
+あの人はだれですか。|あのひとはだれですか。|ano hito wa dare desu ka.|Chi è quella persona?|だれ
+今日は仕事をします。|きょうはしごとをします。|kyō wa shigoto o shimasu.|Oggi lavoro.|する
+友達と出かけます。|ともだちとでかけます。|tomodachi to dekakemasu.|Esco con un amico.|と (con)
+明日学校へ行きます。|あしたがっこうへいきます。|ashita gakkō e ikimasu.|Domani vado a scuola.|へ (verso)
+日本へ行きたいです。|にほんへいきたいです。|nihon e ikitai desu.|Voglio andare in Giappone.|〜たい
+魚を食べたいです。|さかなをたべたいです。|sakana o tabetai desu.|Voglio mangiare pesce.|〜たい
+犬が好きです。|いぬがすきです。|inu ga suki desu.|Mi piacciono i cani.|好き
+猫はかわいいです。|ねこはかわいいです。|neko wa kawaii desu.|Il gatto è carino.|aggettivo
+これは高いです。|これはたかいです。|kore wa takai desu.|Questo è caro.|aggettivo
+それは安いです。|それはやすいです。|sore wa yasui desu.|Quello è economico.|aggettivo
+部屋はきれいです。|へやはきれいです。|heya wa kirei desu.|La stanza è pulita.|な-agg
+部屋はきれいじゃありません。|へやはきれいじゃありません。|heya wa kirei ja arimasen.|La stanza non è pulita.|negativo
+昨日は休みでした。|きのうはやすみでした。|kinō wa yasumi deshita.|Ieri era giorno libero.|passato
+今日は暑いです。|きょうはあついです。|kyō wa atsui desu.|Oggi fa caldo.|aggettivo
+今日は寒いです。|きょうはさむいです。|kyō wa samui desu.|Oggi fa freddo.|aggettivo
+水をください。|みずをください。|mizu o kudasai.|Dell'acqua, per favore.|〜ください
+すみません、いくらですか。|すみません、いくらですか。|sumimasen, ikura desu ka.|Scusi, quanto costa?|いくら
+五百円です。|ごひゃくえんです。|gohyaku en desu.|Costa 500 yen.|numeri
+名前は何ですか。|なまえはなんですか。|namae wa nan desu ka.|Come ti chiami?|何
+元気ですか。|げんきですか。|genki desu ka.|Come stai?|か
+はい、元気です。|はい、げんきです。|hai, genki desu.|Sì, sto bene.|presente
+パンを食べます。|パンをたべます。|pan o tabemasu.|Mangio pane.|presente
+ビールを飲みません。|ビールをのみません。|bīru o nomimasen.|Non bevo birra.|negativo
+料理をします。|りょうりをします。|ryōri o shimasu.|Cucino.|する
+音楽を聞きます。|おんがくをききます。|ongaku o kikimasu.|Ascolto musica.|presente
+写真を撮ります。|しゃしんをとります。|shashin o torimasu.|Scatto una foto.|presente
+日本語は難しいです。|にほんごはむずかしいです。|nihongo wa muzukashii desu.|Il giapponese è difficile.|aggettivo
+これはおいしかったです。|これはおいしかったです。|kore wa oishikatta desu.|Questo era buono.|aggettivo passato
+昨日映画を見ました。|きのうえいがをみました。|kinō eiga o mimashita.|Ieri ho visto un film.|passato
+今本を読みます。|いまほんをよみます。|ima hon o yomimasu.|Adesso leggo un libro.|今
+明日は晴れです。|あしたははれです。|ashita wa hare desu.|Domani sarà sereno.|presente
+バナナを買いました。|バナナをかいました。|banana o kaimashita.|Ho comprato banane.|passato
+りんごが好きです。|りんごがすきです。|ringo ga suki desu.|Mi piacciono le mele.|好き
+これはトマトです。|これはトマトです。|kore wa tomato desu.|Questo è un pomodoro.|です
+その料理は辛いです。|そのりょうりはからいです。|sono ryōri wa karai desu.|Quel piatto è piccante.|aggettivo
+この飲み物は甘いです。|こののみものはあまいです。|kono nomimono wa amai desu.|Questa bevanda è dolce.|aggettivo
+私は先生じゃありません。|わたしはせんせいじゃありません。|watashi wa sensei ja arimasen.|Non sono un insegnante.|negativo
+彼は生徒です。|かれはせいとです。|kare wa seito desu.|Lui è uno studente.|です
+ここは私の部屋です。|ここはわたしのへやです。|koko wa watashi no heya desu.|Qui è la mia stanza.|ここ + の
+犬と散歩します。|いぬとさんぽします。|inu to sanpo shimasu.|Passeggio con il cane.|する
+朝ご飯を食べました。|あさごはんをたべました。|asagohan o tabemashita.|Ho fatto colazione.|passato
+昼ご飯は寿司でした。|ひるごはんはすしでした。|hirugohan wa sushi deshita.|Il pranzo era sushi.|passato
+晩ご飯を作ります。|ばんごはんをつくります。|bangohan o tsukurimasu.|Preparo la cena.|presente
+水が飲みたいです。|みずがのみたいです。|mizu ga nomitai desu.|Voglio bere acqua.|〜たい
+少し疲れました。|すこしつかれました。|sukoshi tsukaremashita.|Sono un po' stanco.|passato
+この映画は怖いです。|このえいがはこわいです。|kono eiga wa kowai desu.|Questo film fa paura.|aggettivo
+東京は大きいです。|とうきょうはおおきいです。|tōkyō wa ōkii desu.|Tokyo è grande.|aggettivo
+この店は小さいです。|このみせはちいさいです。|kono mise wa chiisai desu.|Questo negozio è piccolo.|aggettivo
+友達は親切です。|ともだちはしんせつです。|tomodachi wa shinsetsu desu.|Il mio amico è gentile.|な-agg
+今日は忙しいです。|きょうはいそがしいです。|kyō wa isogashii desu.|Oggi sono impegnato.|aggettivo
+電車で行きます。|でんしゃでいきます。|densha de ikimasu.|Vado in treno.|で (mezzo)
+歩いて行きます。|あるいていきます。|aruite ikimasu.|Vado a piedi.|forma て
+ちょっと待ってください。|ちょっとまってください。|chotto matte kudasai.|Aspetta un attimo.|〜てください
+もう一度お願いします。|もういちどおねがいします。|mō ichido onegai shimasu.|Ancora una volta, per favore.|お願いします
+ゆっくり話してください。|ゆっくりはなしてください。|yukkuri hanashite kudasai.|Parla lentamente, per favore.|〜てください
+日本語が分かります。|にほんごがわかります。|nihongo ga wakarimasu.|Capisco il giapponese.|分かる
+名前を書きます。|なまえをかきます。|namae o kakimasu.|Scrivo il nome.|presente
+ノートを取ります。|ノートをとります。|nōto o torimasu.|Prendo appunti.|presente
+質問があります。|しつもんがあります。|shitsumon ga arimasu.|Ho una domanda.|ある
+時間がありません。|じかんがありません。|jikan ga arimasen.|Non ho tempo.|negativo
+お金がありません。|おかねがありません。|okane ga arimasen.|Non ho soldi.|negativo
+家に帰ります。|いえにかえります。|ie ni kaerimasu.|Torno a casa.|に
+何を食べますか。|なにをたべますか。|nani o tabemasu ka.|Cosa mangi?|何 + か
+どこへ行きますか。|どこへいきますか。|doko e ikimasu ka.|Dove vai?|どこ
+いつ日本へ行きますか。|いつにほんへいきますか。|itsu nihon e ikimasu ka.|Quando vai in Giappone?|いつ
+今日はいい天気です。|きょうはいいてんきです。|kyō wa ii tenki desu.|Oggi c'è bel tempo.|いい
+昨日は曇りでした。|きのうはくもりでした。|kinō wa kumori deshita.|Ieri era nuvoloso.|passato
+この本は面白いです。|このほんはおもしろいです。|kono hon wa omoshiroi desu.|Questo libro è interessante.|aggettivo
+その映画は面白くないです。|そのえいがはおもしろくないです。|sono eiga wa omoshiroku nai desu.|Quel film non è interessante.|aggettivo negativo
+私はイタリア人です。|わたしはイタリアじんです。|watashi wa itariajin desu.|Sono italiano.|です
+日本語を話します。|にほんごをはなします。|nihongo o hanashimasu.|Parlo giapponese.|presente
+少し話せます。|すこしはなせます。|sukoshi hanasemasu.|Parlo un po'.|potenziale
+明日は休みです。|あしたはやすみです。|ashita wa yasumi desu.|Domani è giorno libero.|presente
+一緒に行きましょう。|いっしょにいきましょう。|issho ni ikimashō.|Andiamo insieme.|〜ましょう
+お茶を飲みましょう。|おちゃをのみましょう。|ocha o nomimashō.|Beviamo un tè.|〜ましょう
+これを見てください。|これをみてください。|kore o mite kudasai.|Guarda questo, per favore.|〜てください
+すみません、分かりません。|すみません、わかりません。|sumimasen, wakarimasen.|Scusi, non capisco.|negativo
+今何時ですか。|いまなんじですか。|ima nanji desu ka.|Che ore sono?|何時
+猫が好きです。|ねこがすきです。|neko ga suki desu.|Mi piacciono i gatti.|好き
+この漢字は難しいです。|このかんじはむずかしいです。|kono kanji wa muzukashii desu.|Questo kanji è difficile.|aggettivo
+お茶をもう一杯ください。|おちゃをもういっぱいください。|ocha o mō ippai kudasai.|Un altro tè, per favore.|〜ください
+日本が大好きです。|にほんがだいすきです。|nihon ga daisuki desu.|Amo il Giappone.|大好き
+明日も勉強します。|あしたもべんきょうします。|ashita mo benkyō shimasu.|Studio anche domani.|〜も
+`;
+const PHRASES = RAW_PHRASES.trim().split('\n').map(l=>{ const f=l.split('|'); return {jp:f[0], kana:f[1]||f[0], romaji:f[2]||'', it:f[3]||'', note:f[4]||''}; }).filter(p=>p.jp);
+
 const ITEMS = [], BLOCKS = [];
 let WORDS = [], BUILTIN_BLOCKS = [];
 const KANA_BASE = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん';
@@ -1385,7 +1500,7 @@ function renderHome(){
   $('wordsSub').textContent = `${cw.vis} parole · ${BLOCKS.length} blocchi`;
   $('kanaSub').textContent = `${nk} kana · ${nj} kanji`;
   meter($('wordsMeter'),$('wordsLegend'),cw); meter($('kanaMeter'),$('kanaLegend'),ck);
-  const ps=$('phraseSub'); if(ps){ const p=loadPhrase(); ps.textContent = (p&&p.date===todayStr()&&p.jp) ? p.jp : 'Una frase al giorno con le tue parole'; }
+  const ps=$('phraseSub'); if(ps){ const p=loadPhrase(); ps.textContent = (p&&p.date===todayStr()&&p.jp) ? p.jp : (PHRASES.length ? PHRASES[bankIndexForToday()].jp : 'Una frase al giorno con le tue parole'); }
 }
 $('deckWords').onclick=()=>{ prefs.deck='w'; savePrefs(); renderSetup(); show('setup'); };
 $('deckKana').onclick=()=>{ prefs.deck='kk'; savePrefs(); renderSetup(); show('setup'); };
@@ -1972,11 +2087,19 @@ function renderPhraseEmpty(needKey){
   if(needKey){ $('phKeyBtn').onclick=openAiSettings; } else { $('phGenBtn').onclick=genPhrase; }
 }
 function renderPhraseLoading(){ $('phraseBox').innerHTML=`<div class="ph-empty"><div class="ph-spin"></div><div>Sto creando la frase di oggi…</div></div>`; }
+function bankIndexForToday(){ const d=todayStr(); let h=0; for(let i=0;i<d.length;i++) h=(h*31 + d.charCodeAt(i))|0; return PHRASES.length ? (Math.abs(h)%PHRASES.length) : 0; }
+function showBankPhrase(idx){
+  if(!PHRASES.length){ renderPhraseEmpty(false); return; }
+  const i = (idx==null) ? bankIndexForToday() : ((idx%PHRASES.length)+PHRASES.length)%PHRASES.length;
+  const b=PHRASES[i];
+  const p={ date:todayStr(), jp:b.jp, kana:b.kana, romaji:b.romaji, it:b.it, used:[], grammar:b.note||'', src:'bank' };
+  savePhrase(p); renderPhrase(p); if(current==='home') renderHome();
+}
 function openPhrase(){
   show('phrase');
   const p=loadPhrase();
-  if(p && p.date===todayStr()){ renderPhrase(p); return; }
-  if(aiCfg().key){ genPhrase(); } else { renderPhraseEmpty(true); }
+  if(p && p.date===todayStr() && p.jp){ renderPhrase(p); return; }
+  showBankPhrase();   // default istantaneo (banca frasi)
 }
 function pickWords(n){
   let pool=WORDS.filter(w=>st(w.id)!=='h'); if(!pool.length) pool=WORDS.slice();
@@ -1986,15 +2109,16 @@ function pickWords(n){
 async function genPhrase(){
   if(genBusy) return;
   const cfg=aiCfg(); if(!cfg.key){ renderPhraseEmpty(true); return; }
-  const words=pickWords(18); if(!words.length){ toast('Nessuna parola disponibile'); return; }
+  const words=pickWords(10); if(!words.length){ toast('Nessuna parola disponibile'); return; }
   genBusy=true; renderPhraseLoading();
   const list=words.map(w=>`- ${w.jp}${w.kana&&w.kana!==w.jp?' ['+w.kana+']':''} = ${w.it}`).join('\n');
-  const prompt=`Sei un insegnante di giapponese. Scrivi UNA sola frase in giapponese, naturale e di senso compiuto, adatta a chi studia (livello principiante/intermedio).
-Usa il più possibile queste parole del mio vocabolario; puoi aggiungere particelle e poche parole di collegamento se serve. Varia la forma e il tempo verbale (presente, passato, forma て, negativo, volitivo, potenziale, ecc.) per allenare la flessibilità.
+  const prompt=`Sei un insegnante di giapponese. Scrivi UNA sola frase in giapponese, naturale e di senso compiuto, per un principiante (A1).
+IMPORTANTE: deve essere BREVE e semplice — massimo circa 8 parole, una sola proposizione. Niente frasi lunghe o articolate.
+Usa 1–3 di queste parole del mio vocabolario (aggiungi solo le particelle necessarie). Varia il tempo/forma verbale rispetto al solito (presente, passato, negativo, 〜たい, 〜ましょう, ecc.).
 Parole (giapponese [lettura] = italiano):
 ${list}
-Rispondi SOLO con JSON: jp (frase con kanji dove naturale), kana (stessa frase tutta in kana), romaji, it (traduzione italiana), used (array delle parole del vocabolario usate), grammar (una frase in italiano che spiega la forma/tempo verbale usato).`;
-  const body={ contents:[{parts:[{text:prompt}]}], generationConfig:{ temperature:1.1, responseMimeType:'application/json',
+Rispondi SOLO con JSON: jp (frase con kanji dove naturale), kana (tutta in kana), romaji, it (traduzione italiana), used (array delle parole usate), grammar (brevissima nota in italiano sulla forma/tempo verbale).`;
+  const body={ contents:[{parts:[{text:prompt}]}], generationConfig:{ temperature:1.1, maxOutputTokens:260, responseMimeType:'application/json',
     responseSchema:{ type:'OBJECT', properties:{ jp:{type:'STRING'}, kana:{type:'STRING'}, romaji:{type:'STRING'}, it:{type:'STRING'}, used:{type:'ARRAY', items:{type:'STRING'}}, grammar:{type:'STRING'} }, required:['jp','kana','romaji','it'] } } };
   const candidates=[...new Set([cfg.model, 'gemini-2.0-flash-lite', 'gemini-1.5-flash-8b', 'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite-001', 'gemini-2.0-flash-001', 'gemini-1.5-flash-latest', 'gemini-flash-latest'].filter(Boolean))];
   const isModelErr=(m,s)=> s===404 || /not found|not supported|not available|no longer|does not exist|deprecat|retir|invalid model|unregistered/i.test(m||'');
@@ -2048,7 +2172,8 @@ function openAiSettings(){
 $('openPhrase').onclick=openPhrase;
 $('phraseBack').onclick=()=>{ renderHome(); show('home'); };
 $('phraseSettings').onclick=openAiSettings;
-$('phraseNew').onclick=()=>{ if(aiCfg().key) genPhrase(); else openAiSettings(); };
+$('phraseShuffle').onclick=()=>{ showBankPhrase(PHRASES.length?Math.floor(Math.random()*PHRASES.length):null); };
+$('phraseAI').onclick=()=>{ if(aiCfg().key) genPhrase(); else openAiSettings(); };
 
 /* ================= RIPASSO LEZIONI ================= */
 const IC_BOOK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M19 17H6a2 2 0 0 0-2 2"/></svg>';
