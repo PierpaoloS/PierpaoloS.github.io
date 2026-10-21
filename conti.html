@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Conti</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0f1216">
+<style>
+:root{--bg:#0f1216;--card:#1a1f27;--card2:#222935;--ink:#eef2f6;--muted:#93a0ad;--line:#2b333f;
+  --accent:#ff5c35;--green:#32c48d;--blue:#3a9bdc;--red:#ff5c5c}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.app{max-width:520px;margin:0 auto;min-height:100dvh;padding:16px max(14px,env(safe-area-inset-left)) 40px}
+.bar{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.bar h1{font-size:20px;margin:0;flex:1;font-weight:700}
+.icon{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);display:grid;place-items:center;cursor:pointer;font-size:18px}
+.seg{display:flex;background:var(--card);border-radius:14px;padding:5px;gap:5px;margin-bottom:16px}
+.seg button{flex:1;padding:11px;border:0;border-radius:10px;background:transparent;color:var(--muted);font-weight:700;font-size:14px;cursor:pointer}
+.seg button.on{background:var(--accent);color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px}
+label{display:block;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:14px 2px 7px}
+label:first-child{margin-top:0}
+input,select{width:100%;padding:13px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--card2);color:var(--ink);font-size:16px;outline:none}
+input:focus,select:focus{border-color:var(--accent)}
+.cats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.cats button{padding:12px 6px;border-radius:12px;border:1.5px solid var(--line);background:var(--card2);color:var(--muted);font-weight:700;font-size:13px;cursor:pointer;line-height:1.2}
+.cats button.on{border-color:var(--accent);color:#fff;background:color-mix(in srgb,var(--accent) 22%,var(--card2))}
+.row2{display:flex;gap:10px}
+.row2 .amt{flex:0 0 42%}
+.amt input{text-align:right;font-weight:800;font-size:20px}
+.save{width:100%;margin-top:18px;padding:16px;border:0;border-radius:14px;background:var(--accent);color:#fff;font-size:17px;font-weight:800;cursor:pointer}
+.save:disabled{opacity:.5}
+.save.busy{opacity:.7}
+.hint{font-size:12.5px;color:var(--muted);margin:10px 2px 0;line-height:1.5}
+.recent{margin-top:6px}
+.recent h2{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:18px 2px 8px}
+.item{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:7px;font-size:14px}
+.item .d{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .tag{font-size:11px;color:var(--muted)}
+.item .v{font-weight:800}
+.item.err{border-color:var(--red)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:999px;font-weight:800;font-size:14px;opacity:0;pointer-events:none;transition:.25s;max-width:92%;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.ok{background:var(--green);color:#042016}.toast.bad{background:var(--red);color:#2a0606}
+.mdl{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center;z-index:5}
+.mdl.open{display:flex}
+.mdl .box{background:var(--card);width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:20px}
+@media(min-width:540px){.mdl{align-items:center}.mdl .box{border-radius:20px}}
+.mdl h2{margin:0 0 12px;font-size:18px}
+.locked{text-align:center;color:var(--muted);padding:30px 10px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="bar">
+    <h1>💶 Conti</h1>
+    <button class="icon" id="cfgBtn" title="Impostazioni">⚙️</button>
+  </div>
+
+  <div id="main">
+    <div class="seg">
+      <button data-mode="dettaglio" class="on">Spesa dettagliata</button>
+      <button data-mode="movimento">Resoconto</button>
+    </div>
+
+    <!-- SPESA DETTAGLIATA -->
+    <div class="card" id="formDettaglio">
+      <label>Categoria</label>
+      <div class="cats" id="cats">
+        <button data-cat="Cibo e uscite" class="on">🍔 Cibo e uscite</button>
+        <button data-cat="Cose in più">✨ Cose in più</button>
+        <button data-cat="Altre necessarie">🧾 Altre necessarie</button>
+      </div>
+      <div class="row2" style="margin-top:14px">
+        <div style="flex:1"><label>Descrizione</label><input id="d_desc" placeholder="Es. Pizza, Spesa, Benzina…"></div>
+        <div class="amt"><label>Importo €</label><input id="d_imp" inputmode="decimal" placeholder="0"></div>
+      </div>
+      <button class="save" id="d_save">Aggiungi spesa</button>
+      <p class="hint">Va nel tab <b>SpeseSpecifiche</b>, nell'area del mese corrente (le 3 colonne in alto), prima riga libera.</p>
+    </div>
+
+    <!-- MOVIMENTO RESOCONTO -->
+    <div class="card" id="formMovimento" hidden>
+      <div class="seg" style="margin-bottom:0">
+        <button data-tipo="Spesa" class="on" id="t_spesa">Spesa</button>
+        <button data-tipo="Entrata" id="t_entrata">Entrata</button>
+      </div>
+      <div class="row2" style="margin-top:14px">
+        <div style="flex:1"><label>Descrizione</label><input id="m_desc" placeholder="Es. Netflix, Stipendio…"></div>
+        <div class="amt"><label>Importo €</label><input id="m_imp" inputmode="decimal" placeholder="0"></div>
+      </div>
+      <button class="save" id="m_save">Aggiungi al mese corrente</button>
+      <p class="hint">Va nel tab <b>Resoconto 2025</b>, nel blocco del <b>mese in cima</b> (Spesa → colonne A/B · Entrata → colonne C/D).</p>
+    </div>
+
+    <div class="recent">
+      <h2>Ultimi inserimenti (da questo telefono)</h2>
+      <div id="recent"></div>
+    </div>
+  </div>
+
+  <div id="locked" class="locked" hidden>
+    Configura prima <b>URL</b> e <b>PIN</b> dal pulsante ⚙️ in alto.
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="mdl" id="cfg">
+  <div class="box">
+    <h2>⚙️ Impostazioni</h2>
+    <label>URL Web App (Apps Script)</label>
+    <input id="c_url" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <label>PIN</label>
+    <input id="c_pin" inputmode="numeric" placeholder="PIN" autocomplete="off">
+    <p class="hint">URL e PIN restano salvati solo su questo dispositivo. Il PIN viene controllato dallo script (lato Google), non dal sito.</p>
+    <button class="save" id="c_save">Salva</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const CFG_KEY='conti-cfg', REC_KEY='conti-recent';
+let cfg={url:'',pin:''};
+try{cfg=Object.assign(cfg,JSON.parse(localStorage.getItem(CFG_KEY))||{});}catch(e){}
+let mode='dettaglio', cat='Cibo e uscite', tipo='Spesa';
+
+/* ---- toast ---- */
+let tt;
+function toast(msg,kind){const t=$('toast');t.textContent=msg;t.className='toast show '+(kind||'');clearTimeout(tt);tt=setTimeout(()=>t.className='toast',2600);}
+
+/* ---- config ---- */
+function configured(){return cfg.url && cfg.pin;}
+function syncLock(){ $('main').hidden=!configured(); $('locked').hidden=configured(); }
+$('cfgBtn').onclick=()=>{ $('c_url').value=cfg.url; $('c_pin').value=cfg.pin; $('cfg').classList.add('open'); };
+$('cfg').addEventListener('click',e=>{ if(e.target===$('cfg')) $('cfg').classList.remove('open'); });
+$('c_save').onclick=()=>{
+  cfg.url=$('c_url').value.trim(); cfg.pin=$('c_pin').value.trim();
+  try{localStorage.setItem(CFG_KEY,JSON.stringify(cfg));}catch(e){}
+  $('cfg').classList.remove('open'); syncLock(); toast('Salvato ✓','ok');
+};
+
+/* ---- mode / categoria / tipo ---- */
+document.querySelectorAll('.seg [data-mode]').forEach(b=>b.onclick=()=>{
+  mode=b.dataset.mode;
+  document.querySelectorAll('.seg [data-mode]').forEach(x=>x.classList.toggle('on',x===b));
+  $('formDettaglio').hidden = mode!=='dettaglio';
+  $('formMovimento').hidden = mode!=='movimento';
+});
+$('cats').addEventListener('click',e=>{const b=e.target.closest('[data-cat]');if(!b)return;cat=b.dataset.cat;
+  document.querySelectorAll('#cats [data-cat]').forEach(x=>x.classList.toggle('on',x===b));});
+document.querySelectorAll('#formMovimento .seg [data-tipo]').forEach(b=>b.onclick=()=>{tipo=b.dataset.tipo;
+  document.querySelectorAll('#formMovimento .seg [data-tipo]').forEach(x=>x.classList.toggle('on',x===b));});
+
+/* ---- parse importo (virgola o punto) ---- */
+function num(s){s=(s||'').trim().replace(/\s/g,'');if(!s)return NaN;if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');return parseFloat(s);}
+
+/* ---- recent list ---- */
+function loadRec(){try{return JSON.parse(localStorage.getItem(REC_KEY))||[];}catch(e){return[];}}
+function pushRec(r){const a=loadRec();a.unshift(r);a.splice(10);try{localStorage.setItem(REC_KEY,JSON.stringify(a));}catch(e){}renderRec();}
+function renderRec(){
+  $('recent').innerHTML=loadRec().map(r=>`<div class="item ${r.err?'err':''}"><div class="d">${esc(r.desc)}<div class="tag">${esc(r.dove||r.err||'')}</div></div><div class="v">${r.imp!=null?r.imp.toFixed(2)+' €':''}</div></div>`).join('')||'<div class="hint">Ancora niente.</div>';
+}
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- invio ---- */
+async function send(payload, btn, desc, imp){
+  if(!configured()){toast('Configura URL e PIN',' bad');return;}
+  btn.disabled=true;btn.classList.add('busy');const old=btn.textContent;btn.textContent='Invio…';
+  payload.pin=cfg.pin;
+  let okRead=false,data=null;
+  try{
+    const res=await fetch(cfg.url,{method:'POST',body:JSON.stringify(payload)});
+    try{data=await res.json();okRead=true;}catch(e){}
+  }catch(e){}
+  btn.disabled=false;btn.classList.remove('busy');btn.textContent=old;
+  if(okRead && data){
+    if(data.ok){ toast('Salvato ✓ '+(data.dove||''),'ok'); pushRec({desc,imp,dove:data.dove}); return true; }
+    else { toast('Errore: '+(data.error||'?'),'bad'); pushRec({desc,imp,err:data.error}); return false; }
+  } else {
+    // non ho potuto leggere la risposta (CORS/redirect): inviato comunque, da verificare
+    toast('Inviato — controlla sul foglio','');
+    pushRec({desc,imp,dove:'inviato (verifica)'});
+    return true;
+  }
+}
+
+$('d_save').onclick=async()=>{
+  const desc=$('d_desc').value.trim(), imp=num($('d_imp').value);
+  if(!desc){toast('Scrivi una descrizione','bad');return;}
+  if(!(imp>0)){toast('Importo non valido','bad');return;}
+  const ok=await send({action:'dettaglio',categoria:cat,descrizione:desc,importo:imp}, $('d_save'), desc, imp);
+  if(ok!==false){ $('d_desc').value='';$('d_imp').value='';$('d_desc').focus(); }
+};
+$('m_save').onclick=async()=>{
+  const desc=$('m_desc').value.trim(), imp=num($('m_imp').value);
+  if(!desc){toast('Scrivi una descrizione','bad');return;}
+  if(!(imp>0)){toast('Importo non valido','bad');return;}
+  const ok=await send({action:'movimento',tipo:tipo,descrizione:desc,importo:imp}, $('m_save'), desc, imp);
+  if(ok!==false){ $('m_desc').value='';$('m_imp').value='';$('m_desc').focus(); }
+};
+
+syncLock(); renderRec();
+if(!configured()) setTimeout(()=>$('cfg').classList.add('open'),300);
+</script>
+</body>
+</html>
