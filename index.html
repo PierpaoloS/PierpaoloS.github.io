@@ -143,6 +143,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
 .group.g-n{background:var(--new-soft)} .group.g-n .n{color:var(--muted)}
 .group.g-k{background:var(--known-soft)} .group.g-k .n{color:var(--known)}
 .group.g-m{background:var(--yuzu-soft)} .group.g-m .n{color:var(--yuzu-ink)}
+.group.g-x{background:var(--sakura-soft)} .group.g-x .n{color:var(--sakura)}
 .group[aria-pressed="true"]{border-color:var(--ink)}
 .start-wrap{position:sticky;bottom:0;margin-top:auto;padding-top:10px;padding-bottom:max(4px, env(safe-area-inset-bottom));background:linear-gradient(to top, var(--bg) 70%, transparent)}
 .start{width:100%;background:var(--learn);color:#fff;border-radius:999px;padding:18px;font-family:var(--display);font-size:20px;font-weight:600;box-shadow:0 14px 28px -12px var(--learn)}
@@ -166,7 +167,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
 .face .top{display:flex;justify-content:space-between;align-items:center;gap:8px;position:relative;z-index:1}
 .tag{font-size:12px;font-weight:800;padding:6px 12px;border-radius:999px;background:var(--surface2);border:2px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .status-tag{display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;padding:6px 10px;border-radius:999px;text-transform:uppercase;letter-spacing:.06em;line-height:1;white-space:nowrap;flex:none}
-.st-n{background:var(--new-soft);color:var(--muted)} .st-l{background:var(--learn-soft);color:var(--learn)} .st-k{background:var(--known-soft);color:var(--known)} .st-h{background:var(--line);color:var(--muted)}
+.st-n{background:var(--new-soft);color:var(--muted)} .st-l{background:var(--learn-soft);color:var(--learn)} .st-k{background:var(--known-soft);color:var(--known)} .st-h{background:var(--sakura-soft);color:var(--sakura)}
 .face .main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;position:relative;z-index:1;min-height:0}
 .big{font-family:var(--jp);font-weight:700;line-height:1.15;overflow-wrap:anywhere}
 .big.it{font-family:var(--display);font-weight:600}
@@ -183,6 +184,10 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
 .stamp{position:absolute;top:26px;z-index:3;font-family:var(--display);font-weight:700;font-size:22px;line-height:1;padding:8px 14px;border-radius:16px;border:4px solid;opacity:0;pointer-events:none;background:var(--surface)}
 .stamp.yes{left:22px;color:var(--known);border-color:var(--known);transform:rotate(-12deg)}
 .stamp.no{right:22px;color:var(--learn);border-color:var(--learn);transform:rotate(12deg)}
+.stamp.unseen{left:50%;transform:translateX(-50%) rotate(-4deg);color:var(--sakura);border-color:var(--sakura)}
+.unseen-btn{display:flex;align-items:center;justify-content:center;gap:9px;margin:12px auto 0;background:var(--sakura-soft);color:var(--sakura);border-radius:999px;padding:11px 18px;font-weight:800;font-size:14px}
+.unseen-btn svg{width:18px;height:18px;display:block;flex:none}
+.unseen-btn:active{transform:scale(.96)}
 .actions{display:flex;justify-content:center;align-items:center;gap:22px}
 .act{border-radius:50%;display:inline-flex;align-items:center;justify-content:center;box-shadow:var(--shadow);transition:transform .15s;flex:none}
 .act:active{transform:scale(.9)}
@@ -371,7 +376,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
       <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.3" fill="currentColor" stroke="none"/><circle cx="4.5" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="4.5" cy="18" r="1.3" fill="currentColor" stroke="none"/></svg></span>
       <span><b>Elenco e backup</b><span>Cerca, sposta tra i gruppi, salva i progressi</span></span>
     </button>
-    <p class="note">Lista ricostruita dal corso Duolingo fino a circa Sezione 2 · Unità 23, divisa in blocchi che seguono l'ordine del corso (circa 2–3 unità ciascuno). Nascondi dall'elenco le parole che non hai ancora visto.</p>
+    <p class="note">Lista ricostruita dal corso Duolingo fino a circa Sezione 2 · Unità 23, divisa in blocchi che seguono l'ordine del corso (circa 2–3 unità ciascuno). Durante lo swipe puoi segnare «Mai vista» le parole che su Duolingo non hai mai incontrato: finiscono in un gruppo a parte.</p>
   </section>
 
   <!-- SETUP -->
@@ -411,6 +416,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
       <button class="act flip" id="btnFlip" aria-label="Gira la carta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.7"/><path d="M20 4v4.7h-4.7"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15.3"/><path d="M4 20v-4.7h4.7"/></svg></button>
       <button class="act yes" id="btnYes" aria-label="La so"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
     </div>
+    <button class="unseen-btn" id="btnUnseen" aria-label="Segna come mai vista su Duolingo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7a11 11 0 0 1-5-1.2"/><circle cx="12" cy="12" r="2.5"/><path d="M3 3l18 18"/></svg>Mai vista su Duolingo</button>
   </section>
 
   <!-- DONE -->
@@ -438,7 +444,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
       <button data-d="w">Parole</button><button data-d="kana">Kana</button><button data-d="j">Kanji</button>
     </div>
     <input class="search" id="search" type="search" placeholder="Cerca in giapponese, romaji o italiano…" autocomplete="off">
-    <p class="note">Tocca l'etichetta per cambiare gruppo: Nuova → Da imparare → La so → Non vista.</p>
+    <p class="note">Tocca l'etichetta per cambiare gruppo: Nuova → Da imparare → La so → Mai vista. Le "Mai vista" restano in un gruppo a parte (fuori dagli altri, incluse solo nel Mix).</p>
     <div class="list" id="listBox"></div>
     <p class="label">Backup progressi</p>
     <p class="note">I progressi restano salvati in questo browser. Esporta un backup per non perderli o per portarli su un altro dispositivo.</p>
@@ -1411,9 +1417,10 @@ function buildItems(){
     const kana=w.kana||w.jp;
     ITEMS.push({id:w.id, d:'w', b:bi, theme:w.block, jp:w.jp, kana, ro:w.ro||romaji(kana), it:w.it, custom:true});
   });
-  // kana
+  // kana (set limitato, in crescita: aggiungerne altri su richiesta)
+  const KANA_ALLOWED = [...'あいうえおかきくけこわのです'];
   ['h','k'].forEach(d=>{
-    [...KANA_BASE, ...KANA_DAK, ...KANA_COMBO].forEach(h=>{
+    KANA_ALLOWED.forEach(h=>{
       const ch=d==='h'?h:toKata(h);
       ITEMS.push({id:d+':'+ch, d, theme:d==='h'?'Hiragana':'Katakana', jp:ch, ro:romaji(h), alt:d==='h'?toKata(h):h});
     });
@@ -1511,16 +1518,20 @@ $('openCards').onclick=()=>{ renderCards(); show('cards'); };
 const activeDeck = () => prefs.deck==='w' ? 'w' : prefs.kk;
 const GROUPS = [
   {k:'l', cls:'g-l', name:'Da imparare', sub:'Quelle scartate a sinistra'},
-  {k:'n', cls:'g-n', name:'Nuove', sub:'Mai viste nell’app'},
+  {k:'n', cls:'g-n', name:'Nuove', sub:'Mai studiate qui'},
   {k:'k', cls:'g-k', name:'Le so già', sub:'Ripasso di mantenimento'},
-  {k:'m', cls:'g-m', name:'Mix', sub:'Tutto mescolato'}
+  {k:'h', cls:'g-x', name:'Mai viste', sub:'Segnate: mai viste su Duolingo'},
+  {k:'m', cls:'g-m', name:'Mix', sub:'Tutto, incluse le mai viste'}
 ];
 function selection(deck){
   const bl = prefs.blocks.filter(b=>b<BLOCKS.length);
   return ITEMS.filter(x=>inDeck(x,deck) && (deck!=='w' || !bl.length || bl.includes(x.b)));
 }
 function poolFor(deck, group){
-  return selection(deck).filter(x=>st(x.id)!=='h' && (group==='m' || st(x.id)===group));
+  const sel=selection(deck);
+  if(group==='m') return sel;                             // Mix = tutto, incluse le "mai viste"
+  if(group==='h') return sel.filter(x=>st(x.id)==='h');   // solo le "mai viste"
+  return sel.filter(x=>st(x.id)!=='h' && st(x.id)===group); // n / l / k: escluse le "mai viste"
 }
 const DIRS = {
   w:   [['f','Giapponese'],['r','Italiano']],
@@ -1589,7 +1600,7 @@ function shuffle(a){ a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.floor(
 function startSession(items){ queue=items; idx=0; history=[]; results={}; show('study'); renderCard(); }
 
 const DECK_TINT = {w:['var(--ramune-soft)','var(--yuzu-soft)'], h:['var(--sakura-soft)','var(--yuzu-soft)'], k:['var(--yuzu-soft)','var(--ramune-soft)'], j:['var(--known-soft)','var(--sakura-soft)']};
-const ST_NAME = {n:'Nuova', l:'Da imparare', k:'La so', h:'Non vista'};
+const ST_NAME = {n:'Nuova', l:'Da imparare', k:'La so', h:'Mai vista'};
 const jpSize = s => { const n=[...s].length; return n<=1?150 : n<=2?110 : n<=3?84 : n<=5?64 : n<=8?46 : 36; };
 const itSize = s => s.length<=10?40 : s.length<=20?32 : 26;
 
@@ -1620,7 +1631,7 @@ function faces(x){
   }
   return `<div class="card"><div class="face front">${deco}${top}<div class="main">${front}</div><div class="hint">Tocca per girare</div></div>
     <div class="face back">${deco}${top}<div class="main">${back}</div><div class="hint">Scorri: ← ripassare · la so →</div></div></div>
-    <div class="stamp yes">LA SO!</div><div class="stamp no">RIPASSO</div>`;
+    <div class="stamp yes">LA SO!</div><div class="stamp no">RIPASSO</div><div class="stamp unseen">MAI VISTA</div>`;
 }
 
 let topWrap=null, drag=null, busy=false;
@@ -1658,10 +1669,12 @@ function decide(v){
   const x=queue[idx];
   history.push({id:x.id, prev:st(x.id)});
   results[x.id]=v; setStatus(x.id,v);
-  const w=topWrap; w.querySelector(v==='k'?'.stamp.yes':'.stamp.no').style.opacity=1;
+  const w=topWrap;
+  const stampSel = v==='k'?'.stamp.yes' : v==='h'?'.stamp.unseen' : '.stamp.no';
+  const stEl=w.querySelector(stampSel); if(stEl) stEl.style.opacity=1;
   w.classList.remove('snap'); w.classList.add('fly');
-  const dir=v==='k'?1:-1;
-  requestAnimationFrame(()=>{ w.style.transform=`translate(${dir*window.innerWidth}px,40px) rotate(${dir*28}deg)`; w.style.opacity=0; });
+  if(v==='h'){ requestAnimationFrame(()=>{ w.style.transform='translateY(-120%) rotate(-3deg)'; w.style.opacity=0; }); }
+  else { const dir=v==='k'?1:-1; requestAnimationFrame(()=>{ w.style.transform=`translate(${dir*window.innerWidth}px,40px) rotate(${dir*28}deg)`; w.style.opacity=0; }); }
   setTimeout(()=>{ idx++; renderCard(); }, 280);
 }
 function undo(){
@@ -1670,6 +1683,7 @@ function undo(){
 }
 $('btnYes').onclick=()=>decide('k');
 $('btnNo').onclick=()=>decide('l');
+$('btnUnseen').onclick=()=>decide('h');
 $('btnFlip').onclick=flip;
 $('undoBtn').onclick=undo;
 $('studyClose').onclick=()=>{ renderHome(); show('home'); };
@@ -1677,6 +1691,7 @@ document.addEventListener('keydown',e=>{
   if(current!=='study') return;
   if(e.key==='ArrowRight') decide('k'); else if(e.key==='ArrowLeft') decide('l');
   else if(e.key===' '||e.key==='ArrowUp'||e.key==='ArrowDown'){ e.preventDefault(); flip(); }
+  else if(e.key==='m'||e.key==='M') decide('h');
   else if(e.key==='Backspace') undo();
 });
 
