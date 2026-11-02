@@ -86,9 +86,11 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
 .deck:active{transform:scale(.98)}
 .deck.words{background:#2B9FDA}
 .deck.kana{background:#FF6F9F}
+.deck.genki{background:#4FA07A}
 .deck .deco{position:absolute;border-radius:50%;pointer-events:none}
 .deck.words .deco{width:220px;height:220px;right:-70px;bottom:-110px;background:#52BDEB}
 .deck.kana .deco{width:220px;height:220px;right:-70px;bottom:-110px;background:#FF8FB5}
+.deck.genki .deco{width:220px;height:220px;right:-70px;bottom:-110px;background:#6FBE98}
 .deck .head{position:relative;display:flex;align-items:center;gap:14px}
 .deck .head div{flex:1;min-width:0}
 .deck h2{font-family:var(--display);font-size:28px;font-weight:700;margin:0;line-height:1.1}
@@ -356,6 +358,12 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
       <div class="meter" id="kanaMeter"></div>
       <div class="legend" id="kanaLegend"></div>
     </button>
+    <button class="deck genki" id="deckGenki">
+      <span class="deco"></span>
+      <div class="head"><div><h2>GENKI</h2><p id="genkiSub"></p></div><span class="badge"><span>文</span></span></div>
+      <div class="meter" id="genkiMeter"></div>
+      <div class="legend" id="genkiLegend"></div>
+    </button>
     <button class="row-btn" id="openPhrase">
       <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8 8 0 0 1-11.6 7.1L4 20l1.4-5.4A8 8 0 1 1 21 11.5z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01"/></svg></span>
       <span><b>Frase del giorno</b><span id="phraseSub">Una frase al giorno con le tue parole</span></span>
@@ -433,7 +441,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
       <h1>Elenco</h1>
     </div>
     <div class="seg" id="listSeg">
-      <button data-d="w">Parole</button><button data-d="kana">Hiragana</button>
+      <button data-d="w">Parole</button><button data-d="kana">Hiragana</button><button data-d="g">GENKI</button>
     </div>
     <input class="search" id="search" type="search" placeholder="Cerca in giapponese, romaji o italiano…" autocomplete="off">
     <p class="note">Tocca l'etichetta per cambiare gruppo: Nuova → Da imparare → La so → Mai vista. Le "Mai vista" restano in un gruppo a parte (fuori dagli altri, incluse solo nel Mix).</p>
@@ -1324,6 +1332,77 @@ const RAW_PHRASES = `
 `;
 const PHRASES = RAW_PHRASES.trim().split('\n').map(l=>{ const f=l.split('|'); return {jp:f[0], kana:f[1]||f[0], romaji:f[2]||'', it:f[3]||'', note:f[4]||''}; }).filter(p=>p.jp);
 
+/* ================= GENKI (dal libro, pagina per pagina) =================
+   #tag (pagina/argomento), poi: giapponese|lettura|italiano|romaji */
+const RAW_GENKI = `
+#p.39 · Espressioni
+あのう||ehm... (prima di parlare)|anoo
+はい||sì|hai
+そうです||esatto, è così|soo desu
+そうですか||ah, davvero? / capisco|soo desu ka
+#p.39 · Vocaboli
+ばんごう||numero|bangoo
+なまえ||nome|namae
+なん／なに||che cosa?|nan / nani
+#p.39 · Paesi
+イギリス||Regno Unito|igirisu
+オーストラリア||Australia|oosutoraria
+かんこく||Corea|kankoku
+カナダ||Canada|kanada
+ちゅうごく||Cina|chuugoku
+インド||India|indo
+エジプト||Egitto|ejiputo
+フィリピン||Filippine|firipin
+#p.39 · Materie
+アジアけんきゅう||studi asiatici|ajia kenkyuu
+けいざい||economia|keezai
+こうがく||ingegneria|koogaku
+こくさいかんけい||relazioni internazionali|kokusaikankee
+コンピューター||informatica / computer|konpyuutaa
+せいじ||politica|seeji
+せいぶつがく||biologia|seebutsugaku
+ビジネス||economia aziendale|bijinesu
+ぶんがく||letteratura|bungaku
+れきし||storia|rekishi
+#p.39-40 · Professioni
+いしゃ||medico|isha
+かいしゃいん||impiegato|kaishain
+かんごし||infermiere/a|kangoshi
+こうこうせい||studente di liceo|kookoosee
+しゅふ||casalingo/a|shufu
+だいがくいんせい||dottorando|daigakuinsee
+べんごし||avvocato|bengoshi
+#p.40 · Famiglia
+おかあさん||madre|okaasan
+おとうさん||padre|otoosan
+おねえさん||sorella maggiore|oneesan
+おにいさん||fratello maggiore|oniisan
+いもうと||sorella minore|imooto
+おとうと||fratello minore|otooto
+#p.41 · Frasi: X は Y です
+がくせいです。||Sono uno studente.|Gakusee desu.
+にほんごです。||È giapponese.|Nihongo desu.
+せんこうは にほんごです。||La mia materia è il giapponese.|Senkoo wa nihongo desu.
+わたしは ソラ・キムです。||Io sono Sora Kim.|Watashi wa Sora Kimu desu.
+やましたさんは せんせいです。||Il signor Yamashita è un insegnante.|Yamashita san wa sensee desu.
+メアリーさんは アメリカじんです。||Mary è americana.|Mearii san wa amerikajin desu.
+#p.42 · Frasi: domande (か)
+りゅうがくせいですか。||Sei uno studente internazionale?|Ryuugakusee desu ka.
+せんこうは なんですか。||Qual è la tua materia?|Senkoo wa nan desu ka.
+いま なんじですか。||Che ore sono adesso?|Ima nanji desu ka.
+なんさいですか。||Quanti anni hai?|Nansai desu ka.
+なんねんせいですか。||A che anno sei (all'università)?|Nannensee desu ka.
+でんわばんごうは なんばんですか。||Qual è il tuo numero di telefono?|Denwa bangoo wa nanban desu ka.
+えいご||inglese (lingua)|eego
+くじ||le nove (ora)|kuji
+#p.43 · Frasi: Nome の Nome
+たけしさんの でんわばんごう||il numero di telefono di Takeshi|Takeshi san no denwa bangoo
+だいがくの せんせい||un professore universitario|daigaku no sensee
+にほんごの がくせい||uno studente di giapponese|nihongo no gakusee
+にほんの だいがく||un'università in Giappone|Nihon no daigaku
+たけしさんの おかあさんは こうこうの せんせいです。||La madre di Takeshi è un'insegnante di liceo.|Takeshi san no okaasan wa kookoo no sensee desu.
+`;
+
 const ITEMS = [], BLOCKS = [];
 let WORDS = [], BUILTIN_BLOCKS = [];
 const KANA_BASE = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん';
@@ -1362,6 +1441,14 @@ function buildItems(){
   const HIRAGANA = [...'あいうえおかきくけこさしすせそたちつてとでの'];
   HIRAGANA.forEach(h=>{
     ITEMS.push({id:'h:'+h, d:'h', theme:'Hiragana', jp:h, ro:romaji(h)});
+  });
+  // GENKI (dal libro)
+  let gt='GENKI';
+  RAW_GENKI.trim().split('\n').forEach(line=>{
+    line=line.trim(); if(!line) return;
+    if(line[0]==='#'){ gt=line.slice(1); return; }
+    const f=line.split('|'), jp=f[0], kana=f[1]||f[0];
+    ITEMS.push({id:'g:'+jp, d:'g', theme:gt, jp, kana, ro:f[3]||romaji(kana), it:f[2]});
   });
   WORDS = ITEMS.filter(x=>x.d==='w');
   ITEMS.filter(x=>x.d==='j').forEach(k=>{ k.ex = WORDS.filter(w=>w.jp.includes(k.jp)).sort((a,b)=>a.jp.length-b.jp.length).slice(0,4); });
@@ -1435,20 +1522,21 @@ function meter(el, legend, c){
   legend.innerHTML = `<span><i class="dot-k"></i><span><b>${c.k}</b> la so</span></span><span><i class="dot-l"></i><span><b>${c.l}</b> da imparare</span></span><span><i class="dot-n"></i><span><b>${c.n}</b> nuove</span></span><span class="pct">${c.pct}% appreso</span>`;
 }
 function renderHome(){
-  const cw=counts(WORDS), ck=counts(ITEMS.filter(x=>x.d!=='w'));
-  const nk=ITEMS.filter(x=>x.d==='h'||x.d==='k').length, nj=ITEMS.filter(x=>x.d==='j').length;
+  const cw=counts(WORDS), ck=counts(ITEMS.filter(x=>x.d==='h'||x.d==='k')), cg=counts(ITEMS.filter(x=>x.d==='g'));
   $('wordsSub').textContent = `${cw.vis} parole · ${BLOCKS.length} blocchi`;
-  $('kanaSub').textContent = `${nk} hiragana`;
-  meter($('wordsMeter'),$('wordsLegend'),cw); meter($('kanaMeter'),$('kanaLegend'),ck);
+  $('kanaSub').textContent = `${ck.t} hiragana`;
+  $('genkiSub').textContent = `${cg.t} card`;
+  meter($('wordsMeter'),$('wordsLegend'),cw); meter($('kanaMeter'),$('kanaLegend'),ck); meter($('genkiMeter'),$('genkiLegend'),cg);
   const ps=$('phraseSub'); if(ps){ const p=loadPhrase(); ps.textContent = (p&&p.date===todayStr()&&p.jp) ? p.jp : (PHRASES.length ? PHRASES[bankIndexForToday()].jp : 'Una frase al giorno con le tue parole'); }
 }
 $('deckWords').onclick=()=>{ prefs.deck='w'; savePrefs(); renderSetup(); show('setup'); };
 $('deckKana').onclick=()=>{ prefs.deck='kk'; savePrefs(); renderSetup(); show('setup'); };
+$('deckGenki').onclick=()=>{ prefs.deck='g'; savePrefs(); renderSetup(); show('setup'); };
 $('openList').onclick=()=>{ renderList(); show('list'); };
 $('openCards').onclick=()=>{ renderCards(); show('cards'); };
 
 /* ================= SETUP ================= */
-const activeDeck = () => prefs.deck==='w' ? 'w' : 'kana';
+const activeDeck = () => prefs.deck==='w' ? 'w' : (prefs.deck==='g' ? 'g' : 'kana');
 const GROUPS = [
   {k:'l', cls:'g-l', name:'Da imparare', sub:'Quelle scartate a sinistra'},
   {k:'n', cls:'g-n', name:'Nuove', sub:'Mai studiate qui'},
@@ -1468,17 +1556,18 @@ function poolFor(deck, group){
 }
 const DIRS = {
   w:   [['f','Giapponese'],['r','Italiano']],
+  g:   [['f','Giapponese'],['r','Italiano']],
   kana:[['f','Hiragana'],['r','Romaji']],
   j:   [['f','Kanji'],['r','Significato']]
 };
 function renderSetup(){
   const deck=activeDeck(), isW = deck==='w';
-  $('setupTitle').textContent = isW ? 'Parole' : 'Hiragana';
+  $('setupTitle').textContent = isW ? 'Parole' : (deck==='g' ? 'GENKI' : 'Hiragana');
   $('kkSeg').hidden = true;
 
   // riepilogo
   const sel = counts(selection(deck));
-  const label = isW ? (prefs.blocks.length ? (prefs.blocks.length===1 ? `Blocco ${prefs.blocks[0]+1}` : `${prefs.blocks.length} blocchi scelti`) : 'Tutte le parole') : 'Hiragana';
+  const label = isW ? (prefs.blocks.length ? (prefs.blocks.length===1 ? `Blocco ${prefs.blocks[0]+1}` : `${prefs.blocks.length} blocchi scelti`) : 'Tutte le parole') : (deck==='g' ? 'GENKI' : 'Hiragana');
   $('summary').innerHTML = `${ring(sel.pct,64)}<div class="txt"><b>${esc(label)}: ${sel.pct}% appreso</b><span>${sel.k} la so · ${sel.l} da imparare · ${sel.n} nuove</span></div>`;
 
   // blocchi (solo parole)
@@ -1531,7 +1620,7 @@ let queue=[], idx=0, history=[], results={};
 function shuffle(a){ a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
 function startSession(items){ queue=items; idx=0; history=[]; results={}; show('study'); renderCard(); }
 
-const DECK_TINT = {w:['var(--ramune-soft)','var(--yuzu-soft)'], h:['var(--sakura-soft)','var(--yuzu-soft)'], k:['var(--yuzu-soft)','var(--ramune-soft)'], j:['var(--known-soft)','var(--sakura-soft)']};
+const DECK_TINT = {w:['var(--ramune-soft)','var(--yuzu-soft)'], h:['var(--sakura-soft)','var(--yuzu-soft)'], k:['var(--yuzu-soft)','var(--ramune-soft)'], j:['var(--known-soft)','var(--sakura-soft)'], g:['var(--known-soft)','var(--ramune-soft)']};
 const ST_NAME = {n:'Nuova', l:'Da imparare', k:'La so', h:'Mai vista'};
 const jpSize = s => { const n=[...s].length; return n<=1?150 : n<=2?110 : n<=3?84 : n<=5?64 : n<=8?46 : 36; };
 const itSize = s => s.length<=10?40 : s.length<=20?32 : 26;
@@ -1544,7 +1633,7 @@ function faces(x){
   const top = `<div class="top"><span class="tag">${esc(tagTxt)}</span><span class="status-tag st-${st(x.id)}">${ST_NAME[st(x.id)]}</span></div>`;
   const jpBig = `<div class="big" style="font-size:${jpSize(x.jp)}px">${esc(x.jp)}</div>`;
   let front, back;
-  if(x.d==='w'){
+  if(x.d==='w'||x.d==='g'){
     const itBig = `<div class="big it" style="font-size:${itSize(x.it)}px">${esc(x.it)}</div>`;
     // lato giapponese: parola + lettura + romaji; lato italiano: solo la traduzione
     const jpSide = `${jpBig}${x.kana!==x.jp?`<div class="reading">${esc(x.kana)}</div>`:''}<div class="romaji">${esc(x.ro)}</div>`;
@@ -1648,7 +1737,7 @@ function renderList(){
   const rows=ITEMS.filter(x=>inDeck(x,listDeck) && (!q || [x.jp,x.kana,x.ro,x.it,x.alt,x.on,x.kun].some(v=>v && v.toLowerCase().includes(q))));
   if(!rows.length){ $('listBox').innerHTML='<div class="empty">Nessun risultato</div>'; return; }
   $('listBox').innerHTML = rows.map(x=>{
-    const sub = x.d==='w' ? `B${x.b+1} · ${x.kana!==x.jp?x.kana+' · ':''}${x.ro} — ${x.it}` : x.d==='j' ? `${x.it} · ${x.on||''}${x.kun?' · '+x.kun:''}` : `${x.theme} · ${x.ro}`;
+    const sub = x.d==='w' ? `B${x.b+1} · ${x.kana!==x.jp?x.kana+' · ':''}${x.ro} — ${x.it}` : x.d==='j' ? `${x.it} · ${x.on||''}${x.kun?' · '+x.kun:''}` : x.d==='g' ? `${x.theme} · ${x.ro}${x.it?' — '+x.it:''}` : `${x.theme} · ${x.ro}`;
     return `<div class="item"><div class="w"><span class="jp">${esc(x.jp)}</span><small>${esc(sub)}</small></div><button class="status-tag st-${st(x.id)}" data-id="${esc(x.id)}">${ST_NAME[st(x.id)]}</button></div>`;
   }).join('');
 }
