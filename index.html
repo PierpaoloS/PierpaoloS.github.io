@@ -1401,6 +1401,42 @@ const RAW_GENKI = `
 にほんごの がくせい||uno studente di giapponese|nihongo no gakusee
 にほんの だいがく||un'università in Giappone|Nihon no daigaku
 たけしさんの おかあさんは こうこうの せんせいです。||La madre di Takeshi è un'insegnante di liceo.|Takeshi san no okaasan wa kookoo no sensee desu.
+#Uso comune · Espressioni
+もっと ゆっくり||più lentamente (per favore)|motto yukkuri
+あの||ehm... / scusa (per interrompere chi parla)|ano
+わかりません||non capisco|wakarimasen
+すごい||che figo! / fantastico|sugoi
+そうですね||già, è vero, in effetti (cortese)|soo desu ne
+そうだな||già, fammi pensare... (informale)|soo da na
+だいじょうぶ||va bene, tutto ok, nessun problema|daijoobu
+どういたしまして||prego (risposta a "grazie")|doo itashimashite
+おねがいします||per favore / la prego|onegaishimasu
+おはよう ございます||buongiorno (solo al mattino)|ohayoo gozaimasu
+ありがとう ございました||grazie (uscendo da negozi/ristoranti)|arigatoo gozaimashita
+どうも ありがとう ございました||grazie davvero (più caloroso)|doomo arigatoo gozaimashita
+#Uso comune · Verbi
+よみます||leggere|yomimasu
+しります||sapere / conoscere|shirimasu
+たべたいです||voglio mangiare (-tai = volere, come iki-tai)|tabetai desu
+#Uso comune · Ristorante e negozi
+ぜんぶ おいしいです||è tutto buono!|zenbu oishii desu
+すわりますか||vuole sedersi?|suwarimasu ka
+どこで はらいますか||dove pago?|doko de haraimasu ka
+カードで はらえますか||posso pagare con la carta?|kaado de haraemasu ka
+げんきん||contanti|genkin
+カード||carta (di pagamento)|kaado
+なんかいですか||che piano è?|nankai desu ka
+ごみばこは いっかいです||il cestino è al piano terra|gomibako wa ikkai desu
+#Uso comune · In giro
+おてあらい||bagno / toilette|otearai
+もう いいですか||posso? / va bene adesso?|moo ii desu ka
+すみません、とおります||permesso (per passare)|sumimasen, toorimasu
+いっしょに しゃしんを とっても いいですか||possiamo fare una foto insieme?|issho ni shashin o totte mo ii desu ka
+この ドレスは とても すてきです||questo vestito è molto bello|kono doresu wa totemo suteki desu
+あかが だいすきです||adoro il rosso|aka ga daisuki desu
+みぎ||destra (右)|migi
+ひだり||sinistra (左)|hidari
+ドア||porta (dall'inglese "door")|doa
 `;
 
 const ITEMS = [], BLOCKS = [];
@@ -1438,7 +1474,8 @@ function buildItems(){
   });
   // hiragana (solo questi; se ne aggiungono altri qui man mano che si studiano)
   // Gruppo 1: a i u e o · ka ki ku ke ko     Gruppo 2: sa shi su se so · ta chi tsu te to · de · no
-  const HIRAGANA = [...'あいうえおかきくけこさしすせそたちつてとでの'];
+  // Gruppo 3: na ni nu ne no · ha hi fu he ho
+  const HIRAGANA = [...'あいうえおかきくけこさしすせそたちつてとでのなにぬねはひふへほ'];
   HIRAGANA.forEach(h=>{
     ITEMS.push({id:'h:'+h, d:'h', theme:'Hiragana', jp:h, ro:romaji(h)});
   });
