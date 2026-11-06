@@ -364,6 +364,10 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
       <div class="meter" id="genkiMeter"></div>
       <div class="legend" id="genkiLegend"></div>
     </button>
+    <button class="row-btn" id="openRipasso">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg></span>
+      <span><b>Ripasso GENKI</b><span>Regole di grammatica ed esempi dalle lezioni</span></span>
+    </button>
     <button class="row-btn" id="openPhrase">
       <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8 8 0 0 1-11.6 7.1L4 20l1.4-5.4A8 8 0 1 1 21 11.5z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01"/></svg></span>
       <span><b>Frase del giorno</b><span id="phraseSub">Una frase al giorno con le tue parole</span></span>
@@ -511,6 +515,18 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
       <button class="tool" id="phraseAI"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.9L18.7 9.7 13.8 11.5 12 16.4 10.2 11.5 5.3 9.7 10.2 7.9z"/><path d="M19 15l.7 1.9L21.6 17.6l-1.9.7L19 20.2l-.7-1.9L16.4 17.6l1.9-.7z"/></svg>Con IA</button>
     </div>
     <p class="note">Ripeti questa frase durante il giorno — ad alta voce, mentre cammini, prima di dormire. Domani ne arriva una nuova con parole diverse e tempi verbali diversi.</p>
+  </section>
+
+  <!-- RIPASSO GENKI -->
+  <section class="screen" id="ripasso" hidden>
+    <div class="bar">
+      <button class="icon-btn" id="ripassoBack" aria-label="Indietro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h1>Ripasso GENKI</h1>
+    </div>
+    <p class="hello">Le regole di grammatica delle lezioni, con esempi.
+      <small>Leggi la regola, poi copri l'italiano e prova a tradurre gli esempi.</small></p>
+    <div id="ripassoBox"></div>
+    <p class="note">Questo è il «bignami» grammaticale. Le parole e le frasi da esercitare sono nel mazzo GENKI (swipe).</p>
   </section>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -1548,7 +1564,7 @@ $('themeBtn').onclick=()=>{
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{ if(themeMode==='auto') applyTheme(); });
 
 /* ================= NAV ================= */
-const screens=['home','setup','study','done','list','cards','phrase'];
+const screens=['home','setup','study','done','list','cards','phrase','ripasso'];
 let current='home';
 function show(name){ screens.forEach(s=>$(s).hidden = s!==name); current=name; window.scrollTo(0,0); }
 
@@ -2082,6 +2098,48 @@ function openAiSettings(){
 }
 $('openPhrase').onclick=openPhrase;
 $('phraseBack').onclick=()=>{ renderHome(); show('home'); };
+
+/* ---------- ripasso GENKI (sintesi grammaticale delle lezioni) ---------- */
+const GENKI_REVIEW = [
+  {
+    title:'Lezione 1', sub:'Saluti e presentarsi · pp. 39-43',
+    points:[
+      { pat:'X は Y です', patRo:'X wa Y desu', mean:'X è Y',
+        note:'は (wa) segna il tema della frase: si scrive は ma si legge wa. です (desu) è la copula cortese è/sono. Il tema già noto spesso si omette.',
+        ex:[ ['わたしは がくせいです。','Watashi wa gakusee desu.','Io sono uno studente.'],
+             ['メアリーさんは アメリカじんです。','Mearii san wa amerikajin desu.','Mary è americana.'] ] },
+      { pat:'… ですか', patRo:'… desu ka', mean:'domanda',
+        note:'Aggiungi か (ka) alla fine di una frase per renderla una domanda. In giapponese か fa già da punto interrogativo.',
+        ex:[ ['りゅうがくせいですか。','Ryuugakusee desu ka.','Sei uno studente internazionale?'],
+             ['なんさいですか。','Nansai desu ka.','Quanti anni hai?'] ] },
+      { pat:'なん / なに', patRo:'nan / nani', mean:'parole interrogative',
+        note:'なに / なん (nani / nan) vuol dire che cosa, e si combina con altre parole: なんじ (nanji) che ora, なんさい (nansai) quanti anni, なんねんせい (nannensee) che anno, なんばん (nanban) che numero.',
+        ex:[ ['いま なんじですか。','Ima nanji desu ka.','Che ore sono adesso?'],
+             ['せんこうは なんですか。','Senkoo wa nan desu ka.','Qual è la tua materia?'] ] },
+      { pat:'A の B', patRo:'A no B', mean:'B di A (possesso/relazione)',
+        note:'の (no) unisce due nomi e il modificatore viene PRIMA: A の B = B di A. Es. だいがくの せんせい (daigaku no sensee) = un professore dell’università.',
+        ex:[ ['たけしさんの でんわばんごう','Takeshi san no denwa bangoo','il numero di telefono di Takeshi'],
+             ['にほんごの がくせい','nihongo no gakusee','uno studente di giapponese'] ] },
+      { pat:'… さん', patRo:'… san', mean:'suffisso di cortesia',
+        note:'さん (san) va DOPO il nome della persona (es. やましたさん, Yamashita-san). Non si usa MAI riferendosi a sé stessi.',
+        ex:[ ['やましたさんは せんせいです。','Yamashita san wa sensee desu.','Il signor Yamashita è un insegnante.'] ] },
+    ]
+  }
+];
+function renderRipasso(){
+  const box = $('ripassoBox');
+  box.innerHTML = GENKI_REVIEW.map(les => `
+    <p class="label">${les.title} · ${les.sub}</p>
+    ${les.points.map(p=>`
+      <div class="gp">
+        <div class="gp-top"><span class="gp-pat">${p.pat}</span><span class="gp-pat-ro">${p.patRo}</span><span class="gp-mean">${p.mean}</span></div>
+        <div class="gp-note">${p.note}</div>
+        ${p.ex.map(e=>`<div class="gp-ex"><span class="gp-jp">${e[0]}</span><span class="gp-ro">${e[1]}</span><span class="gp-it">${e[2]}</span></div>`).join('')}
+      </div>`).join('')}
+  `).join('');
+}
+$('openRipasso').onclick=()=>{ renderRipasso(); show('ripasso'); };
+$('ripassoBack').onclick=()=>{ renderHome(); show('home'); };
 $('phraseSettings').onclick=openAiSettings;
 $('phraseShuffle').onclick=()=>{ showBankPhrase(PHRASES.length?Math.floor(Math.random()*PHRASES.length):null); };
 $('phraseAI').onclick=()=>{ if(aiCfg().key) genPhrase(); else openAiSettings(); };
