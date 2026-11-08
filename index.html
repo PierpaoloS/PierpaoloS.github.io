@@ -331,6 +331,25 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
 .lvocab .lv-ro{font-family:var(--display);font-style:normal;color:var(--ramune);font-weight:600;margin-right:8px}
 .chev{color:var(--muted);font-size:22px;font-weight:700;flex:none}
 
+/* ---------- scrivi in hiragana ---------- */
+.hb-count{margin-left:auto;font-family:var(--display);font-weight:700;font-size:15px;color:var(--muted)}
+.hb-prompt{display:flex;flex-direction:column;gap:3px;align-items:center;text-align:center;margin:8px 0 18px}
+.hb-ro{font-family:var(--display);font-size:30px;font-weight:600;color:var(--ink);letter-spacing:.5px}
+.hb-it{font-size:15px;font-weight:600;color:var(--muted)}
+.hb-slots{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;min-height:54px;margin-bottom:14px}
+.hb-slot{width:46px;height:54px;border-radius:13px;border:2px dashed var(--line);background:transparent;font-family:var(--jp);font-size:26px;font-weight:700;color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.hb-slot.filled{border-style:solid;border-color:var(--ramune);background:var(--surface)}
+.hb-slot.ok{border-style:solid;border-color:var(--known);background:var(--known-soft)}
+.hb-slot.bad{border-style:solid;border-color:var(--sakura);background:var(--sakura-soft)}
+.hb-gap{width:16px;height:54px}
+.hb-bank{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin-top:4px}
+.hb-tile{min-width:50px;height:58px;padding:0 10px;border-radius:15px;border:none;background:var(--surface);box-shadow:var(--shadow);font-family:var(--jp);font-size:28px;font-weight:700;color:var(--ink);cursor:pointer;transition:transform .08s}
+.hb-tile:active{transform:translateY(2px)}
+.hb-tile.used{visibility:hidden}
+.hb-result{text-align:center;font-weight:800;font-size:15px;border-radius:14px;padding:10px 14px;margin-bottom:12px}
+.hb-result.ok{background:var(--known-soft);color:var(--known)}
+.hb-result.bad{background:var(--sakura-soft);color:var(--sakura)}
+
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -357,6 +376,10 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
       <div class="head"><div><h2>Hiragana</h2><p id="kanaSub"></p></div><span class="badge"><span>あ</span></span></div>
       <div class="meter" id="kanaMeter"></div>
       <div class="legend" id="kanaLegend"></div>
+    </button>
+    <button class="row-btn" id="openBuild">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10"/></svg></span>
+      <span><b>Scrivi in hiragana</b><span>Dal romaji, tocca gli hiragana giusti</span></span>
     </button>
     <button class="deck genki" id="deckGenki">
       <span class="deco"></span>
@@ -527,6 +550,23 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
       <small>Leggi la regola, poi copri l'italiano e prova a tradurre gli esempi.</small></p>
     <div id="ripassoBox"></div>
     <p class="note">Questo è il «bignami» grammaticale. Le parole e le frasi da esercitare sono nel mazzo GENKI (swipe).</p>
+  </section>
+
+  <!-- SCRIVI IN HIRAGANA -->
+  <section class="screen" id="build" hidden>
+    <div class="bar">
+      <button class="icon-btn" id="buildBack" aria-label="Indietro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h1>Scrivi in hiragana</h1>
+      <span class="hb-count" id="buildScore"></span>
+    </div>
+    <p class="hello">Leggi il romaji e tocca gli hiragana giusti, in ordine.
+      <small>Solo parole con i simboli che hai già sbloccato. Tocca una casella piena per toglierla.</small></p>
+    <div id="buildBox"></div>
+    <div class="tools" style="margin-top:4px">
+      <button class="tool" id="buildClear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>Pulisci</button>
+      <button class="tool" id="buildNext"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Avanti</button>
+    </div>
+    <p class="note">Esercizio di lettura e scrittura: imparare a riconoscere il suono (romaji) e comporlo con i simboli giusti. Man mano che sblocchi nuovi gruppi di hiragana, compaiono più parole.</p>
   </section>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -1351,6 +1391,7 @@ const PHRASES = RAW_PHRASES.trim().split('\n').map(l=>{ const f=l.split('|'); re
 /* ================= GENKI (dal libro, pagina per pagina) =================
    #tag (pagina/argomento), poi: giapponese|lettura|italiano|romaji */
 const RAW_GENKI = `
+@Lezione 1
 #p.39 · Espressioni
 あのう||ehm... (prima di parlare)|anoo
 はい||sì|hai
@@ -1417,6 +1458,7 @@ const RAW_GENKI = `
 にほんごの がくせい||uno studente di giapponese|nihongo no gakusee
 にほんの だいがく||un'università in Giappone|Nihon no daigaku
 たけしさんの おかあさんは こうこうの せんせいです。||La madre di Takeshi è un'insegnante di liceo.|Takeshi san no okaasan wa kookoo no sensee desu.
+@Uso comune
 #Uso comune · Espressioni
 もっと ゆっくり||più lentamente (per favore)|motto yukkuri
 あの||ehm... / scusa (per interrompere chi parla)|ano
@@ -1455,14 +1497,14 @@ const RAW_GENKI = `
 ドア||porta (dall'inglese "door")|doa
 `;
 
-const ITEMS = [], BLOCKS = [];
+const ITEMS = [], BLOCKS = [], GENKI_CHAPTERS = [];
 let WORDS = [], BUILTIN_BLOCKS = [];
 const KANA_BASE = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん';
 const KANA_DAK = 'がぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽ';
 const KANA_COMBO = [];
 [...'きしちにひみりぎじびぴ'].forEach(c=>[...'ゃゅょ'].forEach(y=>KANA_COMBO.push(c+y)));
 function buildItems(){
-  ITEMS.length=0; BLOCKS.length=0;
+  ITEMS.length=0; BLOCKS.length=0; GENKI_CHAPTERS.length=0;
   // parole di serie
   let theme='', block=-1;
   RAW_WORDS.trim().split('\n').forEach(line=>{
@@ -1495,13 +1537,15 @@ function buildItems(){
   HIRAGANA.forEach(h=>{
     ITEMS.push({id:'h:'+h, d:'h', theme:'Hiragana', jp:h, ro:romaji(h)});
   });
-  // GENKI (dal libro)
-  let gt='GENKI';
+  // GENKI (dal libro): @ = lezione/capitolo, # = argomento
+  let gt='GENKI', gch='Lezione 1';
   RAW_GENKI.trim().split('\n').forEach(line=>{
     line=line.trim(); if(!line) return;
-    if(line[0]==='#'){ gt=line.slice(1); return; }
+    if(line[0]==='@'){ gch=line.slice(1).trim(); return; }
+    if(line[0]==='#'){ gt=line.slice(1).trim(); return; }
+    let gci=GENKI_CHAPTERS.indexOf(gch); if(gci<0) gci=GENKI_CHAPTERS.push(gch)-1;
     const f=line.split('|'), jp=f[0], kana=f[1]||f[0];
-    ITEMS.push({id:'g:'+jp, d:'g', theme:gt, jp, kana, ro:f[3]||romaji(kana), it:f[2]});
+    ITEMS.push({id:'g:'+jp, d:'g', theme:gt, gc:gci, jp, kana, ro:f[3]||romaji(kana), it:f[2]});
   });
   WORDS = ITEMS.filter(x=>x.d==='w');
   ITEMS.filter(x=>x.d==='j').forEach(k=>{ k.ex = WORDS.filter(w=>w.jp.includes(k.jp)).sort((a,b)=>a.jp.length-b.jp.length).slice(0,4); });
@@ -1513,9 +1557,10 @@ const inDeck = (x,deck) => deck==='kana' ? (x.d==='h'||x.d==='k') : x.d===deck;
 const LS_KEY='kotoba-swipe-v1', PREF_KEY='kotoba-swipe-prefs', THEME_KEY='kotoba-theme';
 let state = {v:1, updatedAt:0, s:{}};
 try{ const j=JSON.parse(localStorage.getItem(LS_KEY)); if(j && j.s) state=j; }catch(e){}
-let prefs = {deck:'w', kk:'kana', group:'n', dir:'f', len:20, blocks:[]};
+let prefs = {deck:'w', kk:'kana', group:'n', dir:'f', len:20, blocks:[], gch:[]};
 try{ Object.assign(prefs, JSON.parse(localStorage.getItem(PREF_KEY))||{}); }catch(e){}
 if(!Array.isArray(prefs.blocks)) prefs.blocks=[];
+if(!Array.isArray(prefs.gch)) prefs.gch=[];
 const savePrefs=()=>{ try{localStorage.setItem(PREF_KEY,JSON.stringify(prefs));}catch(e){} };
 const st = id => state.s[id] || 'n';
 function persist(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){ toast('Impossibile salvare: spazio del browser non disponibile'); } touch(); }
@@ -1564,7 +1609,7 @@ $('themeBtn').onclick=()=>{
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{ if(themeMode==='auto') applyTheme(); });
 
 /* ================= NAV ================= */
-const screens=['home','setup','study','done','list','cards','phrase','ripasso'];
+const screens=['home','setup','study','done','list','cards','phrase','ripasso','build'];
 let current='home';
 function show(name){ screens.forEach(s=>$(s).hidden = s!==name); current=name; window.scrollTo(0,0); }
 
@@ -1598,6 +1643,7 @@ const GROUPS = [
   {k:'m', cls:'g-m', name:'Mix', sub:'Tutto, incluse le mai viste'}
 ];
 function selection(deck){
+  if(deck==='g'){ const gc=prefs.gch.filter(i=>i<GENKI_CHAPTERS.length); return ITEMS.filter(x=>x.d==='g' && (!gc.length || gc.includes(x.gc))); }
   const bl = prefs.blocks.filter(b=>b<BLOCKS.length);
   return ITEMS.filter(x=>inDeck(x,deck) && (deck!=='w' || !bl.length || bl.includes(x.b)));
 }
@@ -1620,18 +1666,29 @@ function renderSetup(){
 
   // riepilogo
   const sel = counts(selection(deck));
-  const label = isW ? (prefs.blocks.length ? (prefs.blocks.length===1 ? `Blocco ${prefs.blocks[0]+1}` : `${prefs.blocks.length} blocchi scelti`) : 'Tutte le parole') : (deck==='g' ? 'GENKI' : 'Hiragana');
+  const label = isW ? (prefs.blocks.length ? (prefs.blocks.length===1 ? `Blocco ${prefs.blocks[0]+1}` : `${prefs.blocks.length} blocchi scelti`) : 'Tutte le parole')
+    : deck==='g' ? (prefs.gch.length ? (prefs.gch.length===1 ? GENKI_CHAPTERS[prefs.gch[0]] : `${prefs.gch.length} lezioni scelte`) : 'Tutte le lezioni') : 'Hiragana';
   $('summary').innerHTML = `${ring(sel.pct,64)}<div class="txt"><b>${esc(label)}: ${sel.pct}% appreso</b><span>${sel.k} la so · ${sel.l} da imparare · ${sel.n} nuove</span></div>`;
 
-  // blocchi (solo parole)
-  $('blocksLabel').hidden = !isW; $('blocks').hidden = !isW;
+  // blocchi (parole) / lezioni (GENKI)
+  const showBlocks = isW || deck==='g';
+  $('blocksLabel').hidden = !showBlocks; $('blocks').hidden = !showBlocks;
+  $('blocksLabel').textContent = deck==='g' ? 'Lezioni' : 'Blocchi';
+  const checkSvg = '<span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>';
   if(isW){
     const all = counts(WORDS);
-    const checkSvg = '<span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>';
     let html = `<button class="block" data-b="all" aria-pressed="${!prefs.blocks.length}">${ring(all.pct,46)}<span class="txt"><small>Tutti</small><b>Tutte le parole</b><span class="sub">${all.k} / ${all.vis} · ${all.l} da imparare</span></span>${checkSvg}</button>`;
     BLOCKS.forEach((name,i)=>{
       const c = counts(WORDS.filter(x=>x.b===i));
       html += `<button class="block" data-b="${i}" aria-pressed="${prefs.blocks.includes(i)}">${ring(c.pct,46)}<span class="txt"><small>Blocco ${i+1}</small><b>${esc(name)}</b><span class="sub">${c.k} / ${c.vis} · ${c.l} da imparare</span></span>${checkSvg}</button>`;
+    });
+    $('blocks').innerHTML = html;
+  } else if(deck==='g'){
+    const allG = counts(ITEMS.filter(x=>x.d==='g'));
+    let html = `<button class="block" data-b="all" aria-pressed="${!prefs.gch.length}">${ring(allG.pct,46)}<span class="txt"><small>Tutte</small><b>Tutte le lezioni</b><span class="sub">${allG.k} / ${allG.vis} · ${allG.l} da imparare</span></span>${checkSvg}</button>`;
+    GENKI_CHAPTERS.forEach((name,i)=>{
+      const c = counts(ITEMS.filter(x=>x.d==='g' && x.gc===i));
+      html += `<button class="block" data-b="${i}" aria-pressed="${prefs.gch.includes(i)}">${ring(c.pct,46)}<span class="txt"><small>Lezione</small><b>${esc(name)}</b><span class="sub">${c.k} / ${c.vis} · ${c.l} da imparare</span></span>${checkSvg}</button>`;
     });
     $('blocks').innerHTML = html;
   }
@@ -1653,8 +1710,9 @@ function renderSetup(){
 $('kkSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; prefs.kk=b.dataset.kk; savePrefs(); renderSetup(); });
 $('blocks').addEventListener('click',e=>{
   const b=e.target.closest('button[data-b]'); if(!b) return;
-  if(b.dataset.b==='all') prefs.blocks=[];
-  else { const i=+b.dataset.b; prefs.blocks = prefs.blocks.includes(i) ? prefs.blocks.filter(x=>x!==i) : [...prefs.blocks,i].sort((a,b)=>a-b); }
+  const key = activeDeck()==='g' ? 'gch' : 'blocks';
+  if(b.dataset.b==='all') prefs[key]=[];
+  else { const i=+b.dataset.b; prefs[key] = prefs[key].includes(i) ? prefs[key].filter(x=>x!==i) : [...prefs[key],i].sort((a,b)=>a-b); }
   savePrefs(); renderSetup();
 });
 $('groups').addEventListener('click',e=>{ const b=e.target.closest('button[data-g]'); if(!b) return; prefs.group=b.dataset.g; savePrefs(); renderSetup(); });
@@ -2140,6 +2198,130 @@ function renderRipasso(){
 }
 $('openRipasso').onclick=()=>{ renderRipasso(); show('ripasso'); };
 $('ripassoBack').onclick=()=>{ renderHome(); show('home'); };
+
+/* ---------- scrivi in hiragana (romaji -> tocca gli hiragana) ---------- */
+/* Solo parole/frasi scrivibili con gli hiragana sbloccati; il filtro usa il set attivo,
+   quindi aggiungendo nuovi gruppi si sbloccano altre parole in automatico. */
+const BUILD_ITEMS = [
+  {jp:'あお',ro:'ao',it:'blu'},
+  {jp:'あか',ro:'aka',it:'rosso'},
+  {jp:'あき',ro:'aki',it:'autunno'},
+  {jp:'あさ',ro:'asa',it:'mattina'},
+  {jp:'あし',ro:'ashi',it:'gamba / piede'},
+  {jp:'いえ',ro:'ie',it:'casa'},
+  {jp:'いけ',ro:'ike',it:'stagno'},
+  {jp:'いし',ro:'ishi',it:'pietra'},
+  {jp:'いぬ',ro:'inu',it:'cane'},
+  {jp:'うえ',ro:'ue',it:'sopra'},
+  {jp:'うし',ro:'ushi',it:'mucca'},
+  {jp:'うち',ro:'uchi',it:'casa'},
+  {jp:'えき',ro:'eki',it:'stazione'},
+  {jp:'おか',ro:'oka',it:'collina'},
+  {jp:'おかね',ro:'okane',it:'soldi'},
+  {jp:'かお',ro:'kao',it:'viso'},
+  {jp:'かさ',ro:'kasa',it:'ombrello'},
+  {jp:'かき',ro:'kaki',it:'cachi'},
+  {jp:'きく',ro:'kiku',it:'ascoltare'},
+  {jp:'くち',ro:'kuchi',it:'bocca'},
+  {jp:'くつ',ro:'kutsu',it:'scarpe'},
+  {jp:'けさ',ro:'kesa',it:'stamattina'},
+  {jp:'こえ',ro:'koe',it:'voce'},
+  {jp:'さけ',ro:'sake',it:'sakè'},
+  {jp:'さかな',ro:'sakana',it:'pesce'},
+  {jp:'しお',ro:'shio',it:'sale'},
+  {jp:'した',ro:'shita',it:'sotto'},
+  {jp:'すし',ro:'sushi',it:'sushi'},
+  {jp:'すな',ro:'suna',it:'sabbia'},
+  {jp:'せかい',ro:'sekai',it:'mondo'},
+  {jp:'そと',ro:'soto',it:'fuori'},
+  {jp:'たこ',ro:'tako',it:'polpo'},
+  {jp:'つき',ro:'tsuki',it:'luna'},
+  {jp:'つくえ',ro:'tsukue',it:'scrivania'},
+  {jp:'ちち',ro:'chichi',it:'papà'},
+  {jp:'なつ',ro:'natsu',it:'estate'},
+  {jp:'なか',ro:'naka',it:'dentro'},
+  {jp:'ぬの',ro:'nuno',it:'stoffa'},
+  {jp:'ねこ',ro:'neko',it:'gatto'},
+  {jp:'ねつ',ro:'netsu',it:'febbre'},
+  {jp:'はな',ro:'hana',it:'fiore / naso'},
+  {jp:'はこ',ro:'hako',it:'scatola'},
+  {jp:'ひと',ro:'hito',it:'persona'},
+  {jp:'ふね',ro:'fune',it:'nave'},
+  {jp:'ふく',ro:'fuku',it:'vestiti'},
+  {jp:'ほし',ro:'hoshi',it:'stella'},
+  {jp:'ほね',ro:'hone',it:'osso'},
+  {jp:'たかい',ro:'takai',it:'alto / caro'},
+  {jp:'おおきい',ro:'ookii',it:'grande'},
+  {jp:'ちいさい',ro:'chiisai',it:'piccolo'},
+  {jp:'ひこうき',ro:'hikouki',it:'aeroplano'},
+  {jp:'ちかてつ',ro:'chikatetsu',it:'metropolitana'},
+  {jp:'ねこです',ro:'neko desu',it:'è un gatto'},
+  {jp:'いぬです',ro:'inu desu',it:'è un cane'},
+  {jp:'さかなです',ro:'sakana desu',it:'è un pesce'},
+  {jp:'ねこ と いぬ',ro:'neko to inu',it:'gatto e cane'},
+  {jp:'あかい くつ',ro:'akai kutsu',it:'scarpe rosse'},
+  {jp:'はこ の なか',ro:'hako no naka',it:'dentro la scatola'},
+  {jp:'いし の いえ',ro:'ishi no ie',it:'casa di pietra'},
+  {jp:'ねこ の こえ',ro:'neko no koe',it:'la voce del gatto'},
+];
+let build=null;
+const hiraganaSet = () => new Set(ITEMS.filter(x=>x.d==='h').map(x=>x.jp));
+const buildPool = () => { const H=hiraganaSet(); return BUILD_ITEMS.filter(it=>[...it.jp].every(c=>c===' '||H.has(c))); };
+const targetChars = () => [...build.item.jp].filter(c=>c!==' ');
+function startBuild(){ build={queue:shuffle(buildPool()),i:0,ok:0,done:0,item:null,picked:[],bank:[],checked:false,correct:false}; showBuild(); }
+function showBuild(){
+  if(!build.queue.length){ $('buildBox').innerHTML='<p class="note">Nessuna parola disponibile con gli hiragana sbloccati finora.</p>'; $('buildScore').textContent=''; return; }
+  if(build.i>=build.queue.length){ build.i=0; build.queue=shuffle(build.queue); }
+  const it=build.item=build.queue[build.i];
+  build.picked=[]; build.checked=false; build.correct=false;
+  const ans=[...it.jp].filter(c=>c!==' '), H=[...hiraganaSet()];
+  const need=Math.max(2,Math.min(4,8-ans.length)), dis=[]; let g=0;
+  while(dis.length<need && g++<200){ const c=H[Math.floor(Math.random()*H.length)]; if(!ans.includes(c)&&!dis.includes(c)) dis.push(c); }
+  build.bank=shuffle(ans.concat(dis)).map(ch=>({ch,used:false}));
+  renderBuild();
+}
+function renderBuild(){
+  const it=build.item; let ni=-1;
+  const slots=[...it.jp].map(c=>{
+    if(c===' ') return '<span class="hb-gap"></span>';
+    ni++; const k=ni, bi=build.picked[k], ch=bi!=null?build.bank[bi].ch:'';
+    const cls='hb-slot'+(ch?' filled':'')+(build.checked?(build.correct?' ok':' bad'):'');
+    return `<button class="${cls}" data-slot="${k}">${ch}</button>`;
+  }).join('');
+  const bank=build.bank.map((t,i)=>`<button class="hb-tile${t.used?' used':''}" data-tile="${i}"${t.used?' disabled':''}>${t.ch}</button>`).join('');
+  let banner='';
+  if(build.checked) banner=build.correct
+    ? `<div class="hb-result ok">Giusto! ${esc(it.ro)}${it.it?' · '+esc(it.it):''}</div>`
+    : `<div class="hb-result bad">Non ancora — togli un simbolo o premi Avanti</div>`;
+  $('buildBox').innerHTML=`<div class="hb-prompt"><span class="hb-ro">${esc(it.ro)}</span>${it.it?`<span class="hb-it">${esc(it.it)}</span>`:''}</div><div class="hb-slots">${slots}</div>${banner}<div class="hb-bank">${bank}</div>`;
+  $('buildScore').textContent=`${build.ok} / ${build.done}`;
+}
+function pickTile(i){
+  if(!build || (build.checked && build.correct)) return;
+  if(build.picked.length>=targetChars().length) return;
+  const t=build.bank[i]; if(!t||t.used) return;
+  t.used=true; build.picked.push(i);
+  if(build.picked.length===targetChars().length){
+    const ans=build.picked.map(bi=>build.bank[bi].ch).join('');
+    build.checked=true; build.correct = ans===targetChars().join('');
+    build.done++; if(build.correct) build.ok++;
+  }
+  renderBuild();
+  if(build.checked && build.correct) setTimeout(()=>{ build.i++; showBuild(); },1000);
+}
+function unpickAt(k){
+  if(!build || (build.checked && build.correct)) return;
+  const bi=build.picked[k]; if(bi==null) return;
+  build.bank[bi].used=false; build.picked.splice(k,1); build.checked=false; renderBuild();
+}
+$('buildBox').addEventListener('click',e=>{
+  const t=e.target.closest('[data-tile]'); if(t){ pickTile(+t.dataset.tile); return; }
+  const s=e.target.closest('[data-slot]'); if(s) unpickAt(+s.dataset.slot);
+});
+$('buildClear').onclick=()=>{ if(!build||!build.item) return; build.picked.forEach(bi=>build.bank[bi].used=false); build.picked=[]; build.checked=false; renderBuild(); };
+$('buildNext').onclick=()=>{ if(!build) return; build.i++; showBuild(); };
+$('openBuild').onclick=()=>{ startBuild(); show('build'); };
+$('buildBack').onclick=()=>{ renderHome(); show('home'); };
 $('phraseSettings').onclick=openAiSettings;
 $('phraseShuffle').onclick=()=>{ showBankPhrase(PHRASES.length?Math.floor(Math.random()*PHRASES.length):null); };
 $('phraseAI').onclick=()=>{ if(aiCfg().key) genPhrase(); else openAiSettings(); };
