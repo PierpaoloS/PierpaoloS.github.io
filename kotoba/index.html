@@ -384,7 +384,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
     </button>
     <button class="deck kana" id="deckKana">
       <span class="deco"></span>
-      <div class="head"><div><h2>Hiragana</h2><p id="kanaSub"></p></div><span class="badge"><span>あ</span></span></div>
+      <div class="head"><div><h2>Kana</h2><p id="kanaSub"></p></div><span class="badge"><span>あ</span></span></div>
       <div class="meter" id="kanaMeter"></div>
       <div class="legend" id="kanaLegend"></div>
     </button>
@@ -428,7 +428,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
       <h1 id="setupTitle">Parole</h1>
     </div>
     <div class="seg" id="kkSeg" hidden>
-      <button data-kk="kana">Kana</button><button data-kk="j">Kanji</button>
+      <button data-kk="h">Hiragana</button><button data-kk="k">Katakana</button>
     </div>
     <div class="summary" id="summary"></div>
     <p class="label" id="blocksLabel">Blocchi</p>
@@ -1542,6 +1542,35 @@ const KANA_BASE = 'あいうえおかきくけこさしすせそたちつてと�
 const KANA_DAK = 'がぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽ';
 const KANA_COMBO = [];
 [...'きしちにひみりぎじびぴ'].forEach(c=>[...'ゃゅょ'].forEach(y=>KANA_COMBO.push(c+y)));
+// Kana a gruppi, come nel libro (gojūon + dakuten/handakuten + yōon). h=hiragana, k=katakana, r=romaji.
+const KANA_ROWS = [
+  {id:'a',  lab:'Vocali',   h:['あ','い','う','え','お'], k:['ア','イ','ウ','エ','オ'], r:['a','i','u','e','o']},
+  {id:'ka', lab:'K · か',    h:['か','き','く','け','こ'], k:['カ','キ','ク','ケ','コ'], r:['ka','ki','ku','ke','ko']},
+  {id:'sa', lab:'S · さ',    h:['さ','し','す','せ','そ'], k:['サ','シ','ス','セ','ソ'], r:['sa','shi','su','se','so']},
+  {id:'ta', lab:'T · た',    h:['た','ち','つ','て','と'], k:['タ','チ','ツ','テ','ト'], r:['ta','chi','tsu','te','to']},
+  {id:'na', lab:'N · な',    h:['な','に','ぬ','ね','の'], k:['ナ','ニ','ヌ','ネ','ノ'], r:['na','ni','nu','ne','no']},
+  {id:'ha', lab:'H · は',    h:['は','ひ','ふ','へ','ほ'], k:['ハ','ヒ','フ','ヘ','ホ'], r:['ha','hi','fu','he','ho']},
+  {id:'ma', lab:'M · ま',    h:['ま','み','む','め','も'], k:['マ','ミ','ム','メ','モ'], r:['ma','mi','mu','me','mo']},
+  {id:'ya', lab:'Y · や',    h:['や','ゆ','よ'],          k:['ヤ','ユ','ヨ'],          r:['ya','yu','yo']},
+  {id:'ra', lab:'R · ら',    h:['ら','り','る','れ','ろ'], k:['ラ','リ','ル','レ','ロ'], r:['ra','ri','ru','re','ro']},
+  {id:'wa', lab:'W · わ・ん', h:['わ','を','ん'],          k:['ワ','ヲ','ン'],          r:['wa','o','n']},
+  {id:'ga', lab:'G · が (゛)', h:['が','ぎ','ぐ','げ','ご'], k:['ガ','ギ','グ','ゲ','ゴ'], r:['ga','gi','gu','ge','go']},
+  {id:'za', lab:'Z · ざ (゛)', h:['ざ','じ','ず','ぜ','ぞ'], k:['ザ','ジ','ズ','ゼ','ゾ'], r:['za','ji','zu','ze','zo']},
+  {id:'da', lab:'D · だ (゛)', h:['だ','ぢ','づ','で','ど'], k:['ダ','ヂ','ヅ','デ','ド'], r:['da','ji','zu','de','do']},
+  {id:'ba', lab:'B · ば (゛)', h:['ば','び','ぶ','べ','ぼ'], k:['バ','ビ','ブ','ベ','ボ'], r:['ba','bi','bu','be','bo']},
+  {id:'pa', lab:'P · ぱ (゜)', h:['ぱ','ぴ','ぷ','ぺ','ぽ'], k:['パ','ピ','プ','ペ','ポ'], r:['pa','pi','pu','pe','po']},
+  {id:'kya',lab:'Yōon · きゃ', h:['きゃ','きゅ','きょ'], k:['キャ','キュ','キョ'], r:['kya','kyu','kyo']},
+  {id:'sha',lab:'Yōon · しゃ', h:['しゃ','しゅ','しょ'], k:['シャ','シュ','ショ'], r:['sha','shu','sho']},
+  {id:'cha',lab:'Yōon · ちゃ', h:['ちゃ','ちゅ','ちょ'], k:['チャ','チュ','チョ'], r:['cha','chu','cho']},
+  {id:'nya',lab:'Yōon · にゃ', h:['にゃ','にゅ','にょ'], k:['ニャ','ニュ','ニョ'], r:['nya','nyu','nyo']},
+  {id:'hya',lab:'Yōon · ひゃ', h:['ひゃ','ひゅ','ひょ'], k:['ヒャ','ヒュ','ヒョ'], r:['hya','hyu','hyo']},
+  {id:'mya',lab:'Yōon · みゃ', h:['みゃ','みゅ','みょ'], k:['ミャ','ミュ','ミョ'], r:['mya','myu','myo']},
+  {id:'rya',lab:'Yōon · りゃ', h:['りゃ','りゅ','りょ'], k:['リャ','リュ','リョ'], r:['rya','ryu','ryo']},
+  {id:'gya',lab:'Yōon · ぎゃ', h:['ぎゃ','ぎゅ','ぎょ'], k:['ギャ','ギュ','ギョ'], r:['gya','gyu','gyo']},
+  {id:'ja', lab:'Yōon · じゃ', h:['じゃ','じゅ','じょ'], k:['ジャ','ジュ','ジョ'], r:['ja','ju','jo']},
+  {id:'bya',lab:'Yōon · びゃ', h:['びゃ','びゅ','びょ'], k:['ビャ','ビュ','ビョ'], r:['bya','byu','byo']},
+  {id:'pya',lab:'Yōon · ぴゃ', h:['ぴゃ','ぴゅ','ぴょ'], k:['ピャ','ピュ','ピョ'], r:['pya','pyu','pyo']},
+];
 function buildItems(){
   ITEMS.length=0; BLOCKS.length=0; GENKI_CHAPTERS.length=0;
   // parole di serie
@@ -1569,12 +1598,10 @@ function buildItems(){
     const kana=w.kana||w.jp;
     ITEMS.push({id:w.id, d:'w', b:bi, theme:w.block, jp:w.jp, kana, ro:w.ro||romaji(kana), it:w.it, custom:true});
   });
-  // hiragana (solo questi; se ne aggiungono altri qui man mano che si studiano)
-  // Gruppo 1: a i u e o · ka ki ku ke ko     Gruppo 2: sa shi su se so · ta chi tsu te to · de · no
-  // Gruppo 3: na ni nu ne no · ha hi fu he ho
-  const HIRAGANA = [...'あいうえおかきくけこさしすせそたちつてとでのなにぬねはひふへほ'];
-  HIRAGANA.forEach(h=>{
-    ITEMS.push({id:'h:'+h, d:'h', theme:'Hiragana', jp:h, ro:romaji(h)});
+  // KANA: hiragana (d:'h') + katakana (d:'k'), ogni simbolo marcato col gruppo (grp) del libro
+  KANA_ROWS.forEach(row=>{
+    row.h.forEach((ch,i)=>{ if(ch) ITEMS.push({id:'h:'+ch, d:'h', grp:row.id, theme:row.lab, jp:ch, ro:row.r[i]}); });
+    row.k.forEach((ch,i)=>{ if(ch) ITEMS.push({id:'k:'+ch, d:'k', grp:row.id, theme:row.lab, jp:ch, ro:row.r[i]}); });
   });
   // GENKI (dal libro): @ = lezione/capitolo, # = argomento
   let gt='GENKI', gch='Lezione 1';
@@ -1596,10 +1623,15 @@ const inDeck = (x,deck) => deck==='kana' ? (x.d==='h'||x.d==='k') : x.d===deck;
 const LS_KEY='kotoba-swipe-v1', PREF_KEY='kotoba-swipe-prefs', THEME_KEY='kotoba-theme';
 let state = {v:1, updatedAt:0, s:{}};
 try{ const j=JSON.parse(localStorage.getItem(LS_KEY)); if(j && j.s) state=j; }catch(e){}
-let prefs = {deck:'w', kk:'kana', group:'n', dir:'f', len:20, blocks:[], gch:[]};
+const KG_DEFAULT = ['a','ka','sa','ta','na','ha'];
+let prefs = {deck:'w', kk:'kana', group:'n', dir:'f', len:20, blocks:[], gch:[], kkScript:'h', kgroups:{h:KG_DEFAULT.slice(), k:[]}};
 try{ Object.assign(prefs, JSON.parse(localStorage.getItem(PREF_KEY))||{}); }catch(e){}
 if(!Array.isArray(prefs.blocks)) prefs.blocks=[];
 if(!Array.isArray(prefs.gch)) prefs.gch=[];
+if(prefs.kkScript!=='h' && prefs.kkScript!=='k') prefs.kkScript='h';
+if(!prefs.kgroups || typeof prefs.kgroups!=='object') prefs.kgroups={h:KG_DEFAULT.slice(), k:[]};
+if(!Array.isArray(prefs.kgroups.h)) prefs.kgroups.h=KG_DEFAULT.slice();
+if(!Array.isArray(prefs.kgroups.k)) prefs.kgroups.k=[];
 const savePrefs=()=>{ try{localStorage.setItem(PREF_KEY,JSON.stringify(prefs));}catch(e){} };
 const st = id => state.s[id] || 'n';
 function persist(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){ toast('Impossibile salvare: spazio del browser non disponibile'); } touch(); }
@@ -1683,7 +1715,7 @@ function meter(el, legend, c){
 function renderHome(){
   const cw=counts(WORDS), ck=counts(ITEMS.filter(x=>x.d==='h'||x.d==='k')), cg=counts(ITEMS.filter(x=>x.d==='g'));
   $('wordsSub').textContent = `${cw.vis} parole · ${BLOCKS.length} blocchi`;
-  $('kanaSub').textContent = `${ck.t} hiragana`;
+  $('kanaSub').textContent = `${ITEMS.filter(x=>x.d==='h').length} hiragana · ${ITEMS.filter(x=>x.d==='k').length} katakana`;
   $('genkiSub').textContent = `${cg.t} card`;
   meter($('wordsMeter'),$('wordsLegend'),cw); meter($('kanaMeter'),$('kanaLegend'),ck); meter($('genkiMeter'),$('genkiLegend'),cg);
   const ps=$('phraseSub'); if(ps){ const p=loadPhrase(); ps.textContent = (p&&p.date===todayStr()&&p.jp) ? p.jp : (PHRASES.length ? PHRASES[bankIndexForToday()].jp : 'Una frase al giorno con le tue parole'); }
@@ -1705,6 +1737,7 @@ const GROUPS = [
 ];
 function selection(deck){
   if(deck==='g'){ const gc=prefs.gch.filter(i=>i<GENKI_CHAPTERS.length); return ITEMS.filter(x=>x.d==='g' && (!gc.length || gc.includes(x.gc))); }
+  if(deck==='kana'){ const sc=prefs.kkScript, en=prefs.kgroups[sc]||[]; return ITEMS.filter(x=>x.d===sc && en.includes(x.grp)); }
   const bl = prefs.blocks.filter(b=>b<BLOCKS.length);
   return ITEMS.filter(x=>inDeck(x,deck) && (deck!=='w' || !bl.length || bl.includes(x.b)));
 }
@@ -1717,24 +1750,26 @@ function poolFor(deck, group){
 const DIRS = {
   w:   [['f','Giapponese'],['r','Italiano']],
   g:   [['f','Giapponese'],['r','Italiano']],
-  kana:[['f','Hiragana'],['r','Romaji']],
+  kana:[['f','Simbolo'],['r','Romaji']],
   j:   [['f','Kanji'],['r','Significato']]
 };
 function renderSetup(){
-  const deck=activeDeck(), isW = deck==='w';
-  $('setupTitle').textContent = isW ? 'Parole' : (deck==='g' ? 'GENKI' : 'Hiragana');
-  $('kkSeg').hidden = true;
+  const deck=activeDeck(), isW = deck==='w', isKana = deck==='kana';
+  $('setupTitle').textContent = isW ? 'Parole' : (deck==='g' ? 'GENKI' : (isKana ? (prefs.kkScript==='h'?'Hiragana':'Katakana') : 'Hiragana'));
+  $('kkSeg').hidden = !isKana;
+  if(isKana){ $('kkSeg').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.kk===prefs.kkScript)); }
 
   // riepilogo
   const sel = counts(selection(deck));
   const label = isW ? (prefs.blocks.length ? (prefs.blocks.length===1 ? `Blocco ${prefs.blocks[0]+1}` : `${prefs.blocks.length} blocchi scelti`) : 'Tutte le parole')
-    : deck==='g' ? (prefs.gch.length ? (prefs.gch.length===1 ? GENKI_CHAPTERS[prefs.gch[0]] : `${prefs.gch.length} lezioni scelte`) : 'Tutte le lezioni') : 'Hiragana';
+    : deck==='g' ? (prefs.gch.length ? (prefs.gch.length===1 ? GENKI_CHAPTERS[prefs.gch[0]] : `${prefs.gch.length} lezioni scelte`) : 'Tutte le lezioni')
+    : isKana ? ((prefs.kkScript==='h'?'Hiragana':'Katakana')+' · '+(prefs.kgroups[prefs.kkScript]||[]).length+' gruppi') : 'Hiragana';
   $('summary').innerHTML = `${ring(sel.pct,64)}<div class="txt"><b>${esc(label)}: ${sel.pct}% appreso</b><span>${sel.k} la so · ${sel.l} da imparare · ${sel.n} nuove</span></div>`;
 
-  // blocchi (parole) / lezioni (GENKI)
-  const showBlocks = isW || deck==='g';
+  // blocchi (parole) / lezioni (GENKI) / gruppi (kana)
+  const showBlocks = isW || deck==='g' || isKana;
   $('blocksLabel').hidden = !showBlocks; $('blocks').hidden = !showBlocks;
-  $('blocksLabel').textContent = deck==='g' ? 'Lezioni' : 'Blocchi';
+  $('blocksLabel').textContent = deck==='g' ? 'Lezioni' : (isKana ? 'Gruppi' : 'Blocchi');
   const checkSvg = '<span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>';
   if(isW){
     const all = counts(WORDS);
@@ -1750,6 +1785,17 @@ function renderSetup(){
     GENKI_CHAPTERS.forEach((name,i)=>{
       const c = counts(ITEMS.filter(x=>x.d==='g' && x.gc===i));
       html += `<button class="block" data-b="${i}" aria-pressed="${prefs.gch.includes(i)}">${ring(c.pct,46)}<span class="txt"><small>Lezione</small><b>${esc(name)}</b><span class="sub">${c.k} / ${c.vis} · ${c.l} da imparare</span></span>${checkSvg}</button>`;
+    });
+    $('blocks').innerHTML = html;
+  } else if(isKana){
+    const sc=prefs.kkScript, en=prefs.kgroups[sc]||[];
+    const rows=KANA_ROWS.filter(row=>ITEMS.some(x=>x.d===sc && x.grp===row.id));
+    const allOn = en.length>=rows.length;
+    let html = `<button class="block" data-b="all" aria-pressed="${allOn}">${ring(counts(ITEMS.filter(x=>x.d===sc)).pct,46)}<span class="txt"><small>tutti</small><b>Tutti i gruppi</b><span class="sub">${allOn?'tocca per togliere tutto':'attiva tutti i gruppi'}</span></span>${checkSvg}</button>`;
+    rows.forEach(row=>{
+      const items=ITEMS.filter(x=>x.d===sc && x.grp===row.id);
+      const c=counts(items);
+      html += `<button class="block" data-b="${row.id}" aria-pressed="${en.includes(row.id)}">${ring(c.pct,46)}<span class="txt"><small>${esc(row.r[0])}–${esc(row.r[row.r.length-1])}</small><b>${esc(row.lab)}</b><span class="sub">${items.map(x=>esc(x.jp)).join(' ')}</span></span>${checkSvg}</button>`;
     });
     $('blocks').innerHTML = html;
   }
@@ -1768,10 +1814,20 @@ function renderSetup(){
   $('startBtn').disabled = !n;
   $('startBtn').textContent = n ? `Inizia · ${prefs.len ? Math.min(prefs.len,n) : n} carte` : 'Nessuna carta in questo gruppo';
 }
-$('kkSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; prefs.kk=b.dataset.kk; savePrefs(); renderSetup(); });
+$('kkSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; prefs.kkScript=b.dataset.kk; savePrefs(); renderSetup(); });
 $('blocks').addEventListener('click',e=>{
   const b=e.target.closest('button[data-b]'); if(!b) return;
-  const key = activeDeck()==='g' ? 'gch' : 'blocks';
+  const deck=activeDeck();
+  if(deck==='kana'){
+    const sc=prefs.kkScript;
+    const allIds=KANA_ROWS.filter(r=>ITEMS.some(x=>x.d===sc && x.grp===r.id)).map(r=>r.id);
+    let en=prefs.kgroups[sc]||[];
+    if(b.dataset.b==='all'){ en = (en.length>=allIds.length) ? [] : allIds.slice(); }
+    else { const id=b.dataset.b; en = en.includes(id) ? en.filter(x=>x!==id) : [...en, id]; }
+    prefs.kgroups = Object.assign({}, prefs.kgroups, {[sc]:en});
+    savePrefs(); renderSetup(); return;
+  }
+  const key = deck==='g' ? 'gch' : 'blocks';
   if(b.dataset.b==='all') prefs[key]=[];
   else { const i=+b.dataset.b; prefs[key] = prefs[key].includes(i) ? prefs[key].filter(x=>x!==i) : [...prefs[key],i].sort((a,b)=>a-b); }
   savePrefs(); renderSetup();
@@ -2326,7 +2382,7 @@ const BUILD_ITEMS = [
   {jp:'ねこ の こえ',ro:'neko no koe',it:'la voce del gatto'},
 ];
 let build=null;
-const hiraganaSet = () => new Set(ITEMS.filter(x=>x.d==='h').map(x=>x.jp));
+const hiraganaSet = () => new Set(ITEMS.filter(x=>x.d==='h' && (prefs.kgroups.h||[]).includes(x.grp)).map(x=>x.jp));
 const buildPool = () => { const H=hiraganaSet(); return BUILD_ITEMS.filter(it=>[...it.jp].every(c=>c===' '||H.has(c))); };
 const targetChars = () => [...build.item.jp].filter(c=>c!==' ');
 function startBuild(){ build={queue:shuffle(buildPool()),i:0,ok:0,done:0,item:null,picked:[],bank:[],checked:false,correct:false}; showBuild(); }
@@ -2387,7 +2443,7 @@ $('buildBack').onclick=()=>{ renderHome(); show('home'); };
 /* ---------- disegna gli hiragana (scrivi col dito, gira la carta) ---------- */
 let draw=null;
 let padCtx=null, padW=0, padH=0, padDrawing=false, padLast=null, padReady=false;
-const drawPool=()=>ITEMS.filter(x=>x.d==='h');
+const drawPool=()=>ITEMS.filter(x=>x.d==='h' && (prefs.kgroups.h||[]).includes(x.grp));
 function startDraw(){ draw={queue:shuffle(drawPool()), i:0, item:null, revealed:false}; showDraw(); }
 function showDraw(){
   if(!draw.queue.length){ $('drawRo').textContent='—'; $('drawJp').textContent='—'; return; }
