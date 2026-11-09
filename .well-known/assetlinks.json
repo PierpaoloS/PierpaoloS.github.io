@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "io.github.pierpaolos.kotoba",
+      "sha256_cert_fingerprints": [
+        "C8:A9:78:AE:57:56:B6:25:D3:6D:92:0C:67:9B:9F:96:B2:75:8A:CB:98:F9:29:BE:B5:9B:D5:86:FA:95:87:D0"
+      ]
+    }
+  }
+]
