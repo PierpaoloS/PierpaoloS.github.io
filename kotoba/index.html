@@ -1,0 +1,2453 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kotoba Swipe</title>
+<meta name="description" content="Flashcard da swipare per ripassare parole, kana e kanji giapponesi.">
+<meta name="theme-color" content="#EEF5F1">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Kotoba">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;600;700;800&family=Zen+Maru+Gothic:wght@500;700;900&display=swap">
+<script>
+  /* applica il tema salvato prima del primo paint */
+  try{ const t=localStorage.getItem('kotoba-theme'); if(t==='light'||t==='dark') document.documentElement.dataset.theme=t; }catch(e){}
+</script>
+<style>
+:root{
+  color-scheme:light;
+  --bg:#EEF5F1; --surface:#FFFFFF; --surface2:#F4F8F6; --ink:#1B2A35; --muted:#5E717E; --line:#DAE6E0;
+  --known:#2FAE78; --known-soft:#D8F3E6; --learn:#FF6A45; --learn-soft:#FFE4DB;
+  --new:#9FB0BC; --new-soft:#E8EEF2; --ramune:#2B9FDA; --ramune-soft:#DDF0FB;
+  --sakura:#FF7EAE; --sakura-soft:#FFE3EE; --yuzu:#FFBE2E; --yuzu-soft:#FFF1CC; --yuzu-ink:#B87D00;
+  --shadow:0 10px 30px -12px rgba(27,42,53,.28); --shadow-lg:0 24px 50px -18px rgba(27,42,53,.35);
+  --jp:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;
+  --display:"Fredoka","Nunito",system-ui,sans-serif;
+  --body:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0F171C; --surface:#1A252D; --surface2:#212E37; --ink:#EDF4F1; --muted:#9BB0BC; --line:#2A3A44;
+    --known:#43C98E; --known-soft:#173A2C; --learn:#FF8261; --learn-soft:#43261E;
+    --new:#7F93A0; --new-soft:#22313A; --ramune:#4CB6EC; --ramune-soft:#16334A;
+    --sakura:#FF8DB8; --sakura-soft:#44222F; --yuzu:#FFCA4F; --yuzu-soft:#3E3317; --yuzu-ink:#FFCA4F;
+    --shadow:0 10px 30px -12px rgba(0,0,0,.6); --shadow-lg:0 24px 50px -18px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0F171C; --surface:#1A252D; --surface2:#212E37; --ink:#EDF4F1; --muted:#9BB0BC; --line:#2A3A44;
+  --known:#43C98E; --known-soft:#173A2C; --learn:#FF8261; --learn-soft:#43261E;
+  --new:#7F93A0; --new-soft:#22313A; --ramune:#4CB6EC; --ramune-soft:#16334A;
+  --sakura:#FF8DB8; --sakura-soft:#44222F; --yuzu:#FFCA4F; --yuzu-soft:#3E3317; --yuzu-ink:#FFCA4F;
+  --shadow:0 10px 30px -12px rgba(0,0,0,.6); --shadow-lg:0 24px 50px -18px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;-webkit-tap-highlight-color:transparent;overscroll-behavior:none;transition:background .25s,color .25s}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;margin:0;padding:0}
+button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline-offset:2px}
+[hidden]{display:none!important}
+.app{max-width:480px;margin:0 auto;min-height:100%;min-height:100dvh;display:flex;flex-direction:column;
+  padding-inline:max(18px, env(safe-area-inset-left)) max(18px, env(safe-area-inset-right));
+  padding-block:max(14px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-bottom))}
+.screen{display:flex;flex-direction:column;gap:18px;flex:1}
+.jp{font-family:var(--jp)}
+
+/* ---------- top bar ---------- */
+.bar{display:flex;align-items:center;gap:12px;min-height:48px}
+.logo{font-family:var(--jp);font-weight:900;font-size:17px;line-height:1;background:var(--ink);color:var(--bg);padding:9px 13px;border-radius:999px;letter-spacing:.04em}
+.bar h1{font-family:var(--display);font-weight:700;font-size:22px;margin:0;flex:1;min-width:0}
+.icon-btn{width:44px;height:44px;border-radius:50%;background:var(--surface);display:inline-flex;align-items:center;justify-content:center;box-shadow:var(--shadow);flex:none}
+.icon-btn svg{width:22px;height:22px;display:block}
+.icon-btn:disabled{opacity:.35;cursor:default}
+
+.hello{font-family:var(--display);font-size:30px;font-weight:600;line-height:1.1;margin:4px 0 0;text-wrap:balance}
+.hello small{display:block;font-family:var(--body);font-size:15px;font-weight:600;color:var(--muted);margin-top:6px}
+
+/* ---------- progress ring ---------- */
+.ring{position:relative;width:var(--s,56px);height:var(--s,56px);flex:none;display:inline-flex;align-items:center;justify-content:center}
+.ring svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:4}
+.ring .trk{stroke:var(--line)}
+.ring .val{stroke:var(--known);transition:stroke-dasharray .5s}
+.ring b{position:relative;font-family:var(--display);font-weight:700;font-size:calc(var(--s,56px) * .27);line-height:1;font-variant-numeric:tabular-nums}
+
+/* ---------- deck tiles ---------- */
+.deck{position:relative;overflow:hidden;border-radius:32px;padding:22px;text-align:left;color:#fff;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;gap:14px;transition:transform .2s}
+.deck:active{transform:scale(.98)}
+.deck.words{background:#2B9FDA}
+.deck.kana{background:#FF6F9F}
+.deck.genki{background:#4FA07A}
+.deck .deco{position:absolute;border-radius:50%;pointer-events:none}
+.deck.words .deco{width:220px;height:220px;right:-70px;bottom:-110px;background:#52BDEB}
+.deck.kana .deco{width:220px;height:220px;right:-70px;bottom:-110px;background:#FF8FB5}
+.deck.genki .deco{width:220px;height:220px;right:-70px;bottom:-110px;background:#6FBE98}
+.deck .head{position:relative;display:flex;align-items:center;gap:14px}
+.deck .head div{flex:1;min-width:0}
+.deck h2{font-family:var(--display);font-size:28px;font-weight:700;margin:0;line-height:1.1}
+.deck .head p{margin:4px 0 0;font-weight:700;font-size:14px;opacity:.95}
+.badge{width:68px;height:68px;border-radius:50%;background:#FFBE2E;color:#1B2A35;display:inline-flex;align-items:center;justify-content:center;flex:none;font-family:var(--jp);font-weight:900;font-size:34px;line-height:1;box-shadow:0 8px 18px -8px rgba(0,0,0,.35)}
+.badge span{display:block;transform:translateY(1px)}
+.meter{position:relative;height:12px;border-radius:99px;background:rgba(255,255,255,.35);overflow:hidden;display:flex}
+.meter span{height:100%}
+.meter .k{background:#1B2A35}
+.meter .l{background:#fff}
+.legend{position:relative;display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;font-weight:800}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend b{font-variant-numeric:tabular-nums}
+.legend i{width:10px;height:10px;border-radius:50%;flex:none}
+.legend .pct{margin-left:auto;background:rgba(27,42,53,.85);color:#fff;padding:4px 10px;border-radius:999px}
+.dot-k{background:#1B2A35}.dot-l{background:#fff}.dot-n{background:rgba(255,255,255,.5)}
+
+.row-btn{display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:24px;padding:14px 16px;box-shadow:var(--shadow);text-align:left}
+.row-btn .ic{width:42px;height:42px;border-radius:14px;background:var(--yuzu-soft);display:inline-flex;align-items:center;justify-content:center;flex:none}
+.row-btn .ic svg{width:22px;height:22px;display:block}
+.row-btn b{display:block;font-family:var(--display);font-size:17px;font-weight:600}
+.row-btn span{font-size:13px;color:var(--muted);font-weight:600}
+.note{font-size:12.5px;color:var(--muted);line-height:1.5;margin:0;padding-inline:4px}
+
+/* ---------- setup ---------- */
+.label{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 -8px 4px}
+.seg{display:flex;background:var(--surface);border-radius:999px;padding:5px;box-shadow:var(--shadow);gap:4px}
+.seg button{flex:1;padding:10px 6px;border-radius:999px;font-weight:800;font-size:14px;color:var(--muted);transition:background .2s,color .2s}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.blocks{display:flex;flex-direction:column;background:var(--surface);border-radius:26px;box-shadow:var(--shadow);overflow:hidden}
+.block{display:flex;align-items:center;gap:14px;padding:12px 16px;text-align:left;border-bottom:1px solid var(--line);transition:background .15s}
+.block:last-child{border-bottom:0}
+.block[aria-pressed="true"]{background:var(--ramune-soft)}
+.block .txt{flex:1;min-width:0}
+.block small{display:block;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.block b{display:block;font-family:var(--display);font-size:17px;font-weight:600;line-height:1.2}
+.block .sub{display:block;font-size:12.5px;color:var(--muted);font-weight:700;margin-top:2px}
+.check{width:26px;height:26px;border-radius:50%;border:2.5px solid var(--line);flex:none;display:inline-flex;align-items:center;justify-content:center;color:#fff}
+.check svg{width:15px;height:15px;display:block;opacity:0}
+.block[aria-pressed="true"] .check{background:var(--ramune);border-color:var(--ramune)}
+.block[aria-pressed="true"] .check svg{opacity:1}
+.summary{display:flex;align-items:center;gap:16px;background:var(--surface);border-radius:26px;padding:16px 18px;box-shadow:var(--shadow)}
+.summary .txt b{display:block;font-family:var(--display);font-size:18px;font-weight:600}
+.summary .txt span{font-size:13px;color:var(--muted);font-weight:700}
+.groups{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.group{border-radius:26px;padding:16px;text-align:left;border:3px solid transparent;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:4px;min-height:108px;transition:transform .15s}
+.group:active{transform:scale(.97)}
+.group .n{font-family:var(--display);font-size:32px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.group b{font-family:var(--display);font-weight:600;font-size:16px}
+.group span{font-size:12px;color:var(--muted);font-weight:700;line-height:1.3}
+.group.g-l{background:var(--learn-soft)} .group.g-l .n{color:var(--learn)}
+.group.g-n{background:var(--new-soft)} .group.g-n .n{color:var(--muted)}
+.group.g-k{background:var(--known-soft)} .group.g-k .n{color:var(--known)}
+.group.g-m{background:var(--yuzu-soft)} .group.g-m .n{color:var(--yuzu-ink)}
+.group.g-x{background:var(--sakura-soft)} .group.g-x .n{color:var(--sakura)}
+.group[aria-pressed="true"]{border-color:var(--ink)}
+.start-wrap{position:sticky;bottom:0;margin-top:auto;padding-top:10px;padding-bottom:max(4px, env(safe-area-inset-bottom));background:linear-gradient(to top, var(--bg) 70%, transparent)}
+.start{width:100%;background:var(--learn);color:#fff;border-radius:999px;padding:18px;font-family:var(--display);font-size:20px;font-weight:600;box-shadow:0 14px 28px -12px var(--learn)}
+.start:disabled{background:var(--new);box-shadow:none;cursor:default}
+
+/* ---------- study ---------- */
+.progress{flex:1;display:flex;flex-direction:column;gap:6px;align-items:center}
+.progress b{font-family:var(--display);font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.pbar{width:100%;height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.pbar span{display:block;height:100%;background:var(--ramune);border-radius:99px;transition:width .3s}
+.stage{position:relative;flex:1;min-height:340px}
+.card-wrap{position:absolute;inset:6px 4px;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
+.card-wrap.behind{transform:scale(.93) translateY(18px);opacity:.7;pointer-events:none;cursor:default}
+.card-wrap.fly{transition:transform .35s ease-in,opacity .35s}
+.card-wrap.snap{transition:transform .3s cubic-bezier(.3,1.4,.5,1)}
+.card{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.4,1.3,.5,1)}
+.card.flipped{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;border-radius:36px;background:var(--surface);box-shadow:var(--shadow-lg);backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;display:flex;flex-direction:column;padding:22px}
+.face.back{transform:rotateY(180deg)}
+.face .deco{position:absolute;border-radius:50%;pointer-events:none}
+.face .top{display:flex;justify-content:space-between;align-items:center;gap:8px;position:relative;z-index:1}
+.tag{font-size:12px;font-weight:800;padding:6px 12px;border-radius:999px;background:var(--surface2);border:2px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.status-tag{display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;padding:6px 10px;border-radius:999px;text-transform:uppercase;letter-spacing:.06em;line-height:1;white-space:nowrap;flex:none}
+.st-n{background:var(--new-soft);color:var(--muted)} .st-l{background:var(--learn-soft);color:var(--learn)} .st-k{background:var(--known-soft);color:var(--known)} .st-h{background:var(--sakura-soft);color:var(--sakura)}
+.face .main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;position:relative;z-index:1;min-height:0}
+.big{font-family:var(--jp);font-weight:700;line-height:1.15;overflow-wrap:anywhere}
+.big.it{font-family:var(--display);font-weight:600}
+.hint{font-size:12px;font-weight:700;color:var(--muted);text-align:center;position:relative;z-index:1}
+.reading{font-family:var(--jp);font-size:22px;font-weight:700;color:var(--muted)}
+.romaji{font-family:var(--display);font-size:18px;font-weight:600;color:var(--ramune);letter-spacing:.03em}
+.meaning{font-family:var(--display);font-size:28px;font-weight:600;line-height:1.2;text-wrap:balance}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;text-align:left;margin:0;align-items:baseline}
+.kv dt{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.kv dd{margin:0;font-family:var(--jp);font-weight:700;font-size:18px}
+.examples{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:100%}
+.examples span{background:var(--surface2);border:2px solid var(--line);border-radius:14px;padding:5px 10px;font-size:13px;font-weight:700}
+.examples span .jp{font-size:15px;margin-right:4px}
+.stamp{position:absolute;top:26px;z-index:3;font-family:var(--display);font-weight:700;font-size:22px;line-height:1;padding:8px 14px;border-radius:16px;border:4px solid;opacity:0;pointer-events:none;background:var(--surface)}
+.stamp.yes{left:22px;color:var(--known);border-color:var(--known);transform:rotate(-12deg)}
+.stamp.no{right:22px;color:var(--learn);border-color:var(--learn);transform:rotate(12deg)}
+.stamp.unseen{left:50%;transform:translateX(-50%) rotate(-4deg);color:var(--sakura);border-color:var(--sakura)}
+.unseen-btn{display:flex;align-items:center;justify-content:center;gap:9px;margin:12px auto 0;background:var(--sakura-soft);color:var(--sakura);border-radius:999px;padding:11px 18px;font-weight:800;font-size:14px}
+.unseen-btn svg{width:18px;height:18px;display:block;flex:none}
+.unseen-btn:active{transform:scale(.96)}
+.actions{display:flex;justify-content:center;align-items:center;gap:22px}
+.act{border-radius:50%;display:inline-flex;align-items:center;justify-content:center;box-shadow:var(--shadow);transition:transform .15s;flex:none}
+.act:active{transform:scale(.9)}
+.act.no{width:72px;height:72px;background:var(--learn);color:#fff}
+.act.yes{width:72px;height:72px;background:var(--known);color:#fff}
+.act.flip{width:54px;height:54px;background:var(--surface);color:var(--ink)}
+.act svg{width:30px;height:30px;display:block}.act.flip svg{width:24px;height:24px}
+.swipe-hint{display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--muted);padding-inline:8px}
+.swipe-hint .l{color:var(--learn)}.swipe-hint .r{color:var(--known)}
+
+/* ---------- done ---------- */
+.done{align-items:center;text-align:center;justify-content:center}
+.burst{width:150px;height:150px;border-radius:50%;background:var(--yuzu);color:#1B2A35;display:inline-flex;align-items:center;justify-content:center;box-shadow:var(--shadow-lg);font-family:var(--jp);font-weight:900;font-size:46px;line-height:1}
+.done h2{font-family:var(--display);font-size:30px;margin:0}
+.tally{display:flex;gap:12px;width:100%}
+.tally div{flex:1;border-radius:24px;padding:16px}
+.tally .n{font-family:var(--display);font-size:36px;font-weight:700;font-variant-numeric:tabular-nums}
+.tally span{display:block;font-size:13px;font-weight:700}
+.tally .tk{background:var(--known-soft)} .tally .tk .n{color:var(--known)}
+.tally .tl{background:var(--learn-soft)} .tally .tl .n{color:var(--learn)}
+.btn-row{display:flex;flex-direction:column;gap:10px;width:100%}
+.btn{border-radius:999px;padding:16px;font-family:var(--display);font-size:18px;font-weight:600;background:var(--surface);box-shadow:var(--shadow)}
+.btn.primary{background:var(--learn);color:#fff}
+
+/* ---------- list ---------- */
+.search{width:100%;border-radius:999px;border:2px solid var(--line);background:var(--surface);padding:13px 18px;font:inherit;font-weight:600;color:var(--ink)}
+.list{display:flex;flex-direction:column;background:var(--surface);border-radius:26px;box-shadow:var(--shadow);overflow:hidden}
+.item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.item .w{flex:1;min-width:0}
+.item .w .jp{font-size:19px;font-weight:700}
+.item .w small{display:block;font-size:13px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .status-tag{min-width:96px}
+.tools{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tool{border-radius:20px;background:var(--surface);box-shadow:var(--shadow);padding:13px 10px;font-weight:800;font-size:14px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.tool svg{width:18px;height:18px;display:block}
+.tool.danger{grid-column:1 / -1;color:var(--learn);box-shadow:none;background:transparent;border:2px dashed var(--learn-soft)}
+.empty{padding:28px;text-align:center;color:var(--muted);font-weight:700}
+.toast{position:fixed;left:50%;bottom:max(24px, env(safe-area-inset-bottom));transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:999px;font-weight:800;font-size:14px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:10;max-width:calc(100% - 32px);text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- editor: le mie parole ---------- */
+.mini-add{background:var(--ink);color:var(--bg);border-radius:999px;padding:9px 15px;font-family:var(--display);font-weight:600;font-size:14px;flex:none}
+.card-list{display:flex;flex-direction:column;background:var(--surface);border-radius:22px;box-shadow:var(--shadow);overflow:hidden}
+.crow{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.crow:last-child{border-bottom:0}
+.crow .w{flex:1;min-width:0}
+.crow .w b{display:block;font-family:var(--display);font-size:16px;font-weight:600;line-height:1.2}
+.crow .w small{display:block;font-size:12.5px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crow .w .jp{font-size:19px;font-weight:700}
+.rid{width:38px;height:38px;border-radius:12px;background:var(--yuzu-soft);color:var(--yuzu-ink);display:inline-flex;align-items:center;justify-content:center;flex:none}
+.rid svg{width:19px;height:19px;display:block}
+.mini-btn{width:38px;height:38px;border-radius:12px;background:var(--surface2);display:inline-flex;align-items:center;justify-content:center;flex:none}
+.mini-btn svg{width:18px;height:18px;display:block}
+.mini-btn.danger{color:var(--learn)}
+.cards-empty{padding:22px;text-align:center;color:var(--muted);font-weight:700;background:var(--surface);border-radius:22px;box-shadow:var(--shadow)}
+/* modale form */
+.mdl{position:fixed;inset:0;z-index:50;background:rgba(15,23,28,.55);display:flex;align-items:flex-end;justify-content:center}
+.mdl-box{width:100%;max-width:480px;background:var(--surface);border-radius:28px 28px 0 0;box-shadow:var(--shadow-lg);padding:22px;max-height:92vh;overflow:auto;padding-bottom:max(22px,env(safe-area-inset-bottom))}
+@media(min-width:520px){.mdl{align-items:center}.mdl-box{border-radius:28px}}
+.mdl-box h2{font-family:var(--display);font-size:22px;margin:0 0 16px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px 4px}
+.field input,.field select{width:100%;border-radius:16px;border:2px solid var(--line);background:var(--surface2);padding:13px 15px;font:inherit;font-weight:600;color:var(--ink)}
+.field input:focus,.field select:focus{border-color:var(--ramune);outline:none}
+.field .hintline{font-size:12px;color:var(--muted);font-weight:600;margin:6px 0 0 4px}
+.mdl-actions{display:flex;gap:10px;margin-top:20px}
+.mdl-actions .btn{flex:1;padding:14px}
+.mdl-actions .btn.del{flex:none;color:var(--learn);background:var(--learn-soft);box-shadow:none}
+
+/* ---------- canzoni ---------- */
+.yt-wrap{position:relative;width:100%;aspect-ratio:16/9;border-radius:20px;overflow:hidden;background:#000;box-shadow:var(--shadow);flex:none}
+.yt-wrap iframe,.yt-wrap>div{position:absolute;inset:0;width:100%;height:100%;border:0}
+.yt-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:#cdd;font-weight:700;font-size:14px;padding:20px}
+.ly-toggles{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ly-toggles button{border-radius:999px;background:var(--surface);box-shadow:var(--shadow);padding:8px 13px;font-weight:800;font-size:13px;color:var(--muted)}
+.ly-toggles button.on{background:var(--ink);color:var(--bg)}
+.ly-toggles .jp{font-family:var(--jp)}
+.ly-toggles #syncToggle{margin-left:auto;background:var(--yuzu-soft);color:var(--yuzu-ink);box-shadow:none}
+.ly-toggles #syncToggle.on{background:var(--learn);color:#fff}
+.sync-hint{font-size:12.5px;color:var(--muted);font-weight:700;background:var(--yuzu-soft);color:var(--yuzu-ink);border-radius:14px;padding:10px 12px}
+.lyrics{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:6px 2px 45vh;-webkit-overflow-scrolling:touch}
+.lyr{opacity:.45;transition:opacity .3s;cursor:pointer;border-radius:14px;padding:6px 8px}
+.lyr.active{opacity:1}
+.lyrics.sync .lyr{opacity:.9;background:var(--surface2)}
+.ly-jp{font-family:var(--jp);font-weight:700;font-size:21px;line-height:1.55}
+.ly-jp.words .tok{margin-right:.28em}
+.lyr.active .ly-jp{font-size:23px}
+.ly-ro{font-family:var(--display);font-size:15px;color:var(--ramune);font-weight:600;margin-top:2px}
+.ly-it{font-size:14px;color:var(--muted);font-weight:600;margin-top:2px}
+.lyrics:not(.show-jp) .ly-jp{display:none}
+.lyrics:not(.show-ro) .ly-ro{display:none}
+.lyrics:not(.show-it) .ly-it{display:none}
+.tok{display:inline-block;transition:transform .12s ease, color .12s;transform-origin:center bottom}
+.lyr.active .tok.done{color:var(--ramune)}
+.lyr.active .tok.on{color:var(--learn);transform:scale(1.28);font-weight:900}
+.ly-time{display:none;font-size:11px;font-weight:800;color:var(--yuzu-ink);background:var(--yuzu-soft);border-radius:999px;padding:2px 8px;margin-right:8px;vertical-align:middle}
+.lyrics.sync .ly-time{display:inline-block}
+
+/* ---------- sincronizzazione ---------- */
+.sync-help{background:var(--surface);border-radius:16px;box-shadow:var(--shadow);padding:2px 14px;margin-bottom:6px}
+.sync-help summary{cursor:pointer;font-weight:800;font-size:13.5px;padding:11px 0;color:var(--ramune);list-style:none}
+.sync-help summary::-webkit-details-marker{display:none}
+.sync-help ol{margin:0 0 10px}
+.sync-help code{display:block;white-space:pre-wrap;word-break:break-all;background:var(--surface2);border-radius:10px;padding:8px 10px;font-size:12px;margin-top:6px;font-weight:700}
+.synctoggle{display:flex;align-items:center;gap:10px;font-weight:800;font-size:14px;color:var(--ink);padding:8px 4px}
+.synctoggle input{width:22px;height:22px;accent-color:var(--ramune)}
+
+/* ---------- frase del giorno ---------- */
+.phrase-card{background:var(--surface);border-radius:26px;box-shadow:var(--shadow-lg);padding:22px;display:flex;flex-direction:column;gap:11px}
+.ph-jp{font-family:var(--jp);font-weight:700;font-size:26px;line-height:1.5}
+.ph-reading{font-family:var(--jp);font-size:16px;color:var(--muted);font-weight:700}
+.ph-romaji{font-family:var(--display);font-size:16px;color:var(--ramune);font-weight:600}
+.ph-it{font-size:17px;font-weight:700;line-height:1.4}
+.ph-note{font-size:13.5px;color:var(--muted);font-weight:600;background:var(--surface2);border-radius:14px;padding:11px 13px;line-height:1.5}
+.ph-words{display:flex;flex-wrap:wrap;gap:6px}
+.ph-words span{background:var(--yuzu-soft);color:var(--yuzu-ink);border-radius:999px;padding:5px 11px;font-size:14px;font-weight:800;font-family:var(--jp)}
+.ph-date{font-size:12px;color:var(--muted);font-weight:700;margin-top:2px}
+.ph-empty{background:var(--surface);border-radius:26px;box-shadow:var(--shadow);padding:30px 22px;text-align:center;color:var(--muted);font-weight:700;display:flex;flex-direction:column;gap:16px;align-items:center;line-height:1.5}
+.ph-gen{background:var(--learn);color:#fff;border-radius:999px;padding:14px 22px;font-family:var(--display);font-size:17px;font-weight:600;box-shadow:0 12px 24px -12px var(--learn)}
+.ph-spin{width:42px;height:42px;border-radius:50%;border:4px solid var(--line);border-top-color:var(--ramune);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- ripasso lezioni ---------- */
+.gp{background:var(--surface);border-radius:22px;box-shadow:var(--shadow);padding:18px;margin-bottom:12px;display:flex;flex-direction:column;gap:9px}
+.gp-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.gp-pat{font-family:var(--jp);font-weight:700;font-size:22px;color:var(--ramune)}
+.gp-pat-ro{font-family:var(--display);font-weight:600;font-size:14px;color:var(--ramune);opacity:.85}
+.gp-mean{font-weight:800;font-size:14px;color:var(--muted)}
+.gp-struct{font-size:13.5px;font-weight:700;background:var(--surface2);border-radius:12px;padding:8px 12px}
+.gp-ex{border-left:3px solid var(--ramune);padding-left:12px;display:flex;flex-direction:column;gap:2px}
+.gp-jp{font-family:var(--jp);font-weight:700;font-size:19px;line-height:1.5}
+.gp-ro{font-family:var(--display);font-size:14px;color:var(--ramune);font-weight:600}
+.gp-it{font-size:14px;color:var(--muted);font-weight:600}
+.gp-note{font-size:13px;color:var(--muted);font-weight:600;background:var(--surface2);border-radius:12px;padding:9px 12px;line-height:1.5}
+.lvocab{display:flex;flex-direction:column;gap:7px;background:var(--surface);border-radius:18px;box-shadow:var(--shadow);padding:13px 15px}
+.lvocab span{font-size:14px;font-weight:600;color:var(--muted)}
+.lvocab b{font-family:var(--jp);font-weight:700;color:var(--ink);margin-right:8px;font-size:16px}
+.lvocab .lv-ro{font-family:var(--display);font-style:normal;color:var(--ramune);font-weight:600;margin-right:8px}
+.chev{color:var(--muted);font-size:22px;font-weight:700;flex:none}
+
+/* ---------- scrivi in hiragana ---------- */
+.hb-count{margin-left:auto;font-family:var(--display);font-weight:700;font-size:15px;color:var(--muted)}
+.hb-prompt{display:flex;flex-direction:column;gap:3px;align-items:center;text-align:center;margin:8px 0 18px}
+.hb-ro{font-family:var(--display);font-size:30px;font-weight:600;color:var(--ink);letter-spacing:.5px}
+.hb-it{font-size:15px;font-weight:600;color:var(--muted)}
+.hb-slots{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;min-height:54px;margin-bottom:14px}
+.hb-slot{width:46px;height:54px;border-radius:13px;border:2px dashed var(--line);background:transparent;font-family:var(--jp);font-size:26px;font-weight:700;color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.hb-slot.filled{border-style:solid;border-color:var(--ramune);background:var(--surface)}
+.hb-slot.ok{border-style:solid;border-color:var(--known);background:var(--known-soft)}
+.hb-slot.bad{border-style:solid;border-color:var(--sakura);background:var(--sakura-soft)}
+.hb-gap{width:16px;height:54px}
+.hb-bank{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin-top:4px}
+.hb-tile{min-width:50px;height:58px;padding:0 10px;border-radius:15px;border:none;background:var(--surface);box-shadow:var(--shadow);font-family:var(--jp);font-size:28px;font-weight:700;color:var(--ink);cursor:pointer;transition:transform .08s}
+.hb-tile:active{transform:translateY(2px)}
+.hb-tile.used{visibility:hidden}
+.hb-result{text-align:center;font-weight:800;font-size:15px;border-radius:14px;padding:10px 14px;margin-bottom:12px}
+.hb-result.ok{background:var(--known-soft);color:var(--known)}
+.hb-result.bad{background:var(--sakura-soft);color:var(--sakura)}
+
+/* ---------- disegna gli hiragana ---------- */
+.draw-flip{perspective:1200px;margin-top:6px}
+.draw-card{position:relative;height:116px;transform-style:preserve-3d;transition:transform .5s;cursor:pointer}
+.draw-card.flipped{transform:rotateY(180deg)}
+.draw-face{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-radius:22px;background:var(--surface);box-shadow:var(--shadow);backface-visibility:hidden;text-align:center}
+.draw-front b{display:block;font-family:var(--display);font-size:38px;font-weight:600;color:var(--ink)}
+.df-lab{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.09em}
+.draw-back{transform:rotateY(180deg)}
+.draw-back b{font-family:var(--jp);font-size:74px;font-weight:700;color:var(--ramune)}
+.draw-pad{display:block;width:100%;aspect-ratio:1/1;max-height:340px;margin:12px auto 0;background:var(--surface);border-radius:22px;box-shadow:var(--shadow);touch-action:none;cursor:crosshair}
+
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HOME -->
+  <section class="screen" id="home">
+    <div class="bar">
+      <span class="logo">ことば</span>
+      <h1>Kotoba Swipe</h1>
+      <button class="icon-btn" id="themeBtn" aria-label="Tema"></button>
+    </div>
+    <p class="hello"><span class="jp">おかえり！</span> Cosa ripassiamo oggi?
+      <small>Scorri a destra se la sai, a sinistra se devi ripassarla.</small></p>
+    <button class="deck words" id="deckWords">
+      <span class="deco"></span>
+      <div class="head"><div><h2>Parole</h2><p id="wordsSub"></p></div><span class="badge"><span>語</span></span></div>
+      <div class="meter" id="wordsMeter"></div>
+      <div class="legend" id="wordsLegend"></div>
+    </button>
+    <button class="deck kana" id="deckKana">
+      <span class="deco"></span>
+      <div class="head"><div><h2>Hiragana</h2><p id="kanaSub"></p></div><span class="badge"><span>あ</span></span></div>
+      <div class="meter" id="kanaMeter"></div>
+      <div class="legend" id="kanaLegend"></div>
+    </button>
+    <button class="row-btn" id="openBuild">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10"/></svg></span>
+      <span><b>Scrivi in hiragana</b><span>Dal romaji, tocca gli hiragana giusti</span></span>
+    </button>
+    <button class="row-btn" id="openDraw">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7a2.1 2.1 0 0 0-3-3l-7 7-1 4z"/><path d="M5 20h6"/></svg></span>
+      <span><b>Disegna gli hiragana</b><span>Scrivi col dito, poi gira la carta</span></span>
+    </button>
+    <button class="deck genki" id="deckGenki">
+      <span class="deco"></span>
+      <div class="head"><div><h2>GENKI</h2><p id="genkiSub"></p></div><span class="badge"><span>文</span></span></div>
+      <div class="meter" id="genkiMeter"></div>
+      <div class="legend" id="genkiLegend"></div>
+    </button>
+    <button class="row-btn" id="openRipasso">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg></span>
+      <span><b>Ripasso GENKI</b><span>Regole di grammatica ed esempi dalle lezioni</span></span>
+    </button>
+    <button class="row-btn" id="openPhrase">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8 8 0 0 1-11.6 7.1L4 20l1.4-5.4A8 8 0 1 1 21 11.5z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01"/></svg></span>
+      <span><b>Frase del giorno</b><span id="phraseSub">Una frase al giorno con le tue parole</span></span>
+    </button>
+    <button class="row-btn" id="openCards">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span>
+      <span><b>Le mie parole</b><span>Crea gruppi e aggiungi le tue parole</span></span>
+    </button>
+    <button class="row-btn" id="openList">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.3" fill="currentColor" stroke="none"/><circle cx="4.5" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="4.5" cy="18" r="1.3" fill="currentColor" stroke="none"/></svg></span>
+      <span><b>Elenco e backup</b><span>Cerca, sposta tra i gruppi, salva i progressi</span></span>
+    </button>
+    <p class="note">Lista ricostruita dal corso Duolingo fino a circa Sezione 2 · Unità 23, divisa in blocchi che seguono l'ordine del corso (circa 2–3 unità ciascuno). Durante lo swipe puoi segnare «Mai vista» le parole che su Duolingo non hai mai incontrato: finiscono in un gruppo a parte.</p>
+  </section>
+
+  <!-- SETUP -->
+  <section class="screen" id="setup" hidden>
+    <div class="bar">
+      <button class="icon-btn" id="setupBack" aria-label="Indietro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h1 id="setupTitle">Parole</h1>
+    </div>
+    <div class="seg" id="kkSeg" hidden>
+      <button data-kk="kana">Kana</button><button data-kk="j">Kanji</button>
+    </div>
+    <div class="summary" id="summary"></div>
+    <p class="label" id="blocksLabel">Blocchi</p>
+    <div class="blocks" id="blocks"></div>
+    <p class="label">Gruppo</p>
+    <div class="groups" id="groups"></div>
+    <p class="label">Mostra prima</p>
+    <div class="seg" id="dirSeg"></div>
+    <p class="label">Quante carte</p>
+    <div class="seg" id="lenSeg">
+      <button data-len="10">10</button><button data-len="20">20</button><button data-len="40">40</button><button data-len="0">Tutte</button>
+    </div>
+    <div class="start-wrap"><button class="start" id="startBtn">Inizia</button></div>
+  </section>
+
+  <!-- STUDY -->
+  <section class="screen" id="study" hidden>
+    <div class="bar">
+      <button class="icon-btn" id="studyClose" aria-label="Chiudi sessione"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <div class="progress"><b id="progText">1 / 20</b><div class="pbar"><span id="progBar"></span></div></div>
+      <button class="icon-btn" id="undoBtn" aria-label="Annulla ultima scelta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/></svg></button>
+    </div>
+    <div class="stage" id="stage"></div>
+    <div class="swipe-hint"><span class="l">← Da ripassare</span><span class="r">La so →</span></div>
+    <div class="actions">
+      <button class="act no" id="btnNo" aria-label="Da ripassare"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M7 7l10 10M17 7L7 17"/></svg></button>
+      <button class="act flip" id="btnFlip" aria-label="Gira la carta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.7"/><path d="M20 4v4.7h-4.7"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15.3"/><path d="M4 20v-4.7h4.7"/></svg></button>
+      <button class="act yes" id="btnYes" aria-label="La so"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+    </div>
+    <button class="unseen-btn" id="btnUnseen" aria-label="Segna come mai vista su Duolingo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7a11 11 0 0 1-5-1.2"/><circle cx="12" cy="12" r="2.5"/><path d="M3 3l18 18"/></svg>Mai vista su Duolingo</button>
+  </section>
+
+  <!-- DONE -->
+  <section class="screen done" id="done" hidden>
+    <div class="burst">やった</div>
+    <h2>Sessione finita!</h2>
+    <div class="tally">
+      <div class="tk"><div class="n" id="tKnown">0</div><span>La so</span></div>
+      <div class="tl"><div class="n" id="tLearn">0</div><span>Da ripassare</span></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn primary" id="againWrong">Ripassa quelle sbagliate</button>
+      <button class="btn" id="againSame">Nuova sessione uguale</button>
+      <button class="btn" id="toHome">Torna alla home</button>
+    </div>
+  </section>
+
+  <!-- LIST -->
+  <section class="screen" id="list" hidden>
+    <div class="bar">
+      <button class="icon-btn" id="listBack" aria-label="Indietro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h1>Elenco</h1>
+    </div>
+    <div class="seg" id="listSeg">
+      <button data-d="w">Parole</button><button data-d="kana">Hiragana</button><button data-d="g">GENKI</button>
+    </div>
+    <input class="search" id="search" type="search" placeholder="Cerca in giapponese, romaji o italiano…" autocomplete="off">
+    <p class="note">Tocca l'etichetta per cambiare gruppo: Nuova → Da imparare → La so → Mai vista. Le "Mai vista" restano in un gruppo a parte (fuori dagli altri, incluse solo nel Mix).</p>
+    <div class="list" id="listBox"></div>
+    <p class="label">Backup progressi</p>
+    <p class="note">I progressi restano salvati in questo browser. Esporta un backup per non perderli o per portarli su un altro dispositivo.</p>
+    <div class="tools">
+      <button class="tool" id="exportBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Esporta</button>
+      <button class="tool" id="importBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7 9l5-5 5 5M5 20h14"/></svg>Importa</button>
+      <button class="tool danger" id="resetBtn">Azzera progressi</button>
+    </div>
+    <input type="file" id="importFile" accept="application/json,.json" hidden>
+
+    <p class="label">Sincronizza tra dispositivi</p>
+    <p class="note">Con lo stesso <b>URL</b> e lo stesso <b>codice</b> su PC e telefono, i dati si allineano dal cloud (Firebase, gratis). Si sincronizza all'apertura dell'app e a ogni modifica.</p>
+    <details class="sync-help">
+      <summary>Come si configura (una volta sola)</summary>
+      <ol class="note" style="padding-left:18px;line-height:1.8">
+        <li>Vai su <b>console.firebase.google.com</b> e crea un progetto (gratis).</li>
+        <li><b>Build → Realtime Database → Crea database</b>.</li>
+        <li>Copia l'<b>URL</b> del database (es. https://xxx-default-rtdb.firebaseio.com) e incollalo qui sotto.</li>
+        <li>Nella scheda <b>Regole</b> incolla questo e pubblica:<code>{
+  "rules": {
+    "sync": { "$c": { ".read": true, ".write": true } }
+  }
+}</code></li>
+        <li>Metti lo <b>stesso URL e lo stesso codice</b> anche sul telefono.</li>
+      </ol>
+    </details>
+    <div class="field"><input id="syncUrl" placeholder="URL database Firebase" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+    <div class="field"><input id="syncCode" placeholder="Codice segreto (uguale sui due dispositivi)" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+    <label class="synctoggle"><input type="checkbox" id="syncAuto"> Sincronizza automaticamente</label>
+    <div class="tools">
+      <button class="tool" id="syncPullBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Carica dal cloud</button>
+      <button class="tool" id="syncPushBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7 9l5-5 5 5M5 20h14"/></svg>Salva sul cloud</button>
+    </div>
+  </section>
+
+  <!-- LE MIE PAROLE (editor) -->
+  <section class="screen" id="cards" hidden>
+    <div class="bar">
+      <button class="icon-btn" id="cardsBack" aria-label="Indietro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h1>Le mie parole</h1>
+    </div>
+    <p class="note">Crea i tuoi gruppi e aggiungi le tue parole: entrano nello studio e nell'elenco insieme alle altre. Restano su questo dispositivo — usa <b>Esporta</b> nell'elenco per il backup.</p>
+    <div class="bar" style="min-height:0">
+      <p class="label" style="margin:0;flex:1">I miei gruppi</p>
+      <button class="mini-add" id="addGroupBtn">+ Gruppo</button>
+    </div>
+    <div id="myGroups"></div>
+    <div class="bar" style="min-height:0;margin-top:4px">
+      <p class="label" style="margin:0;flex:1">Le mie parole</p>
+      <button class="mini-add" id="addWordBtn">+ Parola</button>
+    </div>
+    <div id="myWords"></div>
+  </section>
+  <!-- FRASE DEL GIORNO -->
+  <section class="screen" id="phrase" hidden>
+    <div class="bar">
+      <button class="icon-btn" id="phraseBack" aria-label="Indietro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h1>Frase del giorno</h1>
+      <button class="icon-btn" id="phraseSettings" aria-label="Impostazioni IA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1.5 14h5M9.5 8h5M17.5 16h5"/></svg></button>
+    </div>
+    <div id="phraseBox"></div>
+    <div class="tools" style="margin-top:2px">
+      <button class="tool" id="phraseShuffle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 4v4h-4"/></svg>Altra frase</button>
+      <button class="tool" id="phraseAI"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.9L18.7 9.7 13.8 11.5 12 16.4 10.2 11.5 5.3 9.7 10.2 7.9z"/><path d="M19 15l.7 1.9L21.6 17.6l-1.9.7L19 20.2l-.7-1.9L16.4 17.6l1.9-.7z"/></svg>Con IA</button>
+    </div>
+    <p class="note">Ripeti questa frase durante il giorno — ad alta voce, mentre cammini, prima di dormire. Domani ne arriva una nuova con parole diverse e tempi verbali diversi.</p>
+  </section>
+
+  <!-- RIPASSO GENKI -->
+  <section class="screen" id="ripasso" hidden>
+    <div class="bar">
+      <button class="icon-btn" id="ripassoBack" aria-label="Indietro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h1>Ripasso GENKI</h1>
+    </div>
+    <p class="hello">Le regole di grammatica delle lezioni, con esempi.
+      <small>Leggi la regola, poi copri l'italiano e prova a tradurre gli esempi.</small></p>
+    <div id="ripassoBox"></div>
+    <p class="note">Questo è il «bignami» grammaticale. Le parole e le frasi da esercitare sono nel mazzo GENKI (swipe).</p>
+  </section>
+
+  <!-- SCRIVI IN HIRAGANA -->
+  <section class="screen" id="build" hidden>
+    <div class="bar">
+      <button class="icon-btn" id="buildBack" aria-label="Indietro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h1>Scrivi in hiragana</h1>
+      <span class="hb-count" id="buildScore"></span>
+    </div>
+    <p class="hello">Leggi il romaji e tocca gli hiragana giusti, in ordine.
+      <small>Solo parole con i simboli che hai già sbloccato. Tocca una casella piena per toglierla.</small></p>
+    <div id="buildBox"></div>
+    <div class="tools" style="margin-top:4px">
+      <button class="tool" id="buildClear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>Pulisci</button>
+      <button class="tool" id="buildNext"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Avanti</button>
+    </div>
+    <p class="note">Esercizio di lettura e scrittura: imparare a riconoscere il suono (romaji) e comporlo con i simboli giusti. Man mano che sblocchi nuovi gruppi di hiragana, compaiono più parole.</p>
+  </section>
+
+  <!-- DISEGNA GLI HIRAGANA -->
+  <section class="screen" id="draw" hidden>
+    <div class="bar">
+      <button class="icon-btn" id="drawBack" aria-label="Indietro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h1>Disegna gli hiragana</h1>
+      <span class="hb-count" id="drawScore"></span>
+    </div>
+    <p class="hello">Guarda il romaji e disegna l'hiragana col dito.
+      <small>Poi gira la carta (o "Mostra soluzione") per vedere il simbolo giusto.</small></p>
+    <div class="draw-flip">
+      <div class="draw-card" id="drawCard">
+        <div class="draw-face draw-front"><div><span class="df-lab">disegna questo</span><b id="drawRo">—</b></div></div>
+        <div class="draw-face draw-back"><b id="drawJp">—</b></div>
+      </div>
+    </div>
+    <canvas id="drawPad" class="draw-pad"></canvas>
+    <div class="tools" style="margin-top:4px">
+      <button class="tool" id="drawClear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>Pulisci</button>
+      <button class="tool" id="drawReveal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>Mostra soluzione</button>
+      <button class="tool" id="drawNext"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Avanti</button>
+    </div>
+    <p class="note">Nessuno controlla il disegno: è un esercizio libero di memoria. Gira la carta per confrontare col simbolo corretto.</p>
+  </section>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="mdl" id="mdl" hidden><div class="mdl-box" id="mdlBox"></div></div>
+
+<script>
+/* ================= DATA =================
+   @ = blocco (circa 2-3 unità Duolingo), # = argomento, poi: giapponese|kana|italiano|romaji (opzionale) */
+const RAW_WORDS = `
+@Primi passi
+#Saluti
+こんにちは||ciao / buongiorno|konnichiwa
+おはようございます||buongiorno (mattina)
+こんばんは||buonasera|konbanwa
+さようなら||arrivederci
+おやすみなさい||buonanotte
+ありがとうございます||grazie mille
+すみません||mi scusi
+ごめんなさい||scusa, mi dispiace
+はい||sì
+いいえ||no
+お願いします|おねがいします|per favore
+じゃあね||ciao, a dopo
+また明日|またあした|a domani
+#Cibo e bevande
+水|みず|acqua
+お茶|おちゃ|tè
+ご飯|ごはん|riso cotto, pasto
+寿司|すし|sushi
+ラーメン||ramen
+うどん||udon
+天ぷら|てんぷら|tempura
+魚|さかな|pesce
+肉|にく|carne
+野菜|やさい|verdura
+卵|たまご|uovo
+パン||pane
+牛乳|ぎゅうにゅう|latte
+コーヒー||caffè
+ジュース||succo
+#Persone
+私|わたし|io
+あなた||tu
+日本人|にほんじん|giapponese (persona)
+イタリア人|イタリアじん|italiano (persona)
+#Luoghi
+日本|にほん|Giappone
+イタリア||Italia
+@Al ristorante
+#Espressioni
+いただきます||buon appetito (prima di mangiare)
+ごちそうさまでした||grazie per il pasto
+いらっしゃいませ||benvenuto (nei negozi)
+どうぞ||prego, tieni
+#Cibo e bevande
+ビール||birra
+お酒|おさけ|sake, alcol
+ケーキ||torta
+アイスクリーム||gelato
+チョコレート||cioccolato
+カレー||curry
+サラダ||insalata
+スープ||zuppa
+味噌汁|みそしる|zuppa di miso
+おにぎり||onigiri
+弁当|べんとう|bentō
+朝ご飯|あさごはん|colazione
+昼ご飯|ひるごはん|pranzo
+晩ご飯|ばんごはん|cena
+美味しい|おいしい|buono, gustoso
+甘い|あまい|dolce
+辛い|からい|piccante
+メニュー||menù
+レストラン||ristorante
+箸|はし|bacchette
+ピザ||pizza
+パスタ||pasta
+果物|くだもの|frutta
+りんご||mela
+みかん||mandarino
+バナナ||banana
+いちご||fragola
+@Numeri e soldi
+#Numeri e soldi
+一|いち|uno
+二|に|due
+三|さん|tre
+四|よん|quattro
+五|ご|cinque
+六|ろく|sei
+七|なな|sette
+八|はち|otto
+九|きゅう|nove
+十|じゅう|dieci
+百|ひゃく|cento
+千|せん|mille
+万|まん|diecimila
+円|えん|yen
+お金|おかね|soldi
+いくら||quanto costa?
+高い|たかい|caro, alto
+安い|やすい|economico
+一つ|ひとつ|uno (oggetto)
+二つ|ふたつ|due (oggetti)
+三つ|みっつ|tre (oggetti)
+いくつ||quanti?
+一人|ひとり|una persona, da solo
+二人|ふたり|due persone
+全部|ぜんぶ|tutto
+#Indicare
+これ||questo
+それ||codesto
+あれ||quello
+どれ||quale?
+@Presentarsi e famiglia
+#Espressioni
+はじめまして||piacere di conoscerti
+よろしくお願いします|よろしくおねがいします|piacere / conto su di te
+お元気ですか|おげんきですか|come stai?
+元気|げんき|in forma, energico
+大丈夫|だいじょうぶ|va bene, tutto ok
+そうですね||è vero, già
+もしもし||pronto (al telefono)
+おめでとうございます||congratulazioni
+#Persone e famiglia
+彼|かれ|lui
+彼女|かのじょ|lei, fidanzata
+人|ひと|persona
+友達|ともだち|amico
+学生|がくせい|studente
+先生|せんせい|insegnante
+家族|かぞく|famiglia
+父|ちち|mio padre
+母|はは|mia madre
+お父さん|おとうさん|padre (di altri)
+お母さん|おかあさん|madre (di altri)
+兄|あに|mio fratello maggiore
+姉|あね|mia sorella maggiore
+弟|おとうと|fratello minore
+妹|いもうと|sorella minore
+お兄さん|おにいさん|fratello maggiore (di altri)
+お姉さん|おねえさん|sorella maggiore (di altri)
+子供|こども|bambino
+男の人|おとこのひと|uomo
+女の人|おんなのひと|donna
+男の子|おとこのこ|ragazzo, bambino
+女の子|おんなのこ|ragazza, bambina
+赤ちゃん|あかちゃん|neonato
+夫|おっと|mio marito
+妻|つま|mia moglie
+祖父|そふ|mio nonno
+祖母|そぼ|mia nonna
+おじいさん||nonno, anziano
+おばあさん||nonna, anziana
+名前|なまえ|nome
+犬|いぬ|cane
+猫|ねこ|gatto
+@In città
+#Luoghi
+駅|えき|stazione
+学校|がっこう|scuola
+大学|だいがく|università
+会社|かいしゃ|azienda, ufficio
+家|いえ|casa
+部屋|へや|stanza
+トイレ||bagno (WC)
+店|みせ|negozio
+コンビニ||minimarket (konbini)
+スーパー||supermercato
+デパート||grande magazzino
+銀行|ぎんこう|banca
+病院|びょういん|ospedale
+郵便局|ゆうびんきょく|ufficio postale
+図書館|としょかん|biblioteca
+公園|こうえん|parco
+ホテル||hotel
+空港|くうこう|aeroporto
+喫茶店|きっさてん|caffetteria
+カフェ||bar, caffè
+映画館|えいがかん|cinema
+美術館|びじゅつかん|museo d'arte
+お寺|おてら|tempio buddista
+神社|じんじゃ|santuario shintoista
+町|まち|città, quartiere
+国|くに|paese, nazione
+東京|とうきょう|Tokyo
+京都|きょうと|Kyoto
+大阪|おおさか|Osaka
+山|やま|montagna
+川|かわ|fiume
+海|うみ|mare
+道|みち|strada
+ここ||qui
+そこ||lì (vicino a te)
+あそこ||laggiù
+どこ||dove?
+@Trasporti e direzioni
+#Trasporti
+電車|でんしゃ|treno
+地下鉄|ちかてつ|metropolitana
+新幹線|しんかんせん|shinkansen
+バス||autobus
+タクシー||taxi
+車|くるま|auto
+自転車|じてんしゃ|bicicletta
+飛行機|ひこうき|aereo
+切符|きっぷ|biglietto
+出口|でぐち|uscita
+入口|いりぐち|entrata
+乗る|のる|salire (su un mezzo)
+降りる|おりる|scendere
+地図|ちず|mappa
+#Direzioni
+右|みぎ|destra
+左|ひだり|sinistra
+まっすぐ||dritto
+近い|ちかい|vicino
+遠い|とおい|lontano
+東|ひがし|est
+西|にし|ovest
+南|みなみ|sud
+北|きた|nord
+上|うえ|sopra
+下|した|sotto
+中|なか|dentro
+外|そと|fuori
+隣|となり|accanto
+後ろ|うしろ|dietro
+@Orari
+#Tempo e orari
+今|いま|adesso
+時|じ|ora (es. 3時)
+分|ふん|minuti
+半|はん|e mezza
+何時|なんじ|che ore sono?
+午前|ごぜん|di mattina (a.m.)
+午後|ごご|di pomeriggio (p.m.)
+朝|あさ|mattina
+昼|ひる|mezzogiorno
+夜|よる|sera, notte
+今日|きょう|oggi
+明日|あした|domani
+昨日|きのう|ieri
+毎日|まいにち|ogni giorno
+今週|こんしゅう|questa settimana
+来週|らいしゅう|la settimana prossima
+先週|せんしゅう|la settimana scorsa
+今年|ことし|quest'anno
+来年|らいねん|l'anno prossimo
+去年|きょねん|l'anno scorso
+週末|しゅうまつ|fine settimana
+時間|じかん|tempo, ore
+いつ||quando?
+早い|はやい|presto
+遅い|おそい|tardi, lento
+後で|あとで|dopo, più tardi
+前|まえ|prima, davanti
+まだ||ancora (non)
+もう||già
+@Giorni, stagioni e meteo
+#Giorni e stagioni
+月曜日|げつようび|lunedì
+火曜日|かようび|martedì
+水曜日|すいようび|mercoledì
+木曜日|もくようび|giovedì
+金曜日|きんようび|venerdì
+土曜日|どようび|sabato
+日曜日|にちようび|domenica
+何曜日|なんようび|che giorno della settimana?
+一月|いちがつ|gennaio
+四月|しがつ|aprile
+七月|しちがつ|luglio
+九月|くがつ|settembre
+誕生日|たんじょうび|compleanno
+春|はる|primavera
+夏|なつ|estate
+秋|あき|autunno
+冬|ふゆ|inverno
+休み|やすみ|vacanza, giorno libero
+#Meteo
+天気|てんき|tempo (meteo)
+雨|あめ|pioggia
+雪|ゆき|neve
+晴れ|はれ|sereno
+曇り|くもり|nuvoloso
+風|かぜ|vento
+暑い|あつい|caldo (clima)
+寒い|さむい|freddo (clima)
+暖かい|あたたかい|tiepido
+涼しい|すずしい|fresco
+傘|かさ|ombrello
+@Casa, oggetti e colori
+#Casa e oggetti
+本|ほん|libro
+机|つくえ|scrivania
+椅子|いす|sedia
+テーブル||tavolo
+ベッド||letto
+テレビ||televisione
+電話|でんわ|telefono
+スマホ||smartphone
+パソコン||computer
+カメラ||macchina fotografica
+鞄|かばん|borsa
+財布|さいふ|portafoglio
+鍵|かぎ|chiave
+時計|とけい|orologio
+窓|まど|finestra
+ドア||porta
+お風呂|おふろ|bagno (vasca)
+台所|だいどころ|cucina (stanza)
+雑誌|ざっし|rivista
+新聞|しんぶん|giornale
+写真|しゃしん|foto
+手紙|てがみ|lettera
+ペン||penna
+鉛筆|えんぴつ|matita
+ノート||quaderno
+#Colori
+赤|あか|rosso
+青|あお|blu
+白|しろ|bianco
+黒|くろ|nero
+黄色|きいろ|giallo
+緑|みどり|verde
+茶色|ちゃいろ|marrone
+ピンク||rosa
+@Azioni quotidiane
+#Verbi
+食べる|たべる|mangiare
+飲む|のむ|bere
+行く|いく|andare
+来る|くる|venire
+帰る|かえる|tornare (a casa)
+見る|みる|guardare, vedere
+聞く|きく|ascoltare, chiedere
+話す|はなす|parlare
+読む|よむ|leggere
+書く|かく|scrivere
+買う|かう|comprare
+する||fare
+ある||esserci (cose)
+いる||esserci (persone, animali)
+分かる|わかる|capire
+寝る|ねる|dormire
+起きる|おきる|svegliarsi
+勉強する|べんきょうする|studiare
+働く|はたらく|lavorare
+休む|やすむ|riposare
+待つ|まつ|aspettare
+会う|あう|incontrare
+遊ぶ|あそぶ|giocare, uscire
+泳ぐ|およぐ|nuotare
+走る|はしる|correre
+歩く|あるく|camminare
+作る|つくる|fare, preparare
+使う|つかう|usare
+持つ|もつ|tenere, avere
+住む|すむ|abitare
+知る|しる|conoscere
+入る|はいる|entrare
+出る|でる|uscire
+開ける|あける|aprire
+閉める|しめる|chiudere
+教える|おしえる|insegnare
+洗う|あらう|lavare
+着る|きる|indossare (sopra)
+歌う|うたう|cantare
+撮る|とる|scattare (foto)
+始まる|はじまる|iniziare
+終わる|おわる|finire
+@Descrivere
+#Aggettivi
+大きい|おおきい|grande
+小さい|ちいさい|piccolo
+新しい|あたらしい|nuovo
+古い|ふるい|vecchio (cose)
+いい||buono, bello
+悪い|わるい|cattivo
+楽しい|たのしい|divertente
+面白い|おもしろい|interessante, buffo
+難しい|むずかしい|difficile
+簡単|かんたん|facile
+忙しい|いそがしい|impegnato
+暇|ひま|libero (di tempo)
+静か|しずか|tranquillo
+にぎやか||vivace, animato
+きれい||bello, pulito
+かわいい||carino
+かっこいい||figo
+有名|ゆうめい|famoso
+好き|すき|che piace
+嫌い|きらい|che non piace
+上手|じょうず|bravo
+下手|へた|scarso
+便利|べんり|comodo, pratico
+優しい|やさしい|gentile
+長い|ながい|lungo
+短い|みじかい|corto
+多い|おおい|molti
+少ない|すくない|pochi
+広い|ひろい|spazioso
+狭い|せまい|stretto
+重い|おもい|pesante
+軽い|かるい|leggero
+眠い|ねむい|assonnato
+嬉しい|うれしい|felice
+悲しい|かなしい|triste
+欲しい|ほしい|volere (una cosa)
+@Tempo libero e shopping
+#Hobby
+趣味|しゅみ|hobby
+音楽|おんがく|musica
+映画|えいが|film
+歌|うた|canzone
+ゲーム||videogioco
+スポーツ||sport
+サッカー||calcio
+テニス||tennis
+野球|やきゅう|baseball
+旅行|りょこう|viaggio
+料理|りょうり|cucina (cucinare)
+アニメ||anime
+漫画|まんが|manga
+ギター||chitarra
+ピアノ||pianoforte
+散歩|さんぽ|passeggiata
+パーティー||festa
+#Vestiti e shopping
+服|ふく|vestiti
+シャツ||camicia
+Tシャツ|ティーシャツ|maglietta
+ズボン||pantaloni
+スカート||gonna
+靴|くつ|scarpe
+帽子|ぼうし|cappello
+眼鏡|めがね|occhiali
+コート||cappotto
+セーター||maglione
+買い物|かいもの|shopping, spesa
+お土産|おみやげ|souvenir
+サイズ||taglia
+@Corpo, scuola e lavoro
+#Corpo e salute
+体|からだ|corpo
+頭|あたま|testa
+顔|かお|faccia
+目|め|occhio
+耳|みみ|orecchio
+口|くち|bocca
+鼻|はな|naso
+歯|は|dente
+手|て|mano
+足|あし|piede, gamba
+お腹|おなか|pancia
+痛い|いたい|fa male
+風邪|かぜ|raffreddore
+薬|くすり|medicina
+熱|ねつ|febbre
+#Scuola e lavoro
+仕事|しごと|lavoro
+会社員|かいしゃいん|impiegato
+医者|いしゃ|medico
+店員|てんいん|commesso
+授業|じゅぎょう|lezione
+宿題|しゅくだい|compiti
+テスト||verifica, test
+日本語|にほんご|lingua giapponese
+英語|えいご|inglese
+イタリア語|イタリアご|italiano (lingua)
+言葉|ことば|parola
+質問|しつもん|domanda
+会議|かいぎ|riunione
+#Parole utili
+何|なに|cosa?
+誰|だれ|chi?
+どう||come?
+なぜ||perché?
+とても||molto
+少し|すこし|un po'
+ちょっと||un pochino
+よく||spesso, bene
+いつも||sempre
+時々|ときどき|a volte
+一緒に|いっしょに|insieme
+でも||però
+そして||e poi
+だから||quindi
+`;
+
+const RAW_KANJI = `
+一|イチ|ひと・つ|uno
+二|ニ|ふた・つ|due
+三|サン|みっ・つ|tre
+四|シ|よん・よ|quattro
+五|ゴ|いつ・つ|cinque
+六|ロク|むっ・つ|sei
+七|シチ|なな|sette
+八|ハチ|やっ・つ|otto
+九|キュウ・ク|ここの・つ|nove
+十|ジュウ|とお|dieci
+百|ヒャク||cento
+千|セン|ち|mille
+万|マン||diecimila
+円|エン|まる・い|yen, cerchio
+日|ニチ・ジツ|ひ・か|giorno, sole
+月|ゲツ・ガツ|つき|luna, mese
+火|カ|ひ|fuoco
+水|スイ|みず|acqua
+木|モク|き|albero
+金|キン|かね|oro, soldi
+土|ド|つち|terra
+曜|ヨウ||giorno della settimana
+年|ネン|とし|anno
+時|ジ|とき|ora, tempo
+分|フン・ブン|わ・かる|minuto, capire
+半|ハン|なか・ば|metà
+午|ゴ||mezzogiorno
+前|ゼン|まえ|prima, davanti
+後|ゴ・コウ|あと・うし・ろ|dopo, dietro
+今|コン|いま|adesso
+毎|マイ||ogni
+週|シュウ||settimana
+朝|チョウ|あさ|mattina
+昼|チュウ|ひる|mezzogiorno
+夜|ヤ|よる|notte
+春|シュン|はる|primavera
+夏|カ|なつ|estate
+秋|シュウ|あき|autunno
+冬|トウ|ふゆ|inverno
+人|ジン・ニン|ひと|persona
+子|シ|こ|bambino
+女|ジョ|おんな|donna
+男|ダン|おとこ|uomo
+父|フ|ちち|padre
+母|ボ|はは|madre
+友|ユウ|とも|amico
+先|セン|さき|prima, avanti
+生|セイ|い・きる|vita, nascere
+学|ガク|まな・ぶ|studio
+校|コウ||scuola
+名|メイ|な|nome
+私|シ|わたし|io, privato
+会|カイ|あ・う|incontrare
+社|シャ||azienda, società
+大|ダイ|おお・きい|grande
+小|ショウ|ちい・さい|piccolo
+中|チュウ|なか|dentro, centro
+上|ジョウ|うえ|sopra
+下|カ・ゲ|した|sotto
+右|ウ|みぎ|destra
+左|サ|ひだり|sinistra
+東|トウ|ひがし|est
+西|セイ|にし|ovest
+南|ナン|みなみ|sud
+北|ホク|きた|nord
+外|ガイ|そと|fuori
+山|サン|やま|montagna
+川|セン|かわ|fiume
+田|デン|た|risaia
+天|テン|あめ|cielo
+気|キ||spirito, energia
+雨|ウ|あめ|pioggia
+雪|セツ|ゆき|neve
+空|クウ|そら|cielo, vuoto
+犬|ケン|いぬ|cane
+魚|ギョ|さかな|pesce
+肉|ニク||carne
+茶|チャ||tè
+米|ベイ|こめ|riso (crudo)
+本|ホン|もと|libro, origine
+語|ゴ|かた・る|lingua, parola
+国|コク|くに|paese
+駅|エキ||stazione
+店|テン|みせ|negozio
+車|シャ|くるま|auto
+電|デン||elettricità
+家|カ|いえ|casa
+道|ドウ|みち|strada
+町|チョウ|まち|città
+食|ショク|た・べる|mangiare
+飲|イン|の・む|bere
+行|コウ|い・く|andare
+来|ライ|く・る|venire
+見|ケン|み・る|vedere
+聞|ブン|き・く|ascoltare
+話|ワ|はな・す|parlare
+読|ドク|よ・む|leggere
+書|ショ|か・く|scrivere
+買|バイ|か・う|comprare
+休|キュウ|やす・む|riposare
+入|ニュウ|はい・る|entrare
+出|シュツ|で・る|uscire
+好|コウ|す・き|piacere
+口|コウ|くち|bocca
+目|モク|め|occhio
+耳|ジ|みみ|orecchio
+手|シュ|て|mano
+足|ソク|あし|piede, gamba
+高|コウ|たか・い|alto, caro
+安|アン|やす・い|economico
+新|シン|あたら・しい|nuovo
+古|コ|ふる・い|vecchio
+長|チョウ|なが・い|lungo
+白|ハク|しろ|bianco
+黒|コク|くろ|nero
+赤|セキ|あか|rosso
+青|セイ|あお|blu
+`;
+
+/* ================= ROMAJI ================= */
+const R = {};
+[['あいうえお','a i u e o'],['かきくけこ','ka ki ku ke ko'],['さしすせそ','sa shi su se so'],['たちつてと','ta chi tsu te to'],
+ ['なにぬねの','na ni nu ne no'],['はひふへほ','ha hi fu he ho'],['まみむめも','ma mi mu me mo'],['やゆよ','ya yu yo'],
+ ['らりるれろ','ra ri ru re ro'],['わを','wa wo'],['ん','n'],['がぎぐげご','ga gi gu ge go'],['ざじずぜぞ','za ji zu ze zo'],
+ ['だぢづでど','da ji zu de do'],['ばびぶべぼ','ba bi bu be bo'],['ぱぴぷぺぽ','pa pi pu pe po'],
+ ['ぁぃぅぇぉ','a i u e o'],['ゃゅょ','ya yu yo'],['ゔ','vu']
+].forEach(([k,r])=>{const rs=r.split(' ');[...k].forEach((c,i)=>R[c]=rs[i]);});
+const toHira = s => s.replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0)-0x60));
+const toKata = s => s.replace(/[ぁ-ゖ]/g, c => String.fromCharCode(c.charCodeAt(0)+0x60));
+function romaAt(s,i){
+  const c=s[i], n=s[i+1], base=R[c];
+  if(base===undefined) return {r:c,len:1};
+  if(n && 'ゃゅょ'.includes(n) && base.length>1 && base.endsWith('i')){
+    const stem=base.slice(0,-1);
+    if(stem==='sh'||stem==='ch'||stem==='j') return {r:stem+R[n].slice(1),len:2};
+    return {r:stem+R[n],len:2};
+  }
+  if(n && 'ぁぃぅぇぉ'.includes(n)){
+    let stem=base.slice(0,-1); if(c==='う') stem='w'; if(c==='ゔ') stem='v';
+    return {r:stem+R[n],len:2};
+  }
+  return {r:base,len:1};
+}
+function romaji(str){
+  const s=toHira(str); let out='';
+  for(let i=0;i<s.length;i++){
+    const c=s[i];
+    if(c==='っ'){ if(i+1<s.length){ const nx=romaAt(s,i+1).r; out += nx.startsWith('ch') ? 't' : nx[0]; } continue; }
+    if(c==='ー'){ const m=out.match(/[aeiou]$/); if(m) out+=m[0]; continue; }
+    const r=romaAt(s,i); out+=r.r; i+=r.len-1;
+  }
+  return out;
+}
+
+/* ================= BUILD ITEMS ================= */
+/* parole aggiunte dalle lezioni (blocco "Parole lezioni") */
+const RAW_LESSON = `
+#Lezioni A1
+有名な|ゆうめいな|famoso (na-agg.)
+巻|かん|volume (di un'opera)
+フィギュア||figure (statuetta da collezione)
+好きな|すきな|preferito (na-agg.)
+読む|よむ|leggere
+おいしい||buono, delizioso
+仕事|しごと|lavoro
+リモートワーカー||lavoratore da remoto
+生徒|せいと|studente, allievo
+出かける|でかける|uscire, andare in giro
+切符|きっぷ|biglietto (del treno)
+から||da, a partire da (particella)
+お願いした|おねがいした|ho chiesto (un favore)
+肉|にく|carne
+昨日|きのう|ieri
+雨|あめ|pioggia
+晴れ|はれ|sereno, bel tempo
+曇り|くもり|nuvoloso
+では||allora, dunque
+話します|はなします|parlare (parlo)
+や||e (elenco: ～や～)
+できます||potere, riuscire (posso)
+袋|ふくろ|sacchetto, busta
+仕事をする|しごとをする|lavorare
+ノートをとる||prendere appunti
+味|あじ|sapore, gusto
+トマト||pomodoro
+勉強|べんきょう|studio
+怖い|こわい|spaventoso, che fa paura
+料理|りょうり|cucina, piatto
+か||o, oppure; particella interrogativa
+飲み物|のみもの|bevanda
+店|みせ|negozio
+さくらんぼ||ciliegia
+`;
+
+/* appunti per il ripasso (una lezione per oggetto) */
+const LESSONS = [
+ { id:'a1-01', title:'A1 · 01', sub:'Grammatica 1–5 · です e forme base',
+   points:[
+    {pat:'〜は〜です', patRo:'~wa ~desu', mean:'A è B', struct:'Nome + は (wa) + Nome + です (desu)', jp:'ここは東京駅です。', ro:'Koko wa Tōkyō-eki desu.', it:'Questa è la stazione di Tokyo.', note:'は (wa) segna il tema (di cosa parli), です (desu) chiude la frase in modo cortese.'},
+    {pat:'〜じゃありません', patRo:'~ja arimasen', mean:'A non è B', struct:'Nome + は (wa) + Nome + じゃありません (ja arimasen)', jp:'これは私のかばんじゃありません。', ro:'Kore wa watashi no kaban ja arimasen.', it:'Questa non è la mia borsa.', note:'Forma negativa di です (desu): です → じゃありません (desu → ja arimasen). L\'ordine non cambia.'},
+    {pat:'〜でした', patRo:'~deshita', mean:'A era B', struct:'Nome + は (wa) + Nome + でした (deshita)', jp:'昨日は雨でした。', ro:'Kinō wa ame deshita.', it:'Ieri è piovuto (era pioggia).', note:'Passato di です (desu): です → でした (desu → deshita).'},
+    {pat:'〜ではありませんでした', patRo:'~dewa arimasen deshita', mean:'A non era B', struct:'Nome + は (wa) + Nome + ではありませんでした (dewa arimasen deshita)', jp:'部屋はきれいではありませんでした。', ro:'Heya wa kirei dewa arimasen deshita.', it:'La stanza non era pulita.', note:'Negativo + passato: prima il negativo, poi でした (deshita).'},
+    {pat:'〜も', patRo:'~mo', mean:'anche', struct:'Nome + も (mo) + … + です (desu)  —  も al posto di は', jp:'これも五百円です。', ro:'Kore mo gohyaku-en desu.', it:'Anche questo costa 500 yen.', note:'も (mo) sostituisce は (wa) per dire «anche questo».'}
+   ],
+   vocab:[['ここ','koko','qui, questo posto'],['東京','Tōkyō','Tokyo'],['駅','eki','stazione'],['これ','kore','questo'],['私','watashi','io'],['かばん','kaban','borsa'],['の','no','di (possessivo)'],['昨日','kinō','ieri'],['雨','ame','pioggia'],['部屋','heya','stanza'],['きれい','kirei','pulito, bello'],['五百','gohyaku','cinquecento'],['円','en','yen'],['かさ','kasa','ombrello'],['学生','gakusei','studente']]
+ },
+ { id:'a1-02', title:'A1 · 02', sub:'Grammatica 6–10 · dimostrativi e だれ (dare)',
+   points:[
+    {pat:'〜の', patRo:'~no', mean:'di / possesso', struct:'Nome (proprietario) + の (no) + Nome (cosa)', jp:'これは私のかばんです。', ro:'Kore wa watashi no kaban desu.', it:'Questa è la mia borsa.', note:'Il proprietario viene prima: 私のほん (watashi no hon) = «il mio libro».'},
+    {pat:'これ・それ・あれ', patRo:'kore · sore · are', mean:'questo / quello / quello là (da soli)', struct:'Stanno da soli, senza nome dopo', jp:'それは私のかさです。', ro:'Sore wa watashi no kasa desu.', it:'Quello è il mio ombrello.', note:'これ (kore) = vicino a me · それ (sore) = vicino a te · あれ (are) = lontano da entrambi.'},
+    {pat:'この・その・あの', patRo:'kono · sono · ano', mean:'questo / quel + Nome', struct:'この / その / あの (kono/sono/ano) + Nome', jp:'あの人は山田さんです。', ro:'Ano hito wa Yamada-san desu.', it:'Quella persona (là) è il signor Yamada.', note:'Hanno SEMPRE un nome subito dopo.'},
+    {pat:'ここ・そこ・あそこ', patRo:'koko · soko · asoko', mean:'qui / lì / laggiù (luoghi)', struct:'Nome + は (wa) + ここ / そこ / あそこ (koko/soko/asoko) + です (desu)', jp:'トイレはあそこです。', ro:'Toire wa asoko desu.', it:'Il bagno è laggiù.', note:'ここ (koko) = dove sono io · そこ (soko) = dove sei tu · あそこ (asoko) = lontano da entrambi.'},
+    {pat:'だれ', patRo:'dare', mean:'chi?', struct:'… + は (wa) + だれ (dare) + ですか (desu ka)', jp:'あの人はだれですか。', ro:'Ano hito wa dare desu ka.', it:'Chi è quella persona?', note:'だれ (dare) va al posto della persona; か (ka) chiude la domanda. どなた (donata) è più cortese.'}
+   ],
+   vocab:[['の','no','di (possessivo)'],['これ','kore','questo (vicino a me)'],['それ','sore','quello (vicino a te)'],['あれ','are','quello là'],['この〜','kono~','questo~ (+ nome)'],['その〜','sono~','quel~ (+ nome)'],['あの〜','ano~','quel~ là (+ nome)'],['ここ','koko','qui'],['そこ','soko','lì'],['あそこ','asoko','laggiù'],['人','hito','persona'],['〜さん','~san','sig. / sig.ra'],['トイレ','toire','bagno'],['だれ','dare','chi'],['か','ka','(particella domanda)'],['本','hon','libro'],['日本語','nihongo','giapponese (lingua)'],['ホテル','hoteru','hotel']]
+ }
+];
+
+/* banca di frasi brevi (default istantaneo della "frase del giorno") — jp|kana|romaji|it|nota */
+const RAW_PHRASES = `
+私は学生です。|わたしはがくせいです。|watashi wa gakusei desu.|Sono uno studente.|presente (です)
+これは本です。|これはほんです。|kore wa hon desu.|Questo è un libro.|これ + です
+それは私のかばんです。|それはわたしのかばんです。|sore wa watashi no kaban desu.|Quella è la mia borsa.|の (possesso)
+あれは駅です。|あれはえきです。|are wa eki desu.|Quello là è la stazione.|あれ
+今日は晴れです。|きょうははれです。|kyō wa hare desu.|Oggi è sereno.|presente
+昨日は雨でした。|きのうはあめでした。|kinō wa ame deshita.|Ieri è piovuto.|passato (でした)
+これは私のかさじゃありません。|これはわたしのかさじゃありません。|kore wa watashi no kasa ja arimasen.|Questo non è il mio ombrello.|negativo
+私も日本人です。|わたしもにほんじんです。|watashi mo nihonjin desu.|Anch'io sono giapponese.|〜も
+水を飲みます。|みずをのみます。|mizu o nomimasu.|Bevo acqua.|presente (verbo)
+お茶を飲みました。|おちゃをのみました。|ocha o nomimashita.|Ho bevuto il tè.|passato
+ご飯を食べます。|ごはんをたべます。|gohan o tabemasu.|Mangio il riso.|presente
+寿司を食べました。|すしをたべました。|sushi o tabemashita.|Ho mangiato il sushi.|passato
+本を読みます。|ほんをよみます。|hon o yomimasu.|Leggo un libro.|presente
+映画を見ます。|えいがをみます。|eiga o mimasu.|Guardo un film.|presente
+日本語を勉強します。|にほんごをべんきょうします。|nihongo o benkyō shimasu.|Studio giapponese.|する
+肉を食べません。|にくをたべません。|niku o tabemasen.|Non mangio carne.|negativo
+コーヒーが好きです。|コーヒーがすきです。|kōhī ga suki desu.|Mi piace il caffè.|好き + が
+寿司が好きです。|すしがすきです。|sushi ga suki desu.|Mi piace il sushi.|好き
+このラーメンはおいしいです。|このラーメンはおいしいです。|kono rāmen wa oishii desu.|Questo ramen è buono.|aggettivo い
+この店は有名です。|このみせはゆうめいです。|kono mise wa yūmei desu.|Questo negozio è famoso.|aggettivo な
+切符を買います。|きっぷをかいます。|kippu o kaimasu.|Compro il biglietto.|presente
+駅はあそこです。|えきはあそこです。|eki wa asoko desu.|La stazione è laggiù.|あそこ
+トイレはどこですか。|トイレはどこですか。|toire wa doko desu ka.|Dov'è il bagno?|どこ + か
+あの人は田中さんです。|あのひとはたなかさんです。|ano hito wa Tanaka-san desu.|Quella persona è il sig. Tanaka.|あの
+あの人はだれですか。|あのひとはだれですか。|ano hito wa dare desu ka.|Chi è quella persona?|だれ
+今日は仕事をします。|きょうはしごとをします。|kyō wa shigoto o shimasu.|Oggi lavoro.|する
+友達と出かけます。|ともだちとでかけます。|tomodachi to dekakemasu.|Esco con un amico.|と (con)
+明日学校へ行きます。|あしたがっこうへいきます。|ashita gakkō e ikimasu.|Domani vado a scuola.|へ (verso)
+日本へ行きたいです。|にほんへいきたいです。|nihon e ikitai desu.|Voglio andare in Giappone.|〜たい
+魚を食べたいです。|さかなをたべたいです。|sakana o tabetai desu.|Voglio mangiare pesce.|〜たい
+犬が好きです。|いぬがすきです。|inu ga suki desu.|Mi piacciono i cani.|好き
+猫はかわいいです。|ねこはかわいいです。|neko wa kawaii desu.|Il gatto è carino.|aggettivo
+これは高いです。|これはたかいです。|kore wa takai desu.|Questo è caro.|aggettivo
+それは安いです。|それはやすいです。|sore wa yasui desu.|Quello è economico.|aggettivo
+部屋はきれいです。|へやはきれいです。|heya wa kirei desu.|La stanza è pulita.|な-agg
+部屋はきれいじゃありません。|へやはきれいじゃありません。|heya wa kirei ja arimasen.|La stanza non è pulita.|negativo
+昨日は休みでした。|きのうはやすみでした。|kinō wa yasumi deshita.|Ieri era giorno libero.|passato
+今日は暑いです。|きょうはあついです。|kyō wa atsui desu.|Oggi fa caldo.|aggettivo
+今日は寒いです。|きょうはさむいです。|kyō wa samui desu.|Oggi fa freddo.|aggettivo
+水をください。|みずをください。|mizu o kudasai.|Dell'acqua, per favore.|〜ください
+すみません、いくらですか。|すみません、いくらですか。|sumimasen, ikura desu ka.|Scusi, quanto costa?|いくら
+五百円です。|ごひゃくえんです。|gohyaku en desu.|Costa 500 yen.|numeri
+名前は何ですか。|なまえはなんですか。|namae wa nan desu ka.|Come ti chiami?|何
+元気ですか。|げんきですか。|genki desu ka.|Come stai?|か
+はい、元気です。|はい、げんきです。|hai, genki desu.|Sì, sto bene.|presente
+パンを食べます。|パンをたべます。|pan o tabemasu.|Mangio pane.|presente
+ビールを飲みません。|ビールをのみません。|bīru o nomimasen.|Non bevo birra.|negativo
+料理をします。|りょうりをします。|ryōri o shimasu.|Cucino.|する
+音楽を聞きます。|おんがくをききます。|ongaku o kikimasu.|Ascolto musica.|presente
+写真を撮ります。|しゃしんをとります。|shashin o torimasu.|Scatto una foto.|presente
+日本語は難しいです。|にほんごはむずかしいです。|nihongo wa muzukashii desu.|Il giapponese è difficile.|aggettivo
+これはおいしかったです。|これはおいしかったです。|kore wa oishikatta desu.|Questo era buono.|aggettivo passato
+昨日映画を見ました。|きのうえいがをみました。|kinō eiga o mimashita.|Ieri ho visto un film.|passato
+今本を読みます。|いまほんをよみます。|ima hon o yomimasu.|Adesso leggo un libro.|今
+明日は晴れです。|あしたははれです。|ashita wa hare desu.|Domani sarà sereno.|presente
+バナナを買いました。|バナナをかいました。|banana o kaimashita.|Ho comprato banane.|passato
+りんごが好きです。|りんごがすきです。|ringo ga suki desu.|Mi piacciono le mele.|好き
+これはトマトです。|これはトマトです。|kore wa tomato desu.|Questo è un pomodoro.|です
+その料理は辛いです。|そのりょうりはからいです。|sono ryōri wa karai desu.|Quel piatto è piccante.|aggettivo
+この飲み物は甘いです。|こののみものはあまいです。|kono nomimono wa amai desu.|Questa bevanda è dolce.|aggettivo
+私は先生じゃありません。|わたしはせんせいじゃありません。|watashi wa sensei ja arimasen.|Non sono un insegnante.|negativo
+彼は生徒です。|かれはせいとです。|kare wa seito desu.|Lui è uno studente.|です
+ここは私の部屋です。|ここはわたしのへやです。|koko wa watashi no heya desu.|Qui è la mia stanza.|ここ + の
+犬と散歩します。|いぬとさんぽします。|inu to sanpo shimasu.|Passeggio con il cane.|する
+朝ご飯を食べました。|あさごはんをたべました。|asagohan o tabemashita.|Ho fatto colazione.|passato
+昼ご飯は寿司でした。|ひるごはんはすしでした。|hirugohan wa sushi deshita.|Il pranzo era sushi.|passato
+晩ご飯を作ります。|ばんごはんをつくります。|bangohan o tsukurimasu.|Preparo la cena.|presente
+水が飲みたいです。|みずがのみたいです。|mizu ga nomitai desu.|Voglio bere acqua.|〜たい
+少し疲れました。|すこしつかれました。|sukoshi tsukaremashita.|Sono un po' stanco.|passato
+この映画は怖いです。|このえいがはこわいです。|kono eiga wa kowai desu.|Questo film fa paura.|aggettivo
+東京は大きいです。|とうきょうはおおきいです。|tōkyō wa ōkii desu.|Tokyo è grande.|aggettivo
+この店は小さいです。|このみせはちいさいです。|kono mise wa chiisai desu.|Questo negozio è piccolo.|aggettivo
+友達は親切です。|ともだちはしんせつです。|tomodachi wa shinsetsu desu.|Il mio amico è gentile.|な-agg
+今日は忙しいです。|きょうはいそがしいです。|kyō wa isogashii desu.|Oggi sono impegnato.|aggettivo
+電車で行きます。|でんしゃでいきます。|densha de ikimasu.|Vado in treno.|で (mezzo)
+歩いて行きます。|あるいていきます。|aruite ikimasu.|Vado a piedi.|forma て
+ちょっと待ってください。|ちょっとまってください。|chotto matte kudasai.|Aspetta un attimo.|〜てください
+もう一度お願いします。|もういちどおねがいします。|mō ichido onegai shimasu.|Ancora una volta, per favore.|お願いします
+ゆっくり話してください。|ゆっくりはなしてください。|yukkuri hanashite kudasai.|Parla lentamente, per favore.|〜てください
+日本語が分かります。|にほんごがわかります。|nihongo ga wakarimasu.|Capisco il giapponese.|分かる
+名前を書きます。|なまえをかきます。|namae o kakimasu.|Scrivo il nome.|presente
+ノートを取ります。|ノートをとります。|nōto o torimasu.|Prendo appunti.|presente
+質問があります。|しつもんがあります。|shitsumon ga arimasu.|Ho una domanda.|ある
+時間がありません。|じかんがありません。|jikan ga arimasen.|Non ho tempo.|negativo
+お金がありません。|おかねがありません。|okane ga arimasen.|Non ho soldi.|negativo
+家に帰ります。|いえにかえります。|ie ni kaerimasu.|Torno a casa.|に
+何を食べますか。|なにをたべますか。|nani o tabemasu ka.|Cosa mangi?|何 + か
+どこへ行きますか。|どこへいきますか。|doko e ikimasu ka.|Dove vai?|どこ
+いつ日本へ行きますか。|いつにほんへいきますか。|itsu nihon e ikimasu ka.|Quando vai in Giappone?|いつ
+今日はいい天気です。|きょうはいいてんきです。|kyō wa ii tenki desu.|Oggi c'è bel tempo.|いい
+昨日は曇りでした。|きのうはくもりでした。|kinō wa kumori deshita.|Ieri era nuvoloso.|passato
+この本は面白いです。|このほんはおもしろいです。|kono hon wa omoshiroi desu.|Questo libro è interessante.|aggettivo
+その映画は面白くないです。|そのえいがはおもしろくないです。|sono eiga wa omoshiroku nai desu.|Quel film non è interessante.|aggettivo negativo
+私はイタリア人です。|わたしはイタリアじんです。|watashi wa itariajin desu.|Sono italiano.|です
+日本語を話します。|にほんごをはなします。|nihongo o hanashimasu.|Parlo giapponese.|presente
+少し話せます。|すこしはなせます。|sukoshi hanasemasu.|Parlo un po'.|potenziale
+明日は休みです。|あしたはやすみです。|ashita wa yasumi desu.|Domani è giorno libero.|presente
+一緒に行きましょう。|いっしょにいきましょう。|issho ni ikimashō.|Andiamo insieme.|〜ましょう
+お茶を飲みましょう。|おちゃをのみましょう。|ocha o nomimashō.|Beviamo un tè.|〜ましょう
+これを見てください。|これをみてください。|kore o mite kudasai.|Guarda questo, per favore.|〜てください
+すみません、分かりません。|すみません、わかりません。|sumimasen, wakarimasen.|Scusi, non capisco.|negativo
+今何時ですか。|いまなんじですか。|ima nanji desu ka.|Che ore sono?|何時
+猫が好きです。|ねこがすきです。|neko ga suki desu.|Mi piacciono i gatti.|好き
+この漢字は難しいです。|このかんじはむずかしいです。|kono kanji wa muzukashii desu.|Questo kanji è difficile.|aggettivo
+お茶をもう一杯ください。|おちゃをもういっぱいください。|ocha o mō ippai kudasai.|Un altro tè, per favore.|〜ください
+日本が大好きです。|にほんがだいすきです。|nihon ga daisuki desu.|Amo il Giappone.|大好き
+明日も勉強します。|あしたもべんきょうします。|ashita mo benkyō shimasu.|Studio anche domani.|〜も
+`;
+const PHRASES = RAW_PHRASES.trim().split('\n').map(l=>{ const f=l.split('|'); return {jp:f[0], kana:f[1]||f[0], romaji:f[2]||'', it:f[3]||'', note:f[4]||''}; }).filter(p=>p.jp);
+
+/* ================= GENKI (dal libro, pagina per pagina) =================
+   #tag (pagina/argomento), poi: giapponese|lettura|italiano|romaji */
+const RAW_GENKI = `
+@Lezione 1
+#p.39 · Espressioni
+あのう||ehm... (prima di parlare)|anoo
+はい||sì|hai
+そうです||esatto, è così|soo desu
+そうですか||ah, davvero? / capisco|soo desu ka
+#p.39 · Vocaboli
+ばんごう||numero|bangoo
+なまえ||nome|namae
+なん／なに||che cosa?|nan / nani
+#p.39 · Paesi
+イギリス||Regno Unito|igirisu
+オーストラリア||Australia|oosutoraria
+かんこく||Corea|kankoku
+カナダ||Canada|kanada
+ちゅうごく||Cina|chuugoku
+インド||India|indo
+エジプト||Egitto|ejiputo
+フィリピン||Filippine|firipin
+#p.39 · Materie
+アジアけんきゅう||studi asiatici|ajia kenkyuu
+けいざい||economia|keezai
+こうがく||ingegneria|koogaku
+こくさいかんけい||relazioni internazionali|kokusaikankee
+コンピューター||informatica / computer|konpyuutaa
+せいじ||politica|seeji
+せいぶつがく||biologia|seebutsugaku
+ビジネス||economia aziendale|bijinesu
+ぶんがく||letteratura|bungaku
+れきし||storia|rekishi
+#p.39-40 · Professioni
+いしゃ||medico|isha
+かいしゃいん||impiegato|kaishain
+かんごし||infermiere/a|kangoshi
+こうこうせい||studente di liceo|kookoosee
+しゅふ||casalingo/a|shufu
+だいがくいんせい||dottorando|daigakuinsee
+べんごし||avvocato|bengoshi
+#p.40 · Famiglia
+おかあさん||madre|okaasan
+おとうさん||padre|otoosan
+おねえさん||sorella maggiore|oneesan
+おにいさん||fratello maggiore|oniisan
+いもうと||sorella minore|imooto
+おとうと||fratello minore|otooto
+#p.41 · Frasi: X は Y です
+がくせいです。||Sono uno studente.|Gakusee desu.
+にほんごです。||È giapponese.|Nihongo desu.
+せんこうは にほんごです。||La mia materia è il giapponese.|Senkoo wa nihongo desu.
+わたしは ソラ・キムです。||Io sono Sora Kim.|Watashi wa Sora Kimu desu.
+やましたさんは せんせいです。||Il signor Yamashita è un insegnante.|Yamashita san wa sensee desu.
+メアリーさんは アメリカじんです。||Mary è americana.|Mearii san wa amerikajin desu.
+#p.42 · Frasi: domande (か)
+りゅうがくせいですか。||Sei uno studente internazionale?|Ryuugakusee desu ka.
+せんこうは なんですか。||Qual è la tua materia?|Senkoo wa nan desu ka.
+いま なんじですか。||Che ore sono adesso?|Ima nanji desu ka.
+なんさいですか。||Quanti anni hai?|Nansai desu ka.
+なんねんせいですか。||A che anno sei (all'università)?|Nannensee desu ka.
+でんわばんごうは なんばんですか。||Qual è il tuo numero di telefono?|Denwa bangoo wa nanban desu ka.
+えいご||inglese (lingua)|eego
+くじ||le nove (ora)|kuji
+#p.43 · Frasi: Nome の Nome
+たけしさんの でんわばんごう||il numero di telefono di Takeshi|Takeshi san no denwa bangoo
+だいがくの せんせい||un professore universitario|daigaku no sensee
+にほんごの がくせい||uno studente di giapponese|nihongo no gakusee
+にほんの だいがく||un'università in Giappone|Nihon no daigaku
+たけしさんの おかあさんは こうこうの せんせいです。||La madre di Takeshi è un'insegnante di liceo.|Takeshi san no okaasan wa kookoo no sensee desu.
+@Uso comune
+#Uso comune · Espressioni
+もっと ゆっくり||più lentamente (per favore)|motto yukkuri
+あの||ehm... / scusa (per interrompere chi parla)|ano
+わかりません||non capisco|wakarimasen
+すごい||che figo! / fantastico|sugoi
+そうですね||già, è vero, in effetti (cortese)|soo desu ne
+そうだな||già, fammi pensare... (informale)|soo da na
+だいじょうぶ||va bene, tutto ok, nessun problema|daijoobu
+どういたしまして||prego (risposta a "grazie")|doo itashimashite
+おねがいします||per favore / la prego|onegaishimasu
+おはよう ございます||buongiorno (solo al mattino)|ohayoo gozaimasu
+ありがとう ございました||grazie (uscendo da negozi/ristoranti)|arigatoo gozaimashita
+どうも ありがとう ございました||grazie davvero (più caloroso)|doomo arigatoo gozaimashita
+#Uso comune · Verbi
+よみます||leggere|yomimasu
+しります||sapere / conoscere|shirimasu
+たべたいです||voglio mangiare (-tai = volere, come iki-tai)|tabetai desu
+#Uso comune · Ristorante e negozi
+ぜんぶ おいしいです||è tutto buono!|zenbu oishii desu
+すわりますか||vuole sedersi?|suwarimasu ka
+どこで はらいますか||dove pago?|doko de haraimasu ka
+カードで はらえますか||posso pagare con la carta?|kaado de haraemasu ka
+げんきん||contanti|genkin
+カード||carta (di pagamento)|kaado
+なんかいですか||che piano è?|nankai desu ka
+ごみばこは いっかいです||il cestino è al piano terra|gomibako wa ikkai desu
+#Uso comune · In giro
+おてあらい||bagno / toilette|otearai
+もう いいですか||posso? / va bene adesso?|moo ii desu ka
+すみません、とおります||permesso (per passare)|sumimasen, toorimasu
+いっしょに しゃしんを とっても いいですか||possiamo fare una foto insieme?|issho ni shashin o totte mo ii desu ka
+この ドレスは とても すてきです||questo vestito è molto bello|kono doresu wa totemo suteki desu
+あかが だいすきです||adoro il rosso|aka ga daisuki desu
+みぎ||destra (右)|migi
+ひだり||sinistra (左)|hidari
+ドア||porta (dall'inglese "door")|doa
+`;
+
+const ITEMS = [], BLOCKS = [], GENKI_CHAPTERS = [];
+let WORDS = [], BUILTIN_BLOCKS = [];
+const KANA_BASE = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん';
+const KANA_DAK = 'がぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽ';
+const KANA_COMBO = [];
+[...'きしちにひみりぎじびぴ'].forEach(c=>[...'ゃゅょ'].forEach(y=>KANA_COMBO.push(c+y)));
+function buildItems(){
+  ITEMS.length=0; BLOCKS.length=0; GENKI_CHAPTERS.length=0;
+  // parole di serie
+  let theme='', block=-1;
+  RAW_WORDS.trim().split('\n').forEach(line=>{
+    line=line.trim(); if(!line) return;
+    if(line[0]==='@'){ BLOCKS.push(line.slice(1)); block=BLOCKS.length-1; return; }
+    if(line[0]==='#'){ theme=line.slice(1); return; }
+    const f=line.split('|'), jp=f[0], kana=f[1]||f[0];
+    ITEMS.push({id:'w:'+jp, d:'w', b:block, theme, jp, kana, ro:f[3]||romaji(kana), it:f[2]});
+  });
+  // parole dalle lezioni (blocco dedicato, id 'wl:' per non collidere con i built-in)
+  let lt='Lezioni A1'; const lb=BLOCKS.push('Parole lezioni')-1;
+  RAW_LESSON.trim().split('\n').forEach(line=>{
+    line=line.trim(); if(!line) return;
+    if(line[0]==='#'){ lt=line.slice(1); return; }
+    const f=line.split('|'), jp=f[0], kana=f[1]||f[0];
+    ITEMS.push({id:'wl:'+jp, d:'w', b:lb, theme:lt, jp, kana, ro:f[3]||romaji(kana), it:f[2]});
+  });
+  BUILTIN_BLOCKS = [...BLOCKS];
+  // le mie parole (gruppi e card aggiunti dall'utente)
+  CUSTOM.blocks.forEach(name=>{ if(name && !BLOCKS.includes(name)) BLOCKS.push(name); });
+  CUSTOM.words.forEach(w=>{
+    let bi=BLOCKS.indexOf(w.block); if(bi<0){ BLOCKS.push(w.block); bi=BLOCKS.length-1; }
+    const kana=w.kana||w.jp;
+    ITEMS.push({id:w.id, d:'w', b:bi, theme:w.block, jp:w.jp, kana, ro:w.ro||romaji(kana), it:w.it, custom:true});
+  });
+  // hiragana (solo questi; se ne aggiungono altri qui man mano che si studiano)
+  // Gruppo 1: a i u e o · ka ki ku ke ko     Gruppo 2: sa shi su se so · ta chi tsu te to · de · no
+  // Gruppo 3: na ni nu ne no · ha hi fu he ho
+  const HIRAGANA = [...'あいうえおかきくけこさしすせそたちつてとでのなにぬねはひふへほ'];
+  HIRAGANA.forEach(h=>{
+    ITEMS.push({id:'h:'+h, d:'h', theme:'Hiragana', jp:h, ro:romaji(h)});
+  });
+  // GENKI (dal libro): @ = lezione/capitolo, # = argomento
+  let gt='GENKI', gch='Lezione 1';
+  RAW_GENKI.trim().split('\n').forEach(line=>{
+    line=line.trim(); if(!line) return;
+    if(line[0]==='@'){ gch=line.slice(1).trim(); return; }
+    if(line[0]==='#'){ gt=line.slice(1).trim(); return; }
+    let gci=GENKI_CHAPTERS.indexOf(gch); if(gci<0) gci=GENKI_CHAPTERS.push(gch)-1;
+    const f=line.split('|'), jp=f[0], kana=f[1]||f[0];
+    ITEMS.push({id:'g:'+jp, d:'g', theme:gt, gc:gci, jp, kana, ro:f[3]||romaji(kana), it:f[2]});
+  });
+  WORDS = ITEMS.filter(x=>x.d==='w');
+  ITEMS.filter(x=>x.d==='j').forEach(k=>{ k.ex = WORDS.filter(w=>w.jp.includes(k.jp)).sort((a,b)=>a.jp.length-b.jp.length).slice(0,4); });
+}
+/* deck key: 'w' parole, 'kana' hiragana+katakana, 'j' kanji */
+const inDeck = (x,deck) => deck==='kana' ? (x.d==='h'||x.d==='k') : x.d===deck;
+
+/* ================= STATE ================= */
+const LS_KEY='kotoba-swipe-v1', PREF_KEY='kotoba-swipe-prefs', THEME_KEY='kotoba-theme';
+let state = {v:1, updatedAt:0, s:{}};
+try{ const j=JSON.parse(localStorage.getItem(LS_KEY)); if(j && j.s) state=j; }catch(e){}
+let prefs = {deck:'w', kk:'kana', group:'n', dir:'f', len:20, blocks:[], gch:[]};
+try{ Object.assign(prefs, JSON.parse(localStorage.getItem(PREF_KEY))||{}); }catch(e){}
+if(!Array.isArray(prefs.blocks)) prefs.blocks=[];
+if(!Array.isArray(prefs.gch)) prefs.gch=[];
+const savePrefs=()=>{ try{localStorage.setItem(PREF_KEY,JSON.stringify(prefs));}catch(e){} };
+const st = id => state.s[id] || 'n';
+function persist(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){ toast('Impossibile salvare: spazio del browser non disponibile'); } touch(); }
+function setStatus(id, v){ if(v==='n') delete state.s[id]; else state.s[id]=v; state.updatedAt=Date.now(); persist(); }
+/* parole e gruppi aggiunti dall'utente */
+const CUSTOM_KEY='kotoba-custom-v1';
+let CUSTOM = {v:1, blocks:[], words:[]};
+try{ const j=JSON.parse(localStorage.getItem(CUSTOM_KEY)); if(j && Array.isArray(j.blocks) && Array.isArray(j.words)) CUSTOM=j; }catch(e){}
+function saveCustom(){ try{ localStorage.setItem(CUSTOM_KEY, JSON.stringify(CUSTOM)); }catch(e){ toast('Impossibile salvare: spazio del browser non disponibile'); } touch(); }
+const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+try{ navigator.storage && navigator.storage.persist && navigator.storage.persist(); }catch(e){}
+
+/* ================= HELPERS ================= */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let toastTimer;
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2200); }
+function counts(list){ const c={k:0,l:0,n:0,h:0,t:0}; list.forEach(x=>{c[st(x.id)]++; c.t++;}); c.vis=c.t-c.h; c.pct=c.vis?Math.round(c.k/c.vis*100):0; return c; }
+const C = 2*Math.PI*15.5;
+function ring(pct, size){
+  const v = pct/100*C;
+  return `<span class="ring" style="--s:${size}px"><svg viewBox="0 0 36 36" aria-hidden="true"><circle class="trk" cx="18" cy="18" r="15.5"/>${pct>0?`<circle class="val" cx="18" cy="18" r="15.5" stroke-linecap="round" stroke-dasharray="${v.toFixed(2)} ${C.toFixed(2)}"/>`:''}</svg><b>${pct}%</b></span>`;
+}
+
+/* ================= THEME ================= */
+const THEME_ICONS = {
+  auto:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></svg>',
+  light:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg>',
+  dark:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>'
+};
+const THEME_NAME = {auto:'Tema automatico', light:'Tema chiaro', dark:'Tema scuro'};
+let themeMode = 'auto';
+try{ themeMode = localStorage.getItem(THEME_KEY) || 'auto'; }catch(e){}
+function applyTheme(){
+  if(themeMode==='auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme=themeMode;
+  $('themeBtn').innerHTML = THEME_ICONS[themeMode];
+  $('themeBtn').setAttribute('aria-label', THEME_NAME[themeMode]+' (tocca per cambiare)');
+  const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', bg);
+}
+$('themeBtn').onclick=()=>{
+  themeMode = {auto:'light', light:'dark', dark:'auto'}[themeMode];
+  try{ localStorage.setItem(THEME_KEY, themeMode); }catch(e){}
+  applyTheme(); toast(THEME_NAME[themeMode]);
+};
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{ if(themeMode==='auto') applyTheme(); });
+
+/* ================= NAV ================= */
+const screens=['home','setup','study','done','list','cards','phrase','ripasso','build','draw'];
+let current='home', navDepth=0;
+function _show(name){ screens.forEach(s=>$(s).hidden = s!==name); current=name; window.scrollTo(0,0); }
+function renderFor(name){
+  if(name==='home') renderHome();
+  else if(name==='setup') renderSetup();
+  else if(name==='list') renderList();
+  else if(name==='cards') renderCards();
+  else if(name==='ripasso') renderRipasso();
+  else if(name==='build'){ if(build) renderBuild(); }
+  else if(name==='draw'){ if(draw) renderDraw(); }
+  else if(name==='phrase'){ const p=loadPhrase(); if(p && p.date===todayStr()) renderPhrase(p); }
+}
+// Tasto "Indietro" (Android/browser): naviga tra le schermate invece di uscire dall'app.
+function show(name){
+  if(name===current){ _show(name); return; }
+  if(name==='home'){ if(navDepth>0){ window.history.go(-navDepth); return; } _show('home'); return; }
+  if(name==='done'){ window.history.replaceState({screen:'done', depth:navDepth}, ''); _show('done'); return; }
+  navDepth++; window.history.pushState({screen:name, depth:navDepth}, ''); _show(name);
+}
+window.addEventListener('popstate', e=>{
+  const st=(e.state && e.state.screen) ? e.state : {screen:'home', depth:0};
+  navDepth = st.depth||0;
+  renderFor(st.screen); _show(st.screen);
+});
+
+/* ================= HOME ================= */
+function meter(el, legend, c){
+  const vis=c.vis||1;
+  el.innerHTML = `<span class="k" style="width:${c.k/vis*100}%"></span><span class="l" style="width:${c.l/vis*100}%"></span>`;
+  legend.innerHTML = `<span><i class="dot-k"></i><span><b>${c.k}</b> la so</span></span><span><i class="dot-l"></i><span><b>${c.l}</b> da imparare</span></span><span><i class="dot-n"></i><span><b>${c.n}</b> nuove</span></span><span class="pct">${c.pct}% appreso</span>`;
+}
+function renderHome(){
+  const cw=counts(WORDS), ck=counts(ITEMS.filter(x=>x.d==='h'||x.d==='k')), cg=counts(ITEMS.filter(x=>x.d==='g'));
+  $('wordsSub').textContent = `${cw.vis} parole · ${BLOCKS.length} blocchi`;
+  $('kanaSub').textContent = `${ck.t} hiragana`;
+  $('genkiSub').textContent = `${cg.t} card`;
+  meter($('wordsMeter'),$('wordsLegend'),cw); meter($('kanaMeter'),$('kanaLegend'),ck); meter($('genkiMeter'),$('genkiLegend'),cg);
+  const ps=$('phraseSub'); if(ps){ const p=loadPhrase(); ps.textContent = (p&&p.date===todayStr()&&p.jp) ? p.jp : (PHRASES.length ? PHRASES[bankIndexForToday()].jp : 'Una frase al giorno con le tue parole'); }
+}
+$('deckWords').onclick=()=>{ prefs.deck='w'; savePrefs(); renderSetup(); show('setup'); };
+$('deckKana').onclick=()=>{ prefs.deck='kk'; savePrefs(); renderSetup(); show('setup'); };
+$('deckGenki').onclick=()=>{ prefs.deck='g'; savePrefs(); renderSetup(); show('setup'); };
+$('openList').onclick=()=>{ renderList(); show('list'); };
+$('openCards').onclick=()=>{ renderCards(); show('cards'); };
+
+/* ================= SETUP ================= */
+const activeDeck = () => prefs.deck==='w' ? 'w' : (prefs.deck==='g' ? 'g' : 'kana');
+const GROUPS = [
+  {k:'l', cls:'g-l', name:'Da imparare', sub:'Quelle scartate a sinistra'},
+  {k:'n', cls:'g-n', name:'Nuove', sub:'Mai studiate qui'},
+  {k:'k', cls:'g-k', name:'Le so già', sub:'Ripasso di mantenimento'},
+  {k:'h', cls:'g-x', name:'Mai viste', sub:'Segnate: mai viste su Duolingo'},
+  {k:'m', cls:'g-m', name:'Mix', sub:'Tutto, incluse le mai viste'}
+];
+function selection(deck){
+  if(deck==='g'){ const gc=prefs.gch.filter(i=>i<GENKI_CHAPTERS.length); return ITEMS.filter(x=>x.d==='g' && (!gc.length || gc.includes(x.gc))); }
+  const bl = prefs.blocks.filter(b=>b<BLOCKS.length);
+  return ITEMS.filter(x=>inDeck(x,deck) && (deck!=='w' || !bl.length || bl.includes(x.b)));
+}
+function poolFor(deck, group){
+  const sel=selection(deck);
+  if(group==='m') return sel;                             // Mix = tutto, incluse le "mai viste"
+  if(group==='h') return sel.filter(x=>st(x.id)==='h');   // solo le "mai viste"
+  return sel.filter(x=>st(x.id)!=='h' && st(x.id)===group); // n / l / k: escluse le "mai viste"
+}
+const DIRS = {
+  w:   [['f','Giapponese'],['r','Italiano']],
+  g:   [['f','Giapponese'],['r','Italiano']],
+  kana:[['f','Hiragana'],['r','Romaji']],
+  j:   [['f','Kanji'],['r','Significato']]
+};
+function renderSetup(){
+  const deck=activeDeck(), isW = deck==='w';
+  $('setupTitle').textContent = isW ? 'Parole' : (deck==='g' ? 'GENKI' : 'Hiragana');
+  $('kkSeg').hidden = true;
+
+  // riepilogo
+  const sel = counts(selection(deck));
+  const label = isW ? (prefs.blocks.length ? (prefs.blocks.length===1 ? `Blocco ${prefs.blocks[0]+1}` : `${prefs.blocks.length} blocchi scelti`) : 'Tutte le parole')
+    : deck==='g' ? (prefs.gch.length ? (prefs.gch.length===1 ? GENKI_CHAPTERS[prefs.gch[0]] : `${prefs.gch.length} lezioni scelte`) : 'Tutte le lezioni') : 'Hiragana';
+  $('summary').innerHTML = `${ring(sel.pct,64)}<div class="txt"><b>${esc(label)}: ${sel.pct}% appreso</b><span>${sel.k} la so · ${sel.l} da imparare · ${sel.n} nuove</span></div>`;
+
+  // blocchi (parole) / lezioni (GENKI)
+  const showBlocks = isW || deck==='g';
+  $('blocksLabel').hidden = !showBlocks; $('blocks').hidden = !showBlocks;
+  $('blocksLabel').textContent = deck==='g' ? 'Lezioni' : 'Blocchi';
+  const checkSvg = '<span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>';
+  if(isW){
+    const all = counts(WORDS);
+    let html = `<button class="block" data-b="all" aria-pressed="${!prefs.blocks.length}">${ring(all.pct,46)}<span class="txt"><small>Tutti</small><b>Tutte le parole</b><span class="sub">${all.k} / ${all.vis} · ${all.l} da imparare</span></span>${checkSvg}</button>`;
+    BLOCKS.forEach((name,i)=>{
+      const c = counts(WORDS.filter(x=>x.b===i));
+      html += `<button class="block" data-b="${i}" aria-pressed="${prefs.blocks.includes(i)}">${ring(c.pct,46)}<span class="txt"><small>Blocco ${i+1}</small><b>${esc(name)}</b><span class="sub">${c.k} / ${c.vis} · ${c.l} da imparare</span></span>${checkSvg}</button>`;
+    });
+    $('blocks').innerHTML = html;
+  } else if(deck==='g'){
+    const allG = counts(ITEMS.filter(x=>x.d==='g'));
+    let html = `<button class="block" data-b="all" aria-pressed="${!prefs.gch.length}">${ring(allG.pct,46)}<span class="txt"><small>Tutte</small><b>Tutte le lezioni</b><span class="sub">${allG.k} / ${allG.vis} · ${allG.l} da imparare</span></span>${checkSvg}</button>`;
+    GENKI_CHAPTERS.forEach((name,i)=>{
+      const c = counts(ITEMS.filter(x=>x.d==='g' && x.gc===i));
+      html += `<button class="block" data-b="${i}" aria-pressed="${prefs.gch.includes(i)}">${ring(c.pct,46)}<span class="txt"><small>Lezione</small><b>${esc(name)}</b><span class="sub">${c.k} / ${c.vis} · ${c.l} da imparare</span></span>${checkSvg}</button>`;
+    });
+    $('blocks').innerHTML = html;
+  }
+
+  // gruppi
+  $('groups').innerHTML = GROUPS.map(G=>{
+    const n=poolFor(deck,G.k).length;
+    return `<button class="group ${G.cls}" data-g="${G.k}" aria-pressed="${prefs.group===G.k}"><span class="n">${n}</span><b>${G.name}</b><span>${G.sub}</span></button>`;
+  }).join('');
+
+  // direzione
+  $('dirSeg').innerHTML = DIRS[deck].map(([k,l])=>`<button data-dir="${k}" aria-pressed="${prefs.dir===k}">${l}</button>`).join('');
+  $('lenSeg').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed', +b.dataset.len===prefs.len));
+
+  const n=poolFor(deck,prefs.group).length;
+  $('startBtn').disabled = !n;
+  $('startBtn').textContent = n ? `Inizia · ${prefs.len ? Math.min(prefs.len,n) : n} carte` : 'Nessuna carta in questo gruppo';
+}
+$('kkSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; prefs.kk=b.dataset.kk; savePrefs(); renderSetup(); });
+$('blocks').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-b]'); if(!b) return;
+  const key = activeDeck()==='g' ? 'gch' : 'blocks';
+  if(b.dataset.b==='all') prefs[key]=[];
+  else { const i=+b.dataset.b; prefs[key] = prefs[key].includes(i) ? prefs[key].filter(x=>x!==i) : [...prefs[key],i].sort((a,b)=>a-b); }
+  savePrefs(); renderSetup();
+});
+$('groups').addEventListener('click',e=>{ const b=e.target.closest('button[data-g]'); if(!b) return; prefs.group=b.dataset.g; savePrefs(); renderSetup(); });
+$('dirSeg').addEventListener('click',e=>{ const b=e.target.closest('button[data-dir]'); if(!b) return; prefs.dir=b.dataset.dir; savePrefs(); renderSetup(); });
+$('lenSeg').addEventListener('click',e=>{ const b=e.target.closest('button[data-len]'); if(!b) return; prefs.len=+b.dataset.len; savePrefs(); renderSetup(); });
+$('setupBack').onclick=()=>{ renderHome(); show('home'); };
+function newSession(){
+  const pool=shuffle(poolFor(activeDeck(),prefs.group));
+  if(!pool.length){ renderSetup(); show('setup'); return; }
+  startSession(prefs.len ? pool.slice(0,prefs.len) : pool);
+}
+$('startBtn').onclick=newSession;
+
+/* ================= STUDY ================= */
+let queue=[], idx=0, history=[], results={};
+function shuffle(a){ a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function startSession(items){ queue=items; idx=0; history=[]; results={}; show('study'); renderCard(); }
+
+const DECK_TINT = {w:['var(--ramune-soft)','var(--yuzu-soft)'], h:['var(--sakura-soft)','var(--yuzu-soft)'], k:['var(--yuzu-soft)','var(--ramune-soft)'], j:['var(--known-soft)','var(--sakura-soft)'], g:['var(--known-soft)','var(--ramune-soft)']};
+const ST_NAME = {n:'Nuova', l:'Da imparare', k:'La so', h:'Mai vista'};
+const jpSize = s => { const n=[...s].length; return n<=1?150 : n<=2?110 : n<=3?84 : n<=5?64 : n<=8?46 : 36; };
+const itSize = s => s.length<=10?40 : s.length<=20?32 : 26;
+
+function faces(x){
+  const rev = prefs.dir==='r';
+  const tint=DECK_TINT[x.d];
+  const deco = `<span class="deco" style="width:220px;height:220px;right:-80px;bottom:-90px;background:${tint[0]}"></span><span class="deco" style="width:90px;height:90px;left:-30px;top:40%;background:${tint[1]}"></span>`;
+  const tagTxt = x.d==='w' ? `Blocco ${x.b+1} · ${x.theme}` : x.theme;
+  const top = `<div class="top"><span class="tag">${esc(tagTxt)}</span><span class="status-tag st-${st(x.id)}">${ST_NAME[st(x.id)]}</span></div>`;
+  const jpBig = `<div class="big" style="font-size:${jpSize(x.jp)}px">${esc(x.jp)}</div>`;
+  let front, back;
+  if(x.d==='w'||x.d==='g'){
+    const itBig = `<div class="big it" style="font-size:${itSize(x.it)}px">${esc(x.it)}</div>`;
+    // lato giapponese: parola + lettura + romaji; lato italiano: solo la traduzione
+    const jpSide = `${jpBig}${x.kana!==x.jp?`<div class="reading">${esc(x.kana)}</div>`:''}<div class="romaji">${esc(x.ro)}</div>`;
+    front = rev ? itBig : jpSide;
+    back = rev ? jpSide : itBig;
+  } else if(x.d==='j'){
+    const ex = x.ex.length ? `<div class="examples">${x.ex.map(w=>`<span><span class="jp">${esc(w.jp)}</span>${esc(w.it)}</span>`).join('')}</div>` : '';
+    front = rev ? `<div class="big it" style="font-size:${itSize(x.it)}px">${esc(x.it)}</div>` : jpBig;
+    back = `<div class="big" style="font-size:${rev?110:70}px">${esc(x.jp)}</div><div class="meaning">${esc(x.it)}</div>
+      <dl class="kv">${x.on?`<dt>On</dt><dd>${esc(x.on)}</dd>`:''}${x.kun?`<dt>Kun</dt><dd>${esc(x.kun)}</dd>`:''}</dl>${ex}`;
+  } else {
+    const roBig = `<div class="big it" style="font-size:72px">${esc(x.ro)}</div>`;
+    front = rev ? roBig : jpBig;
+    back = `${rev?jpBig:`<div class="big" style="font-size:90px">${esc(x.jp)}</div>`}<div class="romaji" style="font-size:34px">${esc(x.ro)}</div>${x.alt?`<div class="reading">katakana: <span class="jp">${esc(x.alt)}</span></div>`:''}`;
+  }
+  return `<div class="card"><div class="face front">${deco}${top}<div class="main">${front}</div><div class="hint">Tocca per girare</div></div>
+    <div class="face back">${deco}${top}<div class="main">${back}</div><div class="hint">Scorri: ← ripassare · la so →</div></div></div>
+    <div class="stamp yes">LA SO!</div><div class="stamp no">RIPASSO</div><div class="stamp unseen">MAI VISTA</div>`;
+}
+
+let topWrap=null, drag=null, busy=false;
+function renderCard(){
+  const stage=$('stage'); stage.innerHTML='';
+  if(idx>=queue.length){ finish(); return; }
+  $('progText').textContent = `${idx+1} / ${queue.length}`;
+  $('progBar').style.width = (idx/queue.length*100)+'%';
+  $('undoBtn').disabled = !history.length;
+  if(queue[idx+1]){ const b=document.createElement('div'); b.className='card-wrap behind'; b.innerHTML=faces(queue[idx+1]); stage.appendChild(b); }
+  const w=document.createElement('div'); w.className='card-wrap'; w.innerHTML=faces(queue[idx]); stage.appendChild(w);
+  topWrap=w; busy=false; bindDrag(w);
+}
+function flip(){ if(topWrap && !busy) topWrap.querySelector('.card').classList.toggle('flipped'); }
+function bindDrag(w){
+  const yes=w.querySelector('.stamp.yes'), no=w.querySelector('.stamp.no');
+  w.addEventListener('pointerdown',e=>{ if(busy) return; drag={x:e.clientX,y:e.clientY,dx:0,dy:0,t:performance.now()}; w.setPointerCapture(e.pointerId); w.classList.remove('snap'); });
+  w.addEventListener('pointermove',e=>{
+    if(!drag) return; drag.dx=e.clientX-drag.x; drag.dy=e.clientY-drag.y;
+    w.style.transform=`translate(${drag.dx}px,${drag.dy*.25}px) rotate(${drag.dx/16}deg)`;
+    yes.style.opacity=Math.max(0,Math.min(1,drag.dx/90)); no.style.opacity=Math.max(0,Math.min(1,-drag.dx/90));
+  });
+  const end=()=>{
+    if(!drag) return; const {dx,dy,t}=drag; drag=null;
+    const v=Math.abs(dx)/Math.max(1,performance.now()-t);
+    if(Math.abs(dx)>100 || (Math.abs(dx)>45 && v>.6)){ decide(dx>0?'k':'l'); return; }
+    if(Math.abs(dx)<6 && Math.abs(dy)<6) flip();
+    w.classList.add('snap'); w.style.transform=''; yes.style.opacity=0; no.style.opacity=0;
+  };
+  w.addEventListener('pointerup',end); w.addEventListener('pointercancel',end);
+}
+function decide(v){
+  if(!topWrap || busy || idx>=queue.length) return;
+  busy=true;
+  const x=queue[idx];
+  history.push({id:x.id, prev:st(x.id)});
+  results[x.id]=v; setStatus(x.id,v);
+  const w=topWrap;
+  const stampSel = v==='k'?'.stamp.yes' : v==='h'?'.stamp.unseen' : '.stamp.no';
+  const stEl=w.querySelector(stampSel); if(stEl) stEl.style.opacity=1;
+  w.classList.remove('snap'); w.classList.add('fly');
+  if(v==='h'){ requestAnimationFrame(()=>{ w.style.transform='translateY(-120%) rotate(-3deg)'; w.style.opacity=0; }); }
+  else { const dir=v==='k'?1:-1; requestAnimationFrame(()=>{ w.style.transform=`translate(${dir*window.innerWidth}px,40px) rotate(${dir*28}deg)`; w.style.opacity=0; }); }
+  setTimeout(()=>{ idx++; renderCard(); }, 280);
+}
+function undo(){
+  if(!history.length || busy) return;
+  const h=history.pop(); setStatus(h.id,h.prev); delete results[h.id]; idx=Math.max(0,idx-1); renderCard();
+}
+$('btnYes').onclick=()=>decide('k');
+$('btnNo').onclick=()=>decide('l');
+$('btnUnseen').onclick=()=>decide('h');
+$('btnFlip').onclick=flip;
+$('undoBtn').onclick=undo;
+$('studyClose').onclick=()=>{ renderHome(); show('home'); };
+document.addEventListener('keydown',e=>{
+  if(current!=='study') return;
+  if(e.key==='ArrowRight') decide('k'); else if(e.key==='ArrowLeft') decide('l');
+  else if(e.key===' '||e.key==='ArrowUp'||e.key==='ArrowDown'){ e.preventDefault(); flip(); }
+  else if(e.key==='m'||e.key==='M') decide('h');
+  else if(e.key==='Backspace') undo();
+});
+
+function finish(){
+  const vals=Object.values(results);
+  $('tKnown').textContent=vals.filter(v=>v==='k').length;
+  $('tLearn').textContent=vals.filter(v=>v==='l').length;
+  const wrong=queue.filter(x=>results[x.id]==='l');
+  $('againWrong').hidden=!wrong.length;
+  $('againWrong').textContent=`Ripassa le ${wrong.length} sbagliate`;
+  $('againWrong').onclick=()=>startSession(shuffle(wrong));
+  show('done');
+}
+$('againSame').onclick=newSession;
+$('toHome').onclick=()=>{ renderHome(); show('home'); };
+
+/* ================= LIST ================= */
+let listDeck='w';
+const CYCLE={n:'l', l:'k', k:'h', h:'n'};
+function renderList(){
+  $('listSeg').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.d===listDeck));
+  const q=$('search').value.trim().toLowerCase();
+  const rows=ITEMS.filter(x=>inDeck(x,listDeck) && (!q || [x.jp,x.kana,x.ro,x.it,x.alt,x.on,x.kun].some(v=>v && v.toLowerCase().includes(q))));
+  if(!rows.length){ $('listBox').innerHTML='<div class="empty">Nessun risultato</div>'; return; }
+  $('listBox').innerHTML = rows.map(x=>{
+    const sub = x.d==='w' ? `B${x.b+1} · ${x.kana!==x.jp?x.kana+' · ':''}${x.ro} — ${x.it}` : x.d==='j' ? `${x.it} · ${x.on||''}${x.kun?' · '+x.kun:''}` : x.d==='g' ? `${x.theme} · ${x.ro}${x.it?' — '+x.it:''}` : `${x.theme} · ${x.ro}`;
+    return `<div class="item"><div class="w"><span class="jp">${esc(x.jp)}</span><small>${esc(sub)}</small></div><button class="status-tag st-${st(x.id)}" data-id="${esc(x.id)}">${ST_NAME[st(x.id)]}</button></div>`;
+  }).join('');
+}
+$('listBox').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-id]'); if(!b) return;
+  const id=b.dataset.id, nv=CYCLE[st(id)]; setStatus(id,nv);
+  b.className='status-tag st-'+nv; b.textContent=ST_NAME[nv];
+});
+$('listSeg').addEventListener('click',e=>{ const b=e.target.closest('button[data-d]'); if(!b) return; listDeck=b.dataset.d; renderList(); });
+$('search').addEventListener('input',renderList);
+$('listBack').onclick=()=>{ renderHome(); show('home'); };
+
+$('exportBtn').onclick=()=>{
+  const blob=new Blob([JSON.stringify({app:'kotoba-swipe', ...state, custom:CUSTOM})],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=`kotoba-progressi-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+  toast('Backup esportato');
+};
+$('importBtn').onclick=()=>$('importFile').click();
+$('importFile').onchange=async e=>{
+  const f=e.target.files[0]; e.target.value=''; if(!f) return;
+  try{
+    const j=JSON.parse(await f.text());
+    if(!j || typeof j.s!=='object' || Array.isArray(j.s)) throw 0;
+    const s={}; Object.entries(j.s).forEach(([k,v])=>{ if(['k','l','h'].includes(v)) s[k]=v; });
+    state={v:1, updatedAt:Date.now(), s}; persist();
+    let extra='';
+    if(j.custom && Array.isArray(j.custom.blocks) && Array.isArray(j.custom.words)){ CUSTOM=j.custom; saveCustom(); buildItems(); extra=` · ${CUSTOM.words.length} parole tue`; }
+    renderList();
+    toast(`Importati ${Object.keys(s).length} progressi${extra}`);
+  }catch(err){ toast('File non valido: scegli un backup esportato da Kotoba Swipe'); }
+};
+let resetArmed=null;
+$('resetBtn').onclick=()=>{
+  const b=$('resetBtn');
+  if(!resetArmed){ b.textContent='Tocca di nuovo per confermare'; resetArmed=setTimeout(()=>{resetArmed=null;b.textContent='Azzera progressi';},3500); return; }
+  clearTimeout(resetArmed); resetArmed=null; b.textContent='Azzera progressi';
+  state={v:1, updatedAt:Date.now(), s:{}}; persist(); renderList(); toast('Progressi azzerati');
+};
+
+/* ================= LE MIE PAROLE (editor) ================= */
+const IC_EDIT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>';
+const IC_DEL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13"/></svg>';
+const IC_FOLDER='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>';
+
+function renderCards(){
+  const groups = CUSTOM.blocks.length ? CUSTOM.blocks.map((name,i)=>{
+    const n = CUSTOM.words.filter(w=>w.block===name).length;
+    return `<div class="crow"><span class="rid">${IC_FOLDER}</span>
+      <div class="w"><b>${esc(name)}</b><small>${n} ${n===1?'parola':'parole'}</small></div>
+      <button class="mini-btn" data-gedit="${i}" aria-label="Rinomina gruppo">${IC_EDIT}</button>
+      <button class="mini-btn danger" data-gdel="${i}" aria-label="Elimina gruppo">${IC_DEL}</button></div>`;
+  }).join('') : '';
+  $('myGroups').innerHTML = groups ? `<div class="card-list">${groups}</div>` : `<div class="cards-empty">Nessun gruppo tuo.<br>Tocca “+ Gruppo” per crearne uno.</div>`;
+
+  const words = CUSTOM.words.length ? CUSTOM.words.map(w=>{
+    const rd = (w.kana && w.kana!==w.jp ? esc(w.kana)+' · ' : '') + esc(w.ro||romaji(w.kana||w.jp));
+    return `<div class="crow"><div class="w"><span class="jp">${esc(w.jp)}</span><small>${rd} — ${esc(w.it)} · ${esc(w.block)}</small></div>
+      <button class="mini-btn" data-wedit="${esc(w.id)}" aria-label="Modifica parola">${IC_EDIT}</button>
+      <button class="mini-btn danger" data-wdel="${esc(w.id)}" aria-label="Elimina parola">${IC_DEL}</button></div>`;
+  }).join('') : '';
+  $('myWords').innerHTML = words ? `<div class="card-list">${words}</div>` : `<div class="cards-empty">Ancora nessuna parola tua.<br>Tocca “+ Parola” per aggiungerne una.</div>`;
+}
+$('myGroups').addEventListener('click',e=>{
+  const ed=e.target.closest('[data-gedit]'); if(ed){ openGroupForm(+ed.dataset.gedit); return; }
+  const dl=e.target.closest('[data-gdel]'); if(dl){ delGroup(+dl.dataset.gdel); }
+});
+$('myWords').addEventListener('click',e=>{
+  const ed=e.target.closest('[data-wedit]'); if(ed){ openWordForm(ed.dataset.wedit); return; }
+  const dl=e.target.closest('[data-wdel]'); if(dl){ delWord(dl.dataset.wdel); }
+});
+$('addGroupBtn').onclick=()=>openGroupForm();
+$('addWordBtn').onclick=()=>openWordForm();
+$('cardsBack').onclick=()=>{ renderHome(); show('home'); };
+
+/* modale */
+function openModal(html){ $('mdlBox').innerHTML=html; $('mdl').hidden=false; }
+function closeModal(){ $('mdl').hidden=true; $('mdlBox').innerHTML=''; }
+$('mdl').addEventListener('click',e=>{ if(e.target===$('mdl')) closeModal(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape' && !$('mdl').hidden) closeModal(); });
+
+/* gruppi */
+function openGroupForm(gi){
+  const editing = Number.isInteger(gi) && gi>=0;
+  const name = editing ? CUSTOM.blocks[gi] : '';
+  openModal(`<h2>${editing?'Rinomina gruppo':'Nuovo gruppo'}</h2>
+    <div class="field"><label>Nome del gruppo</label><input id="mg_name" value="${esc(name)}" placeholder="Es. Verbi · Viaggio · Lavoro" maxlength="40"></div>
+    <div class="mdl-actions">${editing?`<button class="btn del" id="mg_del">Elimina</button>`:''}<button class="btn primary" id="mg_save">Salva</button></div>`);
+  setTimeout(()=>$('mg_name').focus(),60);
+  $('mg_save').onclick=()=>{
+    const v=$('mg_name').value.trim(); if(!v){ toast('Scrivi un nome'); return; }
+    const clash = CUSTOM.blocks.some((b,i)=>b===v && i!==gi);
+    if(clash){ toast('Hai già un gruppo con questo nome'); return; }
+    if(editing){ const old=CUSTOM.blocks[gi]; CUSTOM.blocks[gi]=v; if(v!==old) CUSTOM.words.forEach(w=>{ if(w.block===old) w.block=v; }); }
+    else CUSTOM.blocks.push(v);
+    saveCustom(); buildItems(); closeModal(); renderCards(); toast('Salvato');
+  };
+  if(editing) $('mg_del').onclick=()=>delGroup(gi);
+}
+function delGroup(gi){
+  const name=CUSTOM.blocks[gi]; if(name==null) return;
+  const inGroup=CUSTOM.words.filter(w=>w.block===name);
+  if(!confirm(inGroup.length ? `Eliminare il gruppo “${name}” e le sue ${inGroup.length} parole?` : `Eliminare il gruppo “${name}”?`)) return;
+  inGroup.forEach(w=>{ delete state.s[w.id]; });
+  CUSTOM.words = CUSTOM.words.filter(w=>w.block!==name);
+  CUSTOM.blocks.splice(gi,1);
+  persist(); saveCustom(); buildItems(); closeModal(); renderCards(); toast('Gruppo eliminato');
+}
+
+/* parole */
+function openWordForm(id){
+  const editing = !!id;
+  const w = editing ? CUSTOM.words.find(x=>x.id===id) : {jp:'',kana:'',it:'',ro:'',block:(CUSTOM.blocks[0]||BLOCKS[0]||'')};
+  if(editing && !w) return;
+  const allBlocks = [...CUSTOM.blocks, ...BUILTIN_BLOCKS.filter(b=>!CUSTOM.blocks.includes(b))];
+  const opts = allBlocks.map(b=>`<option value="${esc(b)}"${b===w.block?' selected':''}>${esc(b)}</option>`).join('');
+  openModal(`<h2>${editing?'Modifica parola':'Nuova parola'}</h2>
+    <div class="field"><label>Giapponese</label><input id="mw_jp" class="jp" value="${esc(w.jp)}" placeholder="学校"></div>
+    <div class="field"><label>Lettura in kana</label><input id="mw_kana" class="jp" value="${esc(w.kana||'')}" placeholder="がっこう"><div class="hintline">Lascia vuoto se la parola è già in kana.</div></div>
+    <div class="field"><label>Italiano</label><input id="mw_it" value="${esc(w.it)}" placeholder="scuola"></div>
+    <div class="field"><label>Romaji</label><input id="mw_ro" value="${esc(w.ro||'')}" placeholder="automatico"><div class="hintline">Vuoto = lo calcolo io dai kana.</div></div>
+    <div class="field"><label>Gruppo</label><select id="mw_g">${opts||'<option value="">(crea un gruppo)</option>'}</select><div class="hintline">Puoi metterla anche in un blocco già esistente.</div></div>
+    <div class="mdl-actions">${editing?`<button class="btn del" id="mw_del">Elimina</button>`:''}<button class="btn primary" id="mw_save">Salva</button></div>`);
+  setTimeout(()=>$('mw_jp').focus(),60);
+  $('mw_save').onclick=()=>{
+    const jp=$('mw_jp').value.trim(), it=$('mw_it').value.trim();
+    if(!jp){ toast('Scrivi la parola in giapponese'); return; }
+    if(!it){ toast('Scrivi la traduzione in italiano'); return; }
+    let block=$('mw_g').value;
+    if(!block){ block='Le mie parole'; if(!CUSTOM.blocks.includes(block)) CUSTOM.blocks.push(block); }
+    const kana=$('mw_kana').value.trim(), ro=$('mw_ro').value.trim();
+    if(editing) Object.assign(w,{jp,kana,it,ro,block});
+    else CUSTOM.words.push({id:uid('cw:'),jp,kana,it,ro,block});
+    saveCustom(); buildItems(); closeModal(); renderCards(); toast('Parola salvata');
+  };
+  if(editing) $('mw_del').onclick=()=>delWord(id);
+}
+function delWord(id){
+  if(!confirm('Eliminare questa parola?')) return;
+  delete state.s[id];
+  CUSTOM.words = CUSTOM.words.filter(w=>w.id!==id);
+  persist(); saveCustom(); buildItems(); closeModal(); renderCards(); toast('Parola eliminata');
+}
+
+/* ================= SYNC (codice tra dispositivi) ================= */
+const SYNC_KEY='kotoba-sync', UPD_KEY='kotoba-updated';
+let applyingRemote=false, pushTimer=null;
+function syncCfg(){ try{ return Object.assign({url:'',code:'',auto:false}, JSON.parse(localStorage.getItem(SYNC_KEY))||{}); }catch(e){ return {url:'',code:'',auto:false}; } }
+function saveSyncCfg(c){ try{ localStorage.setItem(SYNC_KEY, JSON.stringify(c)); }catch(e){} }
+function localUpdated(){ return +localStorage.getItem(UPD_KEY)||0; }
+function touch(){ try{ localStorage.setItem(UPD_KEY, String(Date.now())); }catch(e){} if(applyingRemote) return; const c=syncCfg(); if(c.auto && c.url && c.code){ clearTimeout(pushTimer); pushTimer=setTimeout(()=>syncPush(false), 1500); } }
+function syncEndpoint(c){ const code=String(c.code).trim().replace(/[.#$/\[\]\s]/g,'_'); return c.url.replace(/\/+$/,'') + '/sync/' + encodeURIComponent(code) + '.json'; }
+function snapshot(){ return {app:'kotoba-swipe', v:1, updatedAt: localUpdated()||Date.now(), s:state.s, custom:CUSTOM, phrase:loadPhrase()}; }
+function applySnapshot(d){
+  if(!d || typeof d.s!=='object' || Array.isArray(d.s)) return false;
+  const s={}; Object.entries(d.s).forEach(([k,v])=>{ if(['k','l','h'].includes(v)) s[k]=v; });
+  state={v:1, updatedAt:Date.now(), s};
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){}
+  if(d.custom && Array.isArray(d.custom.blocks) && Array.isArray(d.custom.words)){ CUSTOM=d.custom; try{ localStorage.setItem(CUSTOM_KEY, JSON.stringify(CUSTOM)); }catch(e){} }
+  if(d.phrase && d.phrase.jp){ try{ localStorage.setItem('kotoba-phrase', JSON.stringify(d.phrase)); }catch(e){} }
+  try{ localStorage.setItem(UPD_KEY, String(d.updatedAt||Date.now())); }catch(e){}
+  buildItems(); renderHome();
+  if(current==='list') renderList(); else if(current==='cards') renderCards();
+  else if(current==='phrase'){ const pp=loadPhrase(); if(pp && pp.date===todayStr()) renderPhrase(pp); }
+  return true;
+}
+function syncPush(manual){
+  const c=syncCfg(); if(!c.url||!c.code){ if(manual) toast('Inserisci URL e codice'); return; }
+  fetch(syncEndpoint(c), {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(snapshot())})
+    .then(r=>{ if(!r.ok) throw 0; if(manual) toast('Salvato sul cloud ✓'); })
+    .catch(()=>{ if(manual) toast('Errore: controlla URL e regole'); });
+}
+function syncPull(manual){
+  const c=syncCfg(); if(!c.url||!c.code){ if(manual) toast('Inserisci URL e codice'); return; }
+  fetch(syncEndpoint(c)).then(r=>{ if(!r.ok) throw 0; return r.json(); }).then(d=>{
+    if(!d){ if(manual) toast('Ancora niente nel cloud'); return; }
+    if(!manual && !((d.updatedAt||0) > localUpdated())) return;
+    applyingRemote=true; const ok=applySnapshot(d); applyingRemote=false;
+    if(ok) toast(manual?'Caricato dal cloud ✓':'Sincronizzato'); else if(manual) toast('Dati cloud non validi');
+  }).catch(()=>{ if(manual) toast('Errore: controlla URL e regole'); });
+}
+(function initSync(){
+  if(!$('syncUrl')) return;
+  const c=syncCfg();
+  $('syncUrl').value=c.url||''; $('syncCode').value=c.code||''; $('syncAuto').checked=!!c.auto;
+  $('syncUrl').addEventListener('change',()=>{ const x=syncCfg(); x.url=$('syncUrl').value.trim(); saveSyncCfg(x); });
+  $('syncCode').addEventListener('change',()=>{ const x=syncCfg(); x.code=$('syncCode').value.trim(); saveSyncCfg(x); });
+  $('syncAuto').addEventListener('change',()=>{ const x=syncCfg(); x.auto=$('syncAuto').checked; saveSyncCfg(x); if(x.auto){ toast('Sync automatica attiva'); syncPull(false); } });
+  $('syncPullBtn').onclick=()=>syncPull(true);
+  $('syncPushBtn').onclick=()=>syncPush(true);
+})();
+
+/* ================= FRASE DEL GIORNO (IA) ================= */
+const AI_KEY='kotoba-ai', PHRASE_KEY='kotoba-phrase';
+let genBusy=false;
+function aiCfg(){ try{ return Object.assign({key:'',model:'gemini-2.0-flash-lite'}, JSON.parse(localStorage.getItem(AI_KEY))||{}); }catch(e){ return {key:'',model:'gemini-2.0-flash-lite'}; } }
+function saveAiCfg(c){ try{ localStorage.setItem(AI_KEY, JSON.stringify(c)); }catch(e){} }
+function loadPhrase(){ try{ return JSON.parse(localStorage.getItem(PHRASE_KEY))||null; }catch(e){ return null; } }
+function savePhrase(p){ try{ localStorage.setItem(PHRASE_KEY, JSON.stringify(p)); }catch(e){} touch(); }
+function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
+function renderPhrase(p){
+  const words=(p.used||[]).map(w=>`<span>${esc(w)}</span>`).join('');
+  $('phraseBox').innerHTML=`<div class="phrase-card">
+    <div class="ph-jp jp">${esc(p.jp)}</div>
+    ${p.kana && p.kana!==p.jp ? `<div class="ph-reading jp">${esc(p.kana)}</div>` : ''}
+    ${p.romaji ? `<div class="ph-romaji">${esc(p.romaji)}</div>` : ''}
+    ${p.it ? `<div class="ph-it">${esc(p.it)}</div>` : ''}
+    ${p.grammar ? `<div class="ph-note">💡 ${esc(p.grammar)}</div>` : ''}
+    ${words ? `<div class="ph-words">${words}</div>` : ''}
+    <div class="ph-date">Frase di oggi · ${esc(p.date)}</div>
+  </div>`;
+}
+function renderPhraseEmpty(needKey){
+  $('phraseBox').innerHTML=`<div class="ph-empty">
+    ${needKey ? '<div>Per generare la frase serve la chiave IA (Gemini, gratis).</div><button class="ph-gen" id="phKeyBtn">Imposta la chiave</button>'
+              : '<div>Nessuna frase per oggi.</div><button class="ph-gen" id="phGenBtn">✨ Genera la frase di oggi</button>'}
+  </div>`;
+  if(needKey){ $('phKeyBtn').onclick=openAiSettings; } else { $('phGenBtn').onclick=genPhrase; }
+}
+function renderPhraseLoading(){ $('phraseBox').innerHTML=`<div class="ph-empty"><div class="ph-spin"></div><div>Sto creando la frase di oggi…</div></div>`; }
+function bankIndexForToday(){ const d=todayStr(); let h=0; for(let i=0;i<d.length;i++) h=(h*31 + d.charCodeAt(i))|0; return PHRASES.length ? (Math.abs(h)%PHRASES.length) : 0; }
+function showBankPhrase(idx){
+  if(!PHRASES.length){ renderPhraseEmpty(false); return; }
+  const i = (idx==null) ? bankIndexForToday() : ((idx%PHRASES.length)+PHRASES.length)%PHRASES.length;
+  const b=PHRASES[i];
+  const p={ date:todayStr(), jp:b.jp, kana:b.kana, romaji:b.romaji, it:b.it, used:[], grammar:b.note||'', src:'bank' };
+  savePhrase(p); renderPhrase(p); if(current==='home') renderHome();
+}
+function openPhrase(){
+  show('phrase');
+  const p=loadPhrase();
+  if(p && p.date===todayStr() && p.jp){ renderPhrase(p); return; }
+  showBankPhrase();   // default istantaneo (banca frasi)
+}
+function pickWords(n){
+  let pool=WORDS.filter(w=>st(w.id)!=='h'); if(!pool.length) pool=WORDS.slice();
+  for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+  return pool.slice(0, Math.min(n, pool.length));
+}
+async function genPhrase(){
+  if(genBusy) return;
+  const cfg=aiCfg(); if(!cfg.key){ renderPhraseEmpty(true); return; }
+  const words=pickWords(10); if(!words.length){ toast('Nessuna parola disponibile'); return; }
+  genBusy=true; renderPhraseLoading();
+  const list=words.map(w=>`- ${w.jp}${w.kana&&w.kana!==w.jp?' ['+w.kana+']':''} = ${w.it}`).join('\n');
+  const prompt=`Sei un insegnante di giapponese. Scrivi UNA sola frase in giapponese, naturale e di senso compiuto, per un principiante (A1).
+IMPORTANTE: deve essere BREVE e semplice — massimo circa 8 parole, una sola proposizione. Niente frasi lunghe o articolate.
+Usa 1–3 di queste parole del mio vocabolario (aggiungi solo le particelle necessarie). Varia il tempo/forma verbale rispetto al solito (presente, passato, negativo, 〜たい, 〜ましょう, ecc.).
+Parole (giapponese [lettura] = italiano):
+${list}
+Rispondi SOLO con JSON: jp (frase con kanji dove naturale), kana (tutta in kana), romaji, it (traduzione italiana), used (array delle parole usate), grammar (brevissima nota in italiano sulla forma/tempo verbale).`;
+  const body={ contents:[{parts:[{text:prompt}]}], generationConfig:{ temperature:1.1, maxOutputTokens:260, responseMimeType:'application/json',
+    responseSchema:{ type:'OBJECT', properties:{ jp:{type:'STRING'}, kana:{type:'STRING'}, romaji:{type:'STRING'}, it:{type:'STRING'}, used:{type:'ARRAY', items:{type:'STRING'}}, grammar:{type:'STRING'} }, required:['jp','kana','romaji','it'] } } };
+  const candidates=[...new Set([cfg.model, 'gemini-2.0-flash-lite', 'gemini-1.5-flash-8b', 'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite-001', 'gemini-2.0-flash-001', 'gemini-1.5-flash-latest', 'gemini-flash-latest'].filter(Boolean))];
+  const isModelErr=(m,s)=> s===404 || /not found|not supported|not available|no longer|does not exist|deprecat|retir|invalid model|unregistered/i.test(m||'');
+  const isOverload=(m,s)=> s===429 || s===503 || /overload|high demand|try again|temporar|unavailable|resource.?exhausted|rate.?limit|quota/i.test(m||'');
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  let lastErr='errore di rete', overloaded=false, keyStop=null;
+  async function runOnce(){
+    for(const model of candidates){
+      let r,j;
+      try{
+        r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(cfg.key)}`,
+          {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+        j=await r.json().catch(()=>null);
+      }catch(e){ lastErr=(e&&e.message)||'errore di rete'; continue; }
+      if(r.ok){
+        const txt=j&&j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts&&j.candidates[0].content.parts[0]&&j.candidates[0].content.parts[0].text;
+        if(!txt){ lastErr='risposta vuota (contenuto bloccato?)'; continue; }
+        let d; try{ d=JSON.parse(txt); }catch(e){ const m=txt.match(/\{[\s\S]*\}/); d=m?JSON.parse(m[0]):null; }
+        if(!d||!d.jp){ lastErr='formato risposta non valido'; continue; }
+        return {d, model};
+      }
+      const msg=(j&&j.error&&j.error.message)||('HTTP '+r.status); lastErr=msg;
+      if(isOverload(msg,r.status)){ overloaded=true; continue; }   // occupato: prova un altro modello / ritenta dopo
+      if(isModelErr(msg,r.status)){ continue; }                    // modello non disponibile: prossimo
+      keyStop=msg; return null;                                    // chiave o altro errore serio: stop
+    }
+    return null;
+  }
+  let res=await runOnce();
+  if(!res && overloaded && !keyStop){ await sleep(2500); overloaded=false; res=await runOnce(); }  // un retry se erano solo occupati
+  if(res){
+    if(res.model!==cfg.model){ const x=aiCfg(); x.model=res.model; saveAiCfg(x); }
+    const d=res.d; const p={ date:todayStr(), jp:d.jp, kana:d.kana||d.jp, romaji:d.romaji||romaji(d.kana||d.jp), it:d.it||'', used:Array.isArray(d.used)?d.used:[], grammar:d.grammar||'' };
+    savePhrase(p); genBusy=false; renderPhrase(p); if(current==='home') renderHome(); return;
+  }
+  genBusy=false; renderPhraseEmpty(false);
+  if(keyStop) toast('IA: '+keyStop);
+  else if(overloaded) toast('IA occupata ora (troppe richieste). Riprova tra un minuto 🙏');
+  else toast('IA: '+lastErr);
+}
+function openAiSettings(){
+  const c=aiCfg();
+  openModal(`<h2>Impostazioni IA (Gemini)</h2>
+    <div class="field"><label>Chiave API Gemini</label><input id="ai_key" value="${esc(c.key||'')}" placeholder="Incolla qui la chiave" autocomplete="off" autocapitalize="off" spellcheck="false"><div class="hintline">Gratis da <b>aistudio.google.com/apikey</b> (serve solo un account Google). Resta su questo dispositivo, non viene sincronizzata.</div></div>
+    <div class="field"><label>Modello</label><input id="ai_model" value="${esc(c.model||'gemini-2.0-flash-lite')}"><div class="hintline">Default: gemini-2.0-flash-lite (leggero, quasi sempre libero). Se è occupato, l'app prova da sola altri modelli.</div></div>
+    <div class="mdl-actions"><button class="btn" onclick="closeModal()">Chiudi</button><button class="btn primary" id="ai_save">Salva</button></div>`);
+  setTimeout(()=>$('ai_key').focus(),60);
+  $('ai_save').onclick=()=>{ const x=aiCfg(); x.key=$('ai_key').value.trim(); x.model=$('ai_model').value.trim()||'gemini-2.0-flash-lite'; saveAiCfg(x); closeModal(); toast('Salvato');
+    if(current==='phrase'){ const p=loadPhrase(); if(p&&p.date===todayStr()) renderPhrase(p); else if(x.key) genPhrase(); else renderPhraseEmpty(true); } };
+}
+$('openPhrase').onclick=openPhrase;
+$('phraseBack').onclick=()=>{ renderHome(); show('home'); };
+
+/* ---------- ripasso GENKI (sintesi grammaticale delle lezioni) ---------- */
+const GENKI_REVIEW = [
+  {
+    title:'Lezione 1', sub:'Saluti e presentarsi · pp. 39-43',
+    points:[
+      { pat:'X は Y です', patRo:'X wa Y desu', mean:'X è Y',
+        note:'は (wa) segna il tema della frase: si scrive は ma si legge wa. です (desu) è la copula cortese è/sono. Il tema già noto spesso si omette.',
+        ex:[ ['わたしは がくせいです。','Watashi wa gakusee desu.','Io sono uno studente.'],
+             ['メアリーさんは アメリカじんです。','Mearii san wa amerikajin desu.','Mary è americana.'] ] },
+      { pat:'… ですか', patRo:'… desu ka', mean:'domanda',
+        note:'Aggiungi か (ka) alla fine di una frase per renderla una domanda. In giapponese か fa già da punto interrogativo.',
+        ex:[ ['りゅうがくせいですか。','Ryuugakusee desu ka.','Sei uno studente internazionale?'],
+             ['なんさいですか。','Nansai desu ka.','Quanti anni hai?'] ] },
+      { pat:'なん / なに', patRo:'nan / nani', mean:'parole interrogative',
+        note:'なに / なん (nani / nan) vuol dire che cosa, e si combina con altre parole: なんじ (nanji) che ora, なんさい (nansai) quanti anni, なんねんせい (nannensee) che anno, なんばん (nanban) che numero.',
+        ex:[ ['いま なんじですか。','Ima nanji desu ka.','Che ore sono adesso?'],
+             ['せんこうは なんですか。','Senkoo wa nan desu ka.','Qual è la tua materia?'] ] },
+      { pat:'A の B', patRo:'A no B', mean:'B di A (possesso/relazione)',
+        note:'の (no) unisce due nomi e il modificatore viene PRIMA: A の B = B di A. Es. だいがくの せんせい (daigaku no sensee) = un professore dell’università.',
+        ex:[ ['たけしさんの でんわばんごう','Takeshi san no denwa bangoo','il numero di telefono di Takeshi'],
+             ['にほんごの がくせい','nihongo no gakusee','uno studente di giapponese'] ] },
+      { pat:'… さん', patRo:'… san', mean:'suffisso di cortesia',
+        note:'さん (san) va DOPO il nome della persona (es. やましたさん, Yamashita-san). Non si usa MAI riferendosi a sé stessi.',
+        ex:[ ['やましたさんは せんせいです。','Yamashita san wa sensee desu.','Il signor Yamashita è un insegnante.'] ] },
+    ]
+  }
+];
+function renderRipasso(){
+  const box = $('ripassoBox');
+  box.innerHTML = GENKI_REVIEW.map(les => `
+    <p class="label">${les.title} · ${les.sub}</p>
+    ${les.points.map(p=>`
+      <div class="gp">
+        <div class="gp-top"><span class="gp-pat">${p.pat}</span><span class="gp-pat-ro">${p.patRo}</span><span class="gp-mean">${p.mean}</span></div>
+        <div class="gp-note">${p.note}</div>
+        ${p.ex.map(e=>`<div class="gp-ex"><span class="gp-jp">${e[0]}</span><span class="gp-ro">${e[1]}</span><span class="gp-it">${e[2]}</span></div>`).join('')}
+      </div>`).join('')}
+  `).join('');
+}
+$('openRipasso').onclick=()=>{ renderRipasso(); show('ripasso'); };
+$('ripassoBack').onclick=()=>{ renderHome(); show('home'); };
+
+/* ---------- scrivi in hiragana (romaji -> tocca gli hiragana) ---------- */
+/* Solo parole/frasi scrivibili con gli hiragana sbloccati; il filtro usa il set attivo,
+   quindi aggiungendo nuovi gruppi si sbloccano altre parole in automatico. */
+const BUILD_ITEMS = [
+  {jp:'あお',ro:'ao',it:'blu'},
+  {jp:'あか',ro:'aka',it:'rosso'},
+  {jp:'あき',ro:'aki',it:'autunno'},
+  {jp:'あさ',ro:'asa',it:'mattina'},
+  {jp:'あし',ro:'ashi',it:'gamba / piede'},
+  {jp:'いえ',ro:'ie',it:'casa'},
+  {jp:'いけ',ro:'ike',it:'stagno'},
+  {jp:'いし',ro:'ishi',it:'pietra'},
+  {jp:'いぬ',ro:'inu',it:'cane'},
+  {jp:'うえ',ro:'ue',it:'sopra'},
+  {jp:'うし',ro:'ushi',it:'mucca'},
+  {jp:'うち',ro:'uchi',it:'casa'},
+  {jp:'えき',ro:'eki',it:'stazione'},
+  {jp:'おか',ro:'oka',it:'collina'},
+  {jp:'おかね',ro:'okane',it:'soldi'},
+  {jp:'かお',ro:'kao',it:'viso'},
+  {jp:'かさ',ro:'kasa',it:'ombrello'},
+  {jp:'かき',ro:'kaki',it:'cachi'},
+  {jp:'きく',ro:'kiku',it:'ascoltare'},
+  {jp:'くち',ro:'kuchi',it:'bocca'},
+  {jp:'くつ',ro:'kutsu',it:'scarpe'},
+  {jp:'けさ',ro:'kesa',it:'stamattina'},
+  {jp:'こえ',ro:'koe',it:'voce'},
+  {jp:'さけ',ro:'sake',it:'sakè'},
+  {jp:'さかな',ro:'sakana',it:'pesce'},
+  {jp:'しお',ro:'shio',it:'sale'},
+  {jp:'した',ro:'shita',it:'sotto'},
+  {jp:'すし',ro:'sushi',it:'sushi'},
+  {jp:'すな',ro:'suna',it:'sabbia'},
+  {jp:'せかい',ro:'sekai',it:'mondo'},
+  {jp:'そと',ro:'soto',it:'fuori'},
+  {jp:'たこ',ro:'tako',it:'polpo'},
+  {jp:'つき',ro:'tsuki',it:'luna'},
+  {jp:'つくえ',ro:'tsukue',it:'scrivania'},
+  {jp:'ちち',ro:'chichi',it:'papà'},
+  {jp:'なつ',ro:'natsu',it:'estate'},
+  {jp:'なか',ro:'naka',it:'dentro'},
+  {jp:'ぬの',ro:'nuno',it:'stoffa'},
+  {jp:'ねこ',ro:'neko',it:'gatto'},
+  {jp:'ねつ',ro:'netsu',it:'febbre'},
+  {jp:'はな',ro:'hana',it:'fiore / naso'},
+  {jp:'はこ',ro:'hako',it:'scatola'},
+  {jp:'ひと',ro:'hito',it:'persona'},
+  {jp:'ふね',ro:'fune',it:'nave'},
+  {jp:'ふく',ro:'fuku',it:'vestiti'},
+  {jp:'ほし',ro:'hoshi',it:'stella'},
+  {jp:'ほね',ro:'hone',it:'osso'},
+  {jp:'たかい',ro:'takai',it:'alto / caro'},
+  {jp:'おおきい',ro:'ookii',it:'grande'},
+  {jp:'ちいさい',ro:'chiisai',it:'piccolo'},
+  {jp:'ひこうき',ro:'hikouki',it:'aeroplano'},
+  {jp:'ちかてつ',ro:'chikatetsu',it:'metropolitana'},
+  {jp:'ねこです',ro:'neko desu',it:'è un gatto'},
+  {jp:'いぬです',ro:'inu desu',it:'è un cane'},
+  {jp:'さかなです',ro:'sakana desu',it:'è un pesce'},
+  {jp:'ねこ と いぬ',ro:'neko to inu',it:'gatto e cane'},
+  {jp:'あかい くつ',ro:'akai kutsu',it:'scarpe rosse'},
+  {jp:'はこ の なか',ro:'hako no naka',it:'dentro la scatola'},
+  {jp:'いし の いえ',ro:'ishi no ie',it:'casa di pietra'},
+  {jp:'ねこ の こえ',ro:'neko no koe',it:'la voce del gatto'},
+];
+let build=null;
+const hiraganaSet = () => new Set(ITEMS.filter(x=>x.d==='h').map(x=>x.jp));
+const buildPool = () => { const H=hiraganaSet(); return BUILD_ITEMS.filter(it=>[...it.jp].every(c=>c===' '||H.has(c))); };
+const targetChars = () => [...build.item.jp].filter(c=>c!==' ');
+function startBuild(){ build={queue:shuffle(buildPool()),i:0,ok:0,done:0,item:null,picked:[],bank:[],checked:false,correct:false}; showBuild(); }
+function showBuild(){
+  if(!build.queue.length){ $('buildBox').innerHTML='<p class="note">Nessuna parola disponibile con gli hiragana sbloccati finora.</p>'; $('buildScore').textContent=''; return; }
+  if(build.i>=build.queue.length){ build.i=0; build.queue=shuffle(build.queue); }
+  const it=build.item=build.queue[build.i];
+  build.picked=[]; build.checked=false; build.correct=false;
+  const ans=[...it.jp].filter(c=>c!==' '), H=[...hiraganaSet()];
+  const need=Math.max(2,Math.min(4,8-ans.length)), dis=[]; let g=0;
+  while(dis.length<need && g++<200){ const c=H[Math.floor(Math.random()*H.length)]; if(!ans.includes(c)&&!dis.includes(c)) dis.push(c); }
+  build.bank=shuffle(ans.concat(dis)).map(ch=>({ch,used:false}));
+  renderBuild();
+}
+function renderBuild(){
+  const it=build.item; let ni=-1;
+  const slots=[...it.jp].map(c=>{
+    if(c===' ') return '<span class="hb-gap"></span>';
+    ni++; const k=ni, bi=build.picked[k], ch=bi!=null?build.bank[bi].ch:'';
+    const cls='hb-slot'+(ch?' filled':'')+(build.checked?(build.correct?' ok':' bad'):'');
+    return `<button class="${cls}" data-slot="${k}">${ch}</button>`;
+  }).join('');
+  const bank=build.bank.map((t,i)=>`<button class="hb-tile${t.used?' used':''}" data-tile="${i}"${t.used?' disabled':''}>${t.ch}</button>`).join('');
+  let banner='';
+  if(build.checked) banner=build.correct
+    ? `<div class="hb-result ok">Giusto! ${esc(it.ro)}${it.it?' · '+esc(it.it):''}</div>`
+    : `<div class="hb-result bad">Non ancora — togli un simbolo o premi Avanti</div>`;
+  $('buildBox').innerHTML=`<div class="hb-prompt"><span class="hb-ro">${esc(it.ro)}</span>${it.it?`<span class="hb-it">${esc(it.it)}</span>`:''}</div><div class="hb-slots">${slots}</div>${banner}<div class="hb-bank">${bank}</div>`;
+  $('buildScore').textContent=`${build.ok} / ${build.done}`;
+}
+function pickTile(i){
+  if(!build || (build.checked && build.correct)) return;
+  if(build.picked.length>=targetChars().length) return;
+  const t=build.bank[i]; if(!t||t.used) return;
+  t.used=true; build.picked.push(i);
+  if(build.picked.length===targetChars().length){
+    const ans=build.picked.map(bi=>build.bank[bi].ch).join('');
+    build.checked=true; build.correct = ans===targetChars().join('');
+    build.done++; if(build.correct) build.ok++;
+  }
+  renderBuild();
+  if(build.checked && build.correct) setTimeout(()=>{ build.i++; showBuild(); },1000);
+}
+function unpickAt(k){
+  if(!build || (build.checked && build.correct)) return;
+  const bi=build.picked[k]; if(bi==null) return;
+  build.bank[bi].used=false; build.picked.splice(k,1); build.checked=false; renderBuild();
+}
+$('buildBox').addEventListener('click',e=>{
+  const t=e.target.closest('[data-tile]'); if(t){ pickTile(+t.dataset.tile); return; }
+  const s=e.target.closest('[data-slot]'); if(s) unpickAt(+s.dataset.slot);
+});
+$('buildClear').onclick=()=>{ if(!build||!build.item) return; build.picked.forEach(bi=>build.bank[bi].used=false); build.picked=[]; build.checked=false; renderBuild(); };
+$('buildNext').onclick=()=>{ if(!build) return; build.i++; showBuild(); };
+$('openBuild').onclick=()=>{ startBuild(); show('build'); };
+$('buildBack').onclick=()=>{ renderHome(); show('home'); };
+
+/* ---------- disegna gli hiragana (scrivi col dito, gira la carta) ---------- */
+let draw=null;
+let padCtx=null, padW=0, padH=0, padDrawing=false, padLast=null, padReady=false;
+const drawPool=()=>ITEMS.filter(x=>x.d==='h');
+function startDraw(){ draw={queue:shuffle(drawPool()), i:0, item:null, revealed:false}; showDraw(); }
+function showDraw(){
+  if(!draw.queue.length){ $('drawRo').textContent='—'; $('drawJp').textContent='—'; return; }
+  if(draw.i>=draw.queue.length){ draw.i=0; draw.queue=shuffle(draw.queue); }
+  draw.item=draw.queue[draw.i]; draw.revealed=false;
+  renderDraw(); setupPadOnce(); sizePad();
+}
+function renderDraw(){
+  const it=draw.item; if(!it) return;
+  $('drawRo').textContent=it.ro;
+  $('drawJp').textContent=it.jp;
+  $('drawCard').classList.toggle('flipped', draw.revealed);
+  $('drawReveal').lastChild.textContent = draw.revealed ? 'Nascondi' : 'Mostra soluzione';
+  $('drawScore').textContent=`${draw.i+1} / ${draw.queue.length}`;
+}
+function sizePad(){
+  const c=$('drawPad'); const r=c.getBoundingClientRect(); if(!r.width) return;
+  const dpr=window.devicePixelRatio||1;
+  c.width=Math.round(r.width*dpr); c.height=Math.round(r.height*dpr);
+  padW=r.width; padH=r.height; padCtx=c.getContext('2d');
+  padCtx.setTransform(dpr,0,0,dpr,0,0); clearPad();
+}
+function clearPad(){
+  if(!padCtx) return;
+  padCtx.clearRect(0,0,padW,padH);
+  padCtx.save();
+  padCtx.strokeStyle='rgba(127,127,127,.28)'; padCtx.lineWidth=1; padCtx.setLineDash([6,7]);
+  padCtx.beginPath();
+  padCtx.moveTo(padW/2,10); padCtx.lineTo(padW/2,padH-10);
+  padCtx.moveTo(10,padH/2); padCtx.lineTo(padW-10,padH/2);
+  padCtx.stroke(); padCtx.restore();
+  padCtx.lineCap='round'; padCtx.lineJoin='round'; padCtx.lineWidth=10; padCtx.setLineDash([]);
+  padCtx.strokeStyle=(getComputedStyle(document.documentElement).getPropertyValue('--ink')||'#1B2A35').trim();
+}
+function padPos(e){ const r=$('drawPad').getBoundingClientRect(); return {x:e.clientX-r.left, y:e.clientY-r.top}; }
+function setupPadOnce(){
+  if(padReady) return; padReady=true;
+  const c=$('drawPad');
+  c.addEventListener('pointerdown', e=>{ e.preventDefault(); padDrawing=true; try{c.setPointerCapture(e.pointerId);}catch(_){ } padLast=padPos(e); });
+  c.addEventListener('pointermove', e=>{ if(!padDrawing||!padCtx) return; e.preventDefault(); const p=padPos(e); padCtx.beginPath(); padCtx.moveTo(padLast.x,padLast.y); padCtx.lineTo(p.x,p.y); padCtx.stroke(); padLast=p; });
+  const end=()=>{ padDrawing=false; };
+  c.addEventListener('pointerup',end); c.addEventListener('pointercancel',end); c.addEventListener('pointerleave',end);
+  window.addEventListener('resize', ()=>{ if(current==='draw') sizePad(); });
+}
+$('openDraw').onclick=()=>{ show('draw'); startDraw(); };
+$('drawBack').onclick=()=>{ show('home'); };
+$('drawCard').onclick=()=>{ if(!draw) return; draw.revealed=!draw.revealed; renderDraw(); };
+$('drawReveal').onclick=()=>{ if(!draw) return; draw.revealed=!draw.revealed; renderDraw(); };
+$('drawClear').onclick=()=>{ clearPad(); };
+$('drawNext').onclick=()=>{ if(!draw) return; draw.i++; showDraw(); };
+$('phraseSettings').onclick=openAiSettings;
+$('phraseShuffle').onclick=()=>{ showBankPhrase(PHRASES.length?Math.floor(Math.random()*PHRASES.length):null); };
+$('phraseAI').onclick=()=>{ if(aiCfg().key) genPhrase(); else openAiSettings(); };
+
+/* ================= BOOT ================= */
+applyTheme();
+buildItems();
+renderHome();
+window.history.replaceState({screen:'home', depth:0}, '');
+{ const c=syncCfg(); if(c.auto && c.url && c.code) syncPull(false); }
+</script>
+</body>
+</html>
