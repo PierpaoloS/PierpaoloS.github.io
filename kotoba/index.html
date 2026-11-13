@@ -113,6 +113,14 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
 .row-btn .ic svg{width:22px;height:22px;display:block}
 .row-btn b{display:block;font-family:var(--display);font-size:17px;font-weight:600}
 .row-btn span{font-size:13px;color:var(--muted);font-weight:600}
+.row-btn.t-parole{background:#2B9FDA}
+.row-btn.t-kana{background:#FF6F9F}
+.row-btn.t-genki{background:#4FA07A}
+.row-btn.t-parole b,.row-btn.t-kana b,.row-btn.t-genki b{color:#fff}
+.row-btn.t-parole span,.row-btn.t-kana span,.row-btn.t-genki span{color:rgba(255,255,255,.85)}
+.row-btn.t-parole .ic,.row-btn.t-kana .ic,.row-btn.t-genki .ic{background:rgba(255,255,255,.22);color:#fff}
+#readFmtSeg{margin-top:8px}
+#readFmtSeg button{font-size:13px}
 .note{font-size:12.5px;color:var(--muted);line-height:1.5;margin:0;padding-inline:4px}
 
 /* ---------- setup ---------- */
@@ -409,11 +417,11 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
       <div class="meter" id="kanaMeter"></div>
       <div class="legend" id="kanaLegend"></div>
     </button>
-    <button class="row-btn" id="openBuild">
+    <button class="row-btn t-kana" id="openBuild">
       <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10"/></svg></span>
       <span><b>Scrivi in hiragana</b><span>Dal romaji, tocca gli hiragana giusti</span></span>
     </button>
-    <button class="row-btn" id="openDraw">
+    <button class="row-btn t-kana" id="openDraw">
       <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7a2.1 2.1 0 0 0-3-3l-7 7-1 4z"/><path d="M5 20h6"/></svg></span>
       <span><b>Disegna gli hiragana</b><span>Scrivi col dito, poi gira la carta</span></span>
     </button>
@@ -423,23 +431,19 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
       <div class="meter" id="genkiMeter"></div>
       <div class="legend" id="genkiLegend"></div>
     </button>
-    <button class="row-btn" id="openRipasso">
+    <button class="row-btn t-genki" id="openRipasso">
       <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg></span>
       <span><b>Ripasso GENKI</b><span>Regole di grammatica ed esempi dalle lezioni</span></span>
     </button>
-    <button class="row-btn" id="openReading">
+    <button class="row-btn t-genki" id="openReading">
       <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5l3.2 2"/></svg></span>
       <span><b>Leggere orari e prezzi</b><span>Allena la lettura veloce di 時 e 円</span></span>
     </button>
-    <button class="row-btn" id="openPhrase">
-      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8 8 0 0 1-11.6 7.1L4 20l1.4-5.4A8 8 0 1 1 21 11.5z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01"/></svg></span>
-      <span><b>Frase del giorno</b><span id="phraseSub">Una frase al giorno con le tue parole</span></span>
-    </button>
-    <button class="row-btn" id="openCards">
+    <button class="row-btn t-parole" id="openCards">
       <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span>
       <span><b>Le mie parole</b><span>Crea gruppi e aggiungi le tue parole</span></span>
     </button>
-    <button class="row-btn" id="openDict">
+    <button class="row-btn t-parole" id="openDict">
       <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>
       <span><b>Dizionario</b><span>Cerca una parola (italiano, giapponese o romaji)</span></span>
     </button>
@@ -569,21 +573,6 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
     </div>
     <div id="myWords"></div>
   </section>
-  <!-- FRASE DEL GIORNO -->
-  <section class="screen" id="phrase" hidden>
-    <div class="bar">
-      <button class="icon-btn" id="phraseBack" aria-label="Indietro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
-      <h1>Frase del giorno</h1>
-      <button class="icon-btn" id="phraseSettings" aria-label="Impostazioni IA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1.5 14h5M9.5 8h5M17.5 16h5"/></svg></button>
-    </div>
-    <div id="phraseBox"></div>
-    <div class="tools" style="margin-top:2px">
-      <button class="tool" id="phraseShuffle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 4v4h-4"/></svg>Altra frase</button>
-      <button class="tool" id="phraseAI"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.9L18.7 9.7 13.8 11.5 12 16.4 10.2 11.5 5.3 9.7 10.2 7.9z"/><path d="M19 15l.7 1.9L21.6 17.6l-1.9.7L19 20.2l-.7-1.9L16.4 17.6l1.9-.7z"/></svg>Con IA</button>
-    </div>
-    <p class="note">Ripeti questa frase durante il giorno — ad alta voce, mentre cammini, prima di dormire. Domani ne arriva una nuova con parole diverse e tempi verbali diversi.</p>
-  </section>
-
   <!-- RIPASSO GENKI -->
   <section class="screen" id="ripasso" hidden>
     <div class="bar">
@@ -645,6 +634,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
       <span class="hb-count" id="readScore"></span>
     </div>
     <div class="seg" id="readSeg"><button data-m="orari">Orari</button><button data-m="prezzi">Prezzi</button></div>
+    <div class="seg" id="readFmtSeg" hidden><button data-f="ro">Rōmaji</button><button data-f="hira">かな</button><button data-f="kanji">漢字</button><button data-f="all">Tutti</button></div>
     <p class="hello" id="readHint">Leggi ad alta voce, poi gira la carta per controllare.</p>
     <div class="read-flip">
       <div class="read-card" id="readCard">
@@ -1606,10 +1596,10 @@ const RAW_GENKI = `
 あれ||quello (laggiù, lontano)|are
 どれ||quale?|dore
 #Dimostrativi · + nome (この/その/あの/どの)
-この||questo… (+ nome, vicino a me)|kono
-その||quel… (+ nome, vicino a te)|sono
-あの||quel… (+ nome, laggiù)|ano
-どの||quale… (+ nome)?|dono
+この〜||questo… (+ nome, vicino a me)|kono
+その〜||quel… (+ nome, vicino a te)|sono
+あの〜||quel… (+ nome, laggiù)|ano
+どの〜||quale… (+ nome)?|dono
 #Dimostrativi · luoghi (ここ/そこ/あそこ/どこ)
 ここ||qui|koko
 そこ||lì (vicino a te)|soko
@@ -1656,6 +1646,39 @@ Tシャツ||maglietta|tii shatsu
 この かばんは いくらですか。||quanto costa questa borsa?|kono kaban wa ikura desu ka
 ぎんこうは どこですか。||dov'è la banca?|ginkoo wa doko desu ka
 おてあらいは あそこです。||il bagno è laggiù.|otearai wa asoko desu
+@Numeri e saluti
+#Numeri 0-10
+ゼロ／れい||zero|zero / ree
+いち||uno|ichi
+に||due|ni
+さん||tre|san
+よん／し||quattro|yon / shi
+ご||cinque|go
+ろく||sei|roku
+なな／しち||sette|nana / shichi
+はち||otto|hachi
+きゅう／く||nove|kyuu / ku
+じゅう||dieci|juu
+#Saluti
+おはよう||ciao (buongiorno, informale)|ohayoo
+こんにちは||buongiorno / salve|konnichiwa
+こんばんは||buonasera|konbanwa
+さようなら||arrivederci|sayoonara
+おやすみなさい||buonanotte|oyasuminasai
+ありがとう ございます||grazie|arigatoo gozaimasu
+すみません||scusi / mi scusi|sumimasen
+いってきます||esco (vado e torno)|ittekimasu
+いってらっしゃい||a dopo (a chi esce)|itterasshai
+ただいま||sono tornato/a|tadaima
+おかえりなさい||bentornato/a|okaerinasai
+はじめまして||piacere (la prima volta)|hajimemashite
+よろしく おねがいします||piacere di conoscerti|yoroshiku onegaishimasu
+#Lezione 1 · parole in più
+いま||ora / adesso|ima
+～じん||…nazionalità (es. にほんじん)|-jin
+～ご||…lingua (es. にほんご)|-go
+～さい||…anni (età)|-sai
+いいえ||no|iie
 `;
 
 const ITEMS = [], BLOCKS = [], GENKI_CHAPTERS = [];
@@ -1745,8 +1768,8 @@ const inDeck = (x,deck) => deck==='kana' ? (x.d==='h'||x.d==='k') : x.d===deck;
 const LS_KEY='kotoba-swipe-v1', PREF_KEY='kotoba-swipe-prefs', THEME_KEY='kotoba-theme';
 let state = {v:1, updatedAt:0, s:{}};
 try{ const j=JSON.parse(localStorage.getItem(LS_KEY)); if(j && j.s) state=j; }catch(e){}
-const KG_DEFAULT = ['a','ka','sa','ta','na','ha'];
-let prefs = {deck:'w', kk:'kana', group:'n', dir:'f', len:20, blocks:[], gch:[], kkScript:'h', kgroups:{h:KG_DEFAULT.slice(), k:[]}};
+const KG_DEFAULT = ['a','ka','sa','ta','na','ha','ma','ya','ra','wa'];
+let prefs = {deck:'w', kk:'kana', group:'n', dir:'f', len:20, blocks:[], gch:[], kkScript:'h', kgroups:{h:KG_DEFAULT.slice(), k:[]}, readFmt:'all'};
 try{ Object.assign(prefs, JSON.parse(localStorage.getItem(PREF_KEY))||{}); }catch(e){}
 if(!Array.isArray(prefs.blocks)) prefs.blocks=[];
 if(!Array.isArray(prefs.gch)) prefs.gch=[];
@@ -1754,6 +1777,8 @@ if(prefs.kkScript!=='h' && prefs.kkScript!=='k') prefs.kkScript='h';
 if(!prefs.kgroups || typeof prefs.kgroups!=='object') prefs.kgroups={h:KG_DEFAULT.slice(), k:[]};
 if(!Array.isArray(prefs.kgroups.h)) prefs.kgroups.h=KG_DEFAULT.slice();
 if(!Array.isArray(prefs.kgroups.k)) prefs.kgroups.k=[];
+if(!prefs.hExtV2){ ['ma','ya','ra','wa'].forEach(id=>{ if(!prefs.kgroups.h.includes(id)) prefs.kgroups.h.push(id); }); prefs.hExtV2=1; }
+if(prefs.readFmt==null) prefs.readFmt='all';
 const savePrefs=()=>{ try{localStorage.setItem(PREF_KEY,JSON.stringify(prefs));}catch(e){} };
 const st = id => state.s[id] || 'n';
 function persist(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){ toast('Impossibile salvare: spazio del browser non disponibile'); } touch(); }
@@ -1802,7 +1827,7 @@ $('themeBtn').onclick=()=>{
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{ if(themeMode==='auto') applyTheme(); });
 
 /* ================= NAV ================= */
-const screens=['home','setup','study','done','list','cards','phrase','ripasso','build','draw','reading','dict'];
+const screens=['home','setup','study','done','list','cards','ripasso','build','draw','reading','dict'];
 let current='home', navDepth=0;
 function _show(name){ screens.forEach(s=>$(s).hidden = s!==name); current=name; window.scrollTo(0,0); }
 function renderFor(name){
@@ -1815,7 +1840,6 @@ function renderFor(name){
   else if(name==='draw'){ if(draw) renderDraw(); }
   else if(name==='reading'){ if(reading) renderReading(); }
   else if(name==='dict') renderDict();
-  else if(name==='phrase'){ const p=loadPhrase(); if(p && p.date===todayStr()) renderPhrase(p); }
 }
 // Tasto "Indietro" (Android/browser): naviga tra le schermate invece di uscire dall'app.
 function show(name){
@@ -1842,7 +1866,6 @@ function renderHome(){
   $('kanaSub').textContent = `${ITEMS.filter(x=>x.d==='h').length} hiragana · ${ITEMS.filter(x=>x.d==='k').length} katakana`;
   $('genkiSub').textContent = `${cg.t} card`;
   meter($('wordsMeter'),$('wordsLegend'),cw); meter($('kanaMeter'),$('kanaLegend'),ck); meter($('genkiMeter'),$('genkiLegend'),cg);
-  const ps=$('phraseSub'); if(ps){ const p=loadPhrase(); ps.textContent = (p&&p.date===todayStr()&&p.jp) ? p.jp : (PHRASES.length ? PHRASES[bankIndexForToday()].jp : 'Una frase al giorno con le tue parole'); }
 }
 $('deckWords').onclick=()=>{ prefs.deck='w'; savePrefs(); renderSetup(); show('setup'); };
 $('deckKana').onclick=()=>{ prefs.deck='kk'; savePrefs(); renderSetup(); show('setup'); };
@@ -2395,8 +2418,6 @@ function openAiSettings(){
   $('ai_save').onclick=()=>{ const x=aiCfg(); x.key=$('ai_key').value.trim(); x.model=$('ai_model').value.trim()||'gemini-2.0-flash-lite'; saveAiCfg(x); closeModal(); toast('Salvato');
     if(current==='phrase'){ const p=loadPhrase(); if(p&&p.date===todayStr()) renderPhrase(p); else if(x.key) genPhrase(); else renderPhraseEmpty(true); } };
 }
-$('openPhrase').onclick=openPhrase;
-$('phraseBack').onclick=()=>{ renderHome(); show('home'); };
 
 /* ---------- ripasso GENKI (sintesi grammaticale delle lezioni) ---------- */
 const GENKI_REVIEW = [
@@ -2422,6 +2443,33 @@ const GENKI_REVIEW = [
       { pat:'… さん', patRo:'… san', mean:'suffisso di cortesia',
         note:'さん (san) va DOPO il nome della persona (es. やましたさん, Yamashita-san). Non si usa MAI riferendosi a sé stessi.',
         ex:[ ['やましたさんは せんせいです。','Yamashita san wa sensee desu.','Il signor Yamashita è un insegnante.'] ] },
+    ]
+  },
+  {
+    title:'Lezione 2', sub:'Comprare · pp. 58-61',
+    points:[
+      { pat:'これ / それ / あれ', patRo:'kore / sore / are', mean:'pronomi dimostrativi',
+        note:'これ (kore) = questo (vicino a me); それ (sore) = quello (vicino a te); あれ (are) = quello (lontano da entrambi); どれ (dore) = quale. Stanno da soli, come un nome.',
+        ex:[ ['これは にほんごの ほんです。','Kore wa nihongo no hon desu.','Questo è un libro di giapponese.'],
+             ['それは いくらですか。','Sore wa ikura desu ka.','Quanto costa quello?'] ] },
+      { pat:'この / その / あの + Nome', patRo:'kono / sono / ano + N', mean:'questo/quel + nome',
+        note:'この / その / あの NON stanno da soli: vanno SEMPRE davanti a un nome. この ほん = questo libro; あの ひと = quella persona (laggiù). どの = quale (+ nome).',
+        ex:[ ['この とけいは たかいです。','Kono tokee wa takai desu.','Questo orologio è caro.'],
+             ['あの ひとは だれですか。','Ano hito wa dare desu ka.','Chi è quella persona?'] ] },
+      { pat:'ここ / そこ / あそこ', patRo:'koko / soko / asoko', mean:'luoghi: qui / lì / laggiù',
+        note:'ここ qui, そこ lì (vicino a te), あそこ laggiù, どこ dove. Versione cortese: こちら / そちら / あちら / どちら.',
+        ex:[ ['ぎんこうは どこですか。','Ginkoo wa doko desu ka.','Dov’è la banca?'],
+             ['トイレは あそこです。','Toire wa asoko desu.','Il bagno è laggiù.'] ] },
+      { pat:'…の / だれの', patRo:'… no / dare no', mean:'di chi è (possesso)',
+        note:'の lega due nomi (A の B = B di A) e dice di chi è una cosa. だれの = di chi. Il secondo nome si può omettere: わたしの = il mio.',
+        ex:[ ['これは だれの かさですか。','Kore wa dare no kasa desu ka.','Di chi è questo ombrello?'],
+             ['メアリーさんのです。','Mearii san no desu.','È di Mary.'] ] },
+      { pat:'… も', patRo:'… mo', mean:'anche',
+        note:'も (mo) significa "anche" e SOSTITUISCE は o を dopo la parola. それも ください = anche quello, per favore.',
+        ex:[ ['これも にほんごの ほんです。','Kore mo nihongo no hon desu.','Anche questo è un libro di giapponese.'] ] },
+      { pat:'… じゃないです', patRo:'… ja nai desu', mean:'negazione di です',
+        note:'La forma negativa cortese di です è じゃないです (o じゃありません). がくせいじゃないです = non sono uno studente.',
+        ex:[ ['わたしは せんせいじゃないです。','Watashi wa sensee ja nai desu.','Io non sono un insegnante.'] ] },
     ]
   }
 ];
@@ -2504,6 +2552,26 @@ const BUILD_ITEMS = [
   {jp:'はこ の なか',ro:'hako no naka',it:'dentro la scatola'},
   {jp:'いし の いえ',ro:'ishi no ie',it:'casa di pietra'},
   {jp:'ねこ の こえ',ro:'neko no koe',it:'la voce del gatto'},
+  {jp:'やま',ro:'yama',it:'montagna'},
+  {jp:'うみ',ro:'umi',it:'mare'},
+  {jp:'そら',ro:'sora',it:'cielo'},
+  {jp:'とり',ro:'tori',it:'uccello'},
+  {jp:'みみ',ro:'mimi',it:'orecchie'},
+  {jp:'あめ',ro:'ame',it:'pioggia / caramella'},
+  {jp:'ゆき',ro:'yuki',it:'neve'},
+  {jp:'くるま',ro:'kuruma',it:'automobile'},
+  {jp:'みかん',ro:'mikan',it:'mandarino'},
+  {jp:'まち',ro:'machi',it:'città'},
+  {jp:'もり',ro:'mori',it:'bosco'},
+  {jp:'ゆめ',ro:'yume',it:'sogno'},
+  {jp:'よる',ro:'yoru',it:'notte / sera'},
+  {jp:'はる',ro:'haru',it:'primavera'},
+  {jp:'なまえ',ro:'namae',it:'nome'},
+  {jp:'やさい',ro:'yasai',it:'verdura'},
+  {jp:'わたし',ro:'watashi',it:'io'},
+  {jp:'やま と うみ',ro:'yama to umi',it:'montagna e mare'},
+  {jp:'あおい そら',ro:'aoi sora',it:'cielo azzurro'},
+  {jp:'あかい とり',ro:'akai tori',it:'uccello rosso'},
 ];
 let build=null;
 const hiraganaSet = () => new Set(ITEMS.filter(x=>x.d==='h' && (prefs.kgroups.h||[]).includes(x.grp)).map(x=>x.jp));
@@ -2621,26 +2689,25 @@ $('drawNext').onclick=()=>{ if(!draw) return; draw.i++; showDraw(); };
 
 /* ---------- leggere orari / prezzi (lettura veloce) ---------- */
 const ORARI = [
-  {jp:'1時', k:'いちじ', it:'1:00 · ichi-ji'},
-  {jp:'2時', k:'にじ', it:'2:00 · ni-ji'},
-  {jp:'3時', k:'さんじ', it:'3:00 · san-ji'},
-  {jp:'4時', k:'よじ', it:'4:00 · IRREGOLARE: yo-ji (non yon-ji)'},
-  {jp:'5時', k:'ごじ', it:'5:00 · go-ji'},
-  {jp:'6時', k:'ろくじ', it:'6:00 · roku-ji'},
-  {jp:'7時', k:'しちじ', it:'7:00 · shichi-ji'},
-  {jp:'8時', k:'はちじ', it:'8:00 · hachi-ji'},
-  {jp:'9時', k:'くじ', it:'9:00 · IRREGOLARE: ku-ji (non kyuu-ji)'},
-  {jp:'10時', k:'じゅうじ', it:'10:00 · juu-ji'},
-  {jp:'11時', k:'じゅういちじ', it:'11:00 · juuichi-ji'},
-  {jp:'12時', k:'じゅうにじ', it:'12:00 · juuni-ji'},
-  {jp:'7時半', k:'しちじはん', it:'7:30 · le 7 e mezza (han = mezza)'},
-  {jp:'4時半', k:'よじはん', it:'4:30'},
-  {jp:'10時半', k:'じゅうじはん', it:'10:30'},
-  {jp:'午前6時', k:'ごぜん ろくじ', it:'6:00 del mattino (gozen = AM)'},
-  {jp:'午後3時', k:'ごご さんじ', it:'15:00 · 3 del pomeriggio (gogo = PM)'},
-  {jp:'4時15分', k:'よじ じゅうごふん', it:'4:15'},
-  {jp:'9時45分', k:'くじ よんじゅうごふん', it:'9:45'},
-  {jp:'何時ですか', k:'なんじですか', it:'che ore sono? (nan-ji)'},
+  {west:'1:00', kanji:'一時', hira:'いちじ', ro:'ichi-ji'},
+  {west:'2:00', kanji:'二時', hira:'にじ', ro:'ni-ji'},
+  {west:'3:00', kanji:'三時', hira:'さんじ', ro:'san-ji'},
+  {west:'4:00', kanji:'四時', hira:'よじ', ro:'yo-ji (irregolare!)'},
+  {west:'5:00', kanji:'五時', hira:'ごじ', ro:'go-ji'},
+  {west:'6:00', kanji:'六時', hira:'ろくじ', ro:'roku-ji'},
+  {west:'7:00', kanji:'七時', hira:'しちじ', ro:'shichi-ji'},
+  {west:'8:00', kanji:'八時', hira:'はちじ', ro:'hachi-ji'},
+  {west:'9:00', kanji:'九時', hira:'くじ', ro:'ku-ji (irregolare!)'},
+  {west:'10:00', kanji:'十時', hira:'じゅうじ', ro:'juu-ji'},
+  {west:'11:00', kanji:'十一時', hira:'じゅういちじ', ro:'juuichi-ji'},
+  {west:'12:00', kanji:'十二時', hira:'じゅうにじ', ro:'juuni-ji'},
+  {west:'7:30', kanji:'七時半', hira:'しちじはん', ro:'shichi-ji han'},
+  {west:'4:30', kanji:'四時半', hira:'よじはん', ro:'yo-ji han'},
+  {west:'10:30', kanji:'十時半', hira:'じゅうじはん', ro:'juu-ji han'},
+  {west:'6:00 AM', kanji:'午前六時', hira:'ごぜん ろくじ', ro:'gozen roku-ji'},
+  {west:'3:00 PM', kanji:'午後三時', hira:'ごご さんじ', ro:'gogo san-ji'},
+  {west:'4:15', kanji:'四時十五分', hira:'よじ じゅうごふん', ro:'yo-ji juugo-fun'},
+  {west:'9:45', kanji:'九時四十五分', hira:'くじ よんじゅうごふん', ro:'ku-ji yonjuugo-fun'},
 ];
 const PREZZI = [
   {jp:'100円', k:'ひゃくえん', it:'100 yen · hyaku'},
@@ -2672,18 +2739,34 @@ function showReading(){
 }
 function renderReading(){
   const it=reading.item; if(!it) return;
-  $('readFront').textContent=it.jp;
-  $('readKana').textContent=it.k;
-  $('readMean').textContent=it.it;
+  const isO = reading.mode==='orari';
+  $('readFront').textContent = isO ? it.west : it.jp;
+  if(isO){
+    const fmt=prefs.readFmt||'all';
+    let main='', sub='';
+    if(fmt==='ro'){ main=it.ro; }
+    else if(fmt==='hira'){ main=it.hira; }
+    else if(fmt==='kanji'){ main=it.kanji; }
+    else { main=it.kanji+' · '+it.hira; sub=it.ro; }
+    $('readKana').textContent=main;
+    $('readMean').textContent=sub;
+  } else {
+    $('readKana').textContent=it.k;
+    $('readMean').textContent=it.it;
+  }
   $('readCard').classList.toggle('flipped', reading.revealed);
   $('readReveal').lastChild.textContent = reading.revealed?'Nascondi':'Mostra soluzione';
   $('readScore').textContent=`${reading.i+1} / ${reading.queue.length}`;
-  $('readLab').textContent = reading.mode==='prezzi' ? 'leggi il prezzo' : "leggi l'ora";
+  $('readLab').textContent = isO ? 'dillo in giapponese' : 'leggi il prezzo';
+  $('readHint').textContent = isO ? "Guarda l'orario e dillo in giapponese, poi gira la carta." : 'Leggi il prezzo ad alta voce, poi gira la carta.';
   $('readSeg').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.m===reading.mode));
+  $('readFmtSeg').hidden = !isO;
+  if(isO){ $('readFmtSeg').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.f===(prefs.readFmt||'all'))); }
 }
 $('openReading').onclick=()=>{ show('reading'); startReading(reading?reading.mode:'orari'); };
 $('readBack').onclick=()=>{ show('home'); };
 $('readSeg').addEventListener('click',e=>{ const b=e.target.closest('button[data-m]'); if(!b) return; startReading(b.dataset.m); });
+$('readFmtSeg').addEventListener('click',e=>{ const b=e.target.closest('button[data-f]'); if(!b) return; prefs.readFmt=b.dataset.f; savePrefs(); renderReading(); });
 $('readCard').onclick=()=>{ if(!reading) return; reading.revealed=!reading.revealed; renderReading(); };
 $('readReveal').onclick=()=>{ if(!reading) return; reading.revealed=!reading.revealed; renderReading(); };
 $('readNext').onclick=()=>{ if(!reading) return; reading.i++; showReading(); };
@@ -2722,9 +2805,6 @@ $('dictKbd').addEventListener('click',e=>{
   else if(b.dataset.c!=null) inp.value+=b.dataset.c;
   renderDict();
 });
-$('phraseSettings').onclick=openAiSettings;
-$('phraseShuffle').onclick=()=>{ showBankPhrase(PHRASES.length?Math.floor(Math.random()*PHRASES.length):null); };
-$('phraseAI').onclick=()=>{ if(aiCfg().key) genPhrase(); else openAiSettings(); };
 
 /* ================= BOOT ================= */
 applyTheme();
