@@ -354,6 +354,9 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
 .hb-tile{min-width:50px;height:58px;padding:0 10px;border-radius:15px;border:none;background:var(--surface);box-shadow:var(--shadow);font-family:var(--jp);font-size:28px;font-weight:700;color:var(--ink);cursor:pointer;transition:transform .08s}
 .hb-tile:active{transform:translateY(2px)}
 .hb-tile.used{visibility:hidden}
+.hb-jp{font-family:var(--jp);font-size:34px;font-weight:700;color:var(--ink);display:block}
+.hb-slot.hb-slot-ro{width:auto;min-width:50px;padding:0 8px;font-family:var(--display);font-size:19px}
+.hb-tile.hb-tile-ro{font-family:var(--display);font-size:19px;min-width:52px}
 .hb-result{text-align:center;font-weight:800;font-size:15px;border-radius:14px;padding:10px 14px;margin-bottom:12px}
 .hb-result.ok{background:var(--known-soft);color:var(--known)}
 .hb-result.bad{background:var(--sakura-soft);color:var(--sakura)}
@@ -592,7 +595,8 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
       <h1>Scrivi in hiragana</h1>
       <span class="hb-count" id="buildScore"></span>
     </div>
-    <p class="hello">Leggi il romaji e tocca gli hiragana giusti, in ordine.
+    <div class="seg" id="buildDirSeg"><button data-bd="r2h">Romaji → か</button><button data-bd="h2r">か → Romaji</button></div>
+    <p class="hello" id="buildHint">Leggi il romaji e tocca gli hiragana giusti, in ordine.
       <small>Solo parole con i simboli che hai già sbloccato. Tocca una casella piena per toglierla.</small></p>
     <div id="buildBox"></div>
     <div class="tools" style="margin-top:4px">
@@ -1769,7 +1773,7 @@ const LS_KEY='kotoba-swipe-v1', PREF_KEY='kotoba-swipe-prefs', THEME_KEY='kotoba
 let state = {v:1, updatedAt:0, s:{}};
 try{ const j=JSON.parse(localStorage.getItem(LS_KEY)); if(j && j.s) state=j; }catch(e){}
 const KG_DEFAULT = ['a','ka','sa','ta','na','ha','ma','ya','ra','wa'];
-let prefs = {deck:'w', kk:'kana', group:'n', dir:'f', len:20, blocks:[], gch:[], kkScript:'h', kgroups:{h:KG_DEFAULT.slice(), k:[]}, readFmt:'all'};
+let prefs = {deck:'w', kk:'kana', group:'n', dir:'f', len:20, blocks:[], gch:[], kkScript:'h', kgroups:{h:KG_DEFAULT.slice(), k:[]}, readFmt:'all', buildDir:'r2h'};
 try{ Object.assign(prefs, JSON.parse(localStorage.getItem(PREF_KEY))||{}); }catch(e){}
 if(!Array.isArray(prefs.blocks)) prefs.blocks=[];
 if(!Array.isArray(prefs.gch)) prefs.gch=[];
@@ -2596,43 +2600,58 @@ const BUILD_ITEMS = [
 let build=null;
 const hiraganaSet = () => new Set(ITEMS.filter(x=>x.d==='h' && (prefs.kgroups.h||[]).includes(x.grp)).map(x=>x.jp));
 const buildPool = () => { const H=hiraganaSet(); return BUILD_ITEMS.filter(it=>[...it.jp].every(c=>c===' '||H.has(c))); };
-const targetChars = () => [...build.item.jp].filter(c=>c!==' ');
-function startBuild(){ build={queue:shuffle(buildPool()),i:0,ok:0,done:0,item:null,picked:[],bank:[],checked:false,correct:false}; showBuild(); }
+const KANA_RO = {};
+KANA_ROWS.forEach(r=>r.h.forEach((c,i)=>{ KANA_RO[c]=r.r[i]; }));
+function startBuild(){ build={dir:(prefs.buildDir==='h2r'?'h2r':'r2h'),queue:shuffle(buildPool()),i:0,ok:0,done:0,item:null,picked:[],bank:[],units:[],checked:false,correct:false}; showBuild(); }
 function showBuild(){
   if(!build.queue.length){ $('buildBox').innerHTML='<p class="note">Nessuna parola disponibile con gli hiragana sbloccati finora.</p>'; $('buildScore').textContent=''; return; }
   if(build.i>=build.queue.length){ build.i=0; build.queue=shuffle(build.queue); }
   const it=build.item=build.queue[build.i];
   build.picked=[]; build.checked=false; build.correct=false;
-  const ans=[...it.jp].filter(c=>c!==' '), H=[...hiraganaSet()];
+  const chars=[...it.jp].filter(c=>c!==' ');
+  let ans, disPool;
+  if(build.dir==='h2r'){
+    ans = chars.map(c=>KANA_RO[c]||romaji(c)||c);
+    disPool = [...new Set(ITEMS.filter(x=>x.d==='h' && (prefs.kgroups.h||[]).includes(x.grp)).map(x=>x.ro))];
+  } else {
+    ans = chars;
+    disPool = [...hiraganaSet()];
+  }
+  build.units = ans;
   const need=Math.max(2,Math.min(4,8-ans.length)), dis=[]; let g=0;
-  while(dis.length<need && g++<200){ const c=H[Math.floor(Math.random()*H.length)]; if(!ans.includes(c)&&!dis.includes(c)) dis.push(c); }
+  while(dis.length<need && g++<300){ const c=disPool[Math.floor(Math.random()*disPool.length)]; if(c && !ans.includes(c) && !dis.includes(c)) dis.push(c); }
   build.bank=shuffle(ans.concat(dis)).map(ch=>({ch,used:false}));
   renderBuild();
 }
 function renderBuild(){
-  const it=build.item; let ni=-1;
+  const it=build.item; const h2r=build.dir==='h2r'; let ni=-1;
   const slots=[...it.jp].map(c=>{
     if(c===' ') return '<span class="hb-gap"></span>';
     ni++; const k=ni, bi=build.picked[k], ch=bi!=null?build.bank[bi].ch:'';
-    const cls='hb-slot'+(ch?' filled':'')+(build.checked?(build.correct?' ok':' bad'):'');
-    return `<button class="${cls}" data-slot="${k}">${ch}</button>`;
+    const cls='hb-slot'+(h2r?' hb-slot-ro':'')+(ch?' filled':'')+(build.checked?(build.correct?' ok':' bad'):'');
+    return `<button class="${cls}" data-slot="${k}">${esc(ch)}</button>`;
   }).join('');
-  const bank=build.bank.map((t,i)=>`<button class="hb-tile${t.used?' used':''}" data-tile="${i}"${t.used?' disabled':''}>${t.ch}</button>`).join('');
+  const bank=build.bank.map((t,i)=>`<button class="hb-tile${h2r?' hb-tile-ro':''}${t.used?' used':''}" data-tile="${i}"${t.used?' disabled':''}>${esc(t.ch)}</button>`).join('');
   let banner='';
   if(build.checked) banner=build.correct
-    ? `<div class="hb-result ok">Giusto! ${esc(it.ro)}${it.it?' · '+esc(it.it):''}</div>`
-    : `<div class="hb-result bad">Non ancora — togli un simbolo o premi Avanti</div>`;
-  $('buildBox').innerHTML=`<div class="hb-prompt"><span class="hb-ro">${esc(it.ro)}</span>${it.it?`<span class="hb-it">${esc(it.it)}</span>`:''}</div><div class="hb-slots">${slots}</div>${banner}<div class="hb-bank">${bank}</div>`;
+    ? `<div class="hb-result ok">Giusto! ${esc(it.jp)} = ${esc(it.ro)}${it.it?' · '+esc(it.it):''}</div>`
+    : `<div class="hb-result bad">Non ancora — togli una tessera o premi Avanti</div>`;
+  const prompt = h2r
+    ? `<div class="hb-prompt"><span class="hb-jp">${esc(it.jp)}</span>${it.it?`<span class="hb-it">${esc(it.it)}</span>`:''}</div>`
+    : `<div class="hb-prompt"><span class="hb-ro">${esc(it.ro)}</span>${it.it?`<span class="hb-it">${esc(it.it)}</span>`:''}</div>`;
+  $('buildBox').innerHTML=`${prompt}<div class="hb-slots">${slots}</div>${banner}<div class="hb-bank">${bank}</div>`;
   $('buildScore').textContent=`${build.ok} / ${build.done}`;
+  $('buildHint').innerHTML = (h2r ? 'Leggi la parola in hiragana e componi il romaji, in ordine.' : 'Leggi il romaji e tocca gli hiragana giusti, in ordine.') + ' <small>Solo parole coi simboli sbloccati. Tocca una casella piena per toglierla.</small>';
+  $('buildDirSeg').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.bd===build.dir));
 }
 function pickTile(i){
   if(!build || (build.checked && build.correct)) return;
-  if(build.picked.length>=targetChars().length) return;
+  if(build.picked.length>=build.units.length) return;
   const t=build.bank[i]; if(!t||t.used) return;
   t.used=true; build.picked.push(i);
-  if(build.picked.length===targetChars().length){
-    const ans=build.picked.map(bi=>build.bank[bi].ch).join('');
-    build.checked=true; build.correct = ans===targetChars().join('');
+  if(build.picked.length===build.units.length){
+    const picked=build.picked.map(bi=>build.bank[bi].ch);
+    build.checked=true; build.correct = picked.every((u,idx)=>u===build.units[idx]);
     build.done++; if(build.correct) build.ok++;
   }
   renderBuild();
@@ -2651,6 +2670,7 @@ $('buildClear').onclick=()=>{ if(!build||!build.item) return; build.picked.forEa
 $('buildNext').onclick=()=>{ if(!build) return; build.i++; showBuild(); };
 $('openBuild').onclick=()=>{ startBuild(); show('build'); };
 $('buildBack').onclick=()=>{ renderHome(); show('home'); };
+$('buildDirSeg').addEventListener('click',e=>{ const b=e.target.closest('button[data-bd]'); if(!b) return; prefs.buildDir=b.dataset.bd; savePrefs(); startBuild(); });
 
 /* ---------- disegna gli hiragana (scrivi col dito, gira la carta) ---------- */
 let draw=null;
