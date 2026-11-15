@@ -204,6 +204,9 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
 .act.no{width:72px;height:72px;background:var(--learn);color:#fff}
 .act.yes{width:72px;height:72px;background:var(--known);color:#fff}
 .act.flip{width:54px;height:54px;background:var(--surface);color:var(--ink)}
+.act.util{width:64px;height:64px;background:var(--surface);color:var(--ink)}
+.act.util:disabled{opacity:.3;box-shadow:none}
+.act.ro{font-family:var(--display);font-weight:800;font-size:27px;line-height:1}
 .act svg{width:30px;height:30px;display:block}.act.flip svg{width:24px;height:24px}
 .swipe-hint{display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--muted);padding-inline:8px}
 .swipe-hint .l{color:var(--learn)}.swipe-hint .r{color:var(--known)}
@@ -488,15 +491,13 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ramune);outline
     <div class="bar">
       <button class="icon-btn" id="studyClose" aria-label="Chiudi sessione"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <div class="progress"><b id="progText">1 / 20</b><div class="pbar"><span id="progBar"></span></div></div>
-      <button class="icon-btn ro-tgl" id="btnRomaji" aria-label="Mostra o nascondi il romaji" aria-pressed="true">R</button>
-      <button class="icon-btn" id="undoBtn" aria-label="Annulla ultima scelta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/></svg></button>
     </div>
     <div class="stage" id="stage"></div>
     <div class="swipe-hint"><span class="l">← Da ripassare</span><span class="r">La so →</span></div>
     <div class="actions">
-      <button class="act no" id="btnNo" aria-label="Da ripassare"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M7 7l10 10M17 7L7 17"/></svg></button>
+      <button class="act util" id="undoBtn" aria-label="Annulla ultima scelta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/></svg></button>
       <button class="act flip" id="btnFlip" aria-label="Gira la carta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.7"/><path d="M20 4v4.7h-4.7"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15.3"/><path d="M4 20v-4.7h4.7"/></svg></button>
-      <button class="act yes" id="btnYes" aria-label="La so"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+      <button class="act util ro ro-tgl" id="btnRomaji" aria-label="Mostra o nascondi il romaji" aria-pressed="true">R</button>
     </div>
     <button class="unseen-btn" id="btnUnseen" aria-label="Segna come mai vista su Duolingo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7a11 11 0 0 1-5-1.2"/><circle cx="12" cy="12" r="2.5"/><path d="M3 3l18 18"/></svg>Mai vista su Duolingo</button>
   </section>
@@ -2084,8 +2085,6 @@ function undo(){
   if(!history.length || busy) return;
   const h=history.pop(); setStatus(h.id,h.prev); delete results[h.id]; idx=Math.max(0,idx-1); renderCard();
 }
-$('btnYes').onclick=()=>decide('k');
-$('btnNo').onclick=()=>decide('l');
 $('btnUnseen').onclick=()=>decide('h');
 $('btnFlip').onclick=flip;
 $('undoBtn').onclick=undo;
