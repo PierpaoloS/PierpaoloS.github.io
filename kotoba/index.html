@@ -1893,7 +1893,7 @@ const GROUPS = [
 ];
 function selection(deck){
   if(deck==='g'){ const gc=prefs.gch.filter(i=>i<GENKI_CHAPTERS.length); return ITEMS.filter(x=>x.d==='g' && (!gc.length || gc.includes(x.gc))); }
-  if(deck==='kana'){ const sc=prefs.kkScript, en=prefs.kgroups[sc]||[]; return ITEMS.filter(x=>x.d===sc && en.includes(x.grp)); }
+  if(deck==='kana'){ const eh=prefs.kgroups.h||[], ek=prefs.kgroups.k||[]; return ITEMS.filter(x=> (x.d==='h' && eh.includes(x.grp)) || (x.d==='k' && ek.includes(x.grp)) ); }
   const bl = prefs.blocks.filter(b=>b<BLOCKS.length);
   return ITEMS.filter(x=>inDeck(x,deck) && (deck!=='w' || !bl.length || bl.includes(x.b)));
 }
@@ -1919,7 +1919,7 @@ function renderSetup(){
   const sel = counts(selection(deck));
   const label = isW ? (prefs.blocks.length ? (prefs.blocks.length===1 ? `Blocco ${prefs.blocks[0]+1}` : `${prefs.blocks.length} blocchi scelti`) : 'Tutte le parole')
     : deck==='g' ? (prefs.gch.length ? (prefs.gch.length===1 ? GENKI_CHAPTERS[prefs.gch[0]] : `${prefs.gch.length} lezioni scelte`) : 'Tutte le lezioni')
-    : isKana ? ((prefs.kkScript==='h'?'Hiragana':'Katakana')+' · '+(prefs.kgroups[prefs.kkScript]||[]).length+' gruppi') : 'Hiragana';
+    : isKana ? (`${(prefs.kgroups.h||[]).length} gruppi hiragana + ${(prefs.kgroups.k||[]).length} katakana`) : 'Hiragana';
   $('summary').innerHTML = `${ring(sel.pct,64)}<div class="txt"><b>${esc(label)}: ${sel.pct}% appreso</b><span>${sel.k} la so · ${sel.l} da imparare · ${sel.n} nuove</span></div>`;
 
   // blocchi (parole) / lezioni (GENKI) / gruppi (kana)
